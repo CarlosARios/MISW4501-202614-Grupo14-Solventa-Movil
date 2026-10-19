@@ -1,13 +1,17 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Reglas de copia de seguridad para dispositivos anteriores a Android 12.
+    Desde Android 12 manda data_extraction_rules.xml, y las dos dicen lo
+    mismo.
+
+    Los tokens de la sesión quedan fuera de la copia. Están cifrados con una
+    clave del Keystore que nunca sale del dispositivo y que no se respalda,
+    así que en otro teléfono el archivo sería ilegible de todos modos; se
+    excluye para no llevar a la nube material de autenticación que allí no
+    sirve para nada.
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <exclude
+        domain="sharedpref"
+        path="sesion-solventa.xml" />
 </full-backup-content>

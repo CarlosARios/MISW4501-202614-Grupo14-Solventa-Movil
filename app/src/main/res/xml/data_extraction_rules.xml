@@ -1,19 +1,24 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Qué sale del dispositivo, desde Android 12.
+
+    Los tokens de la sesión no salen ni a la nube ni a otro teléfono. Van
+    cifrados con una clave del Keystore que no se respalda ni se transfiere,
+    de modo que fuera de este dispositivo el archivo no se puede descifrar:
+    excluirlo evita mover material de autenticación que no serviría.
+
+    En una transferencia entre dispositivos tampoco se copian, así que el
+    usuario vuelve a iniciar sesión en el teléfono nuevo, que es lo esperable.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <exclude
+            domain="sharedpref"
+            path="sesion-solventa.xml" />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude
+            domain="sharedpref"
+            path="sesion-solventa.xml" />
     </device-transfer>
-    -->
 </data-extraction-rules>

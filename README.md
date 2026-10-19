@@ -250,10 +250,48 @@ Toda pantalla implementa los **estados** que define el prototipo (vacío, error,
 |---|---|---|---|
 | Local | `debug` | `http://10.0.2.2:8080` | Desarrollo diario contra el Docker Compose del repositorio de servicios |
 | Test / CI | — (sin despliegue) | — | Lint, build y unitarias en cada *pull request* |
-| Staging | `staging` (sufijo `.staging` en el `applicationId`) | Pendiente | Experimentos de arquitectura; se enciende solo en su ventana |
-| Producción (demo) | `release` | Pendiente | Entrega evaluable |
+| Staging | `staging` (sufijo `.staging` en el `applicationId`) | `URL_API_GATEWAY` | Experimentos de arquitectura; se enciende solo en su ventana |
+| Producción (demo) | `release` | `URL_API_GATEWAY` | Entrega evaluable |
 
-Los valores marcados `PENDIENTE` (URL del API Gateway, user pool y cliente de Cognito) se completan cuando el repositorio de infraestructura los publique. Se leen desde `BuildConfig`, nunca escritos en una pantalla.
+Todos los valores se leen desde `BuildConfig`, nunca escritos en una pantalla.
+
+### Identidad: el *user pool* permanente
+
+El *user pool* de Cognito que usan los canales humanos es **permanente** y está configurado en el propio
+`build.gradle.kts`, en las tres variantes. Lo crea y administra `infra/terraform/bootstrap/identity` del repositorio
+de servicios, se aplicó una sola vez y no se destruye con las ventanas de *staging*.
+
+| Valor | |
+|---|---|
+| Región | `us-east-2` |
+| *User pool* | `us-east-2_EWwg8NL2C` |
+| Cliente móvil | `6dri40bi3sk74cr0jb5djq43c0` |
+
+No son secretos: un *user pool* se identifica por ellos y el cliente móvil es público, sin secreto de cliente. El
+*pool* tampoco contiene datos personales; sus usuarios son cuatro cuentas de prueba `@example.com`, una por rol, y la
+contraseña la custodia el equipo fuera del repositorio.
+
+**La variante `debug` autentica contra ese mismo *pool*.** Es lo que permite comprobar en un dispositivo el ingreso
+real, la renovación silenciosa y el vencimiento de la sesión sin tener que construir y firmar la versión de
+producción.
+
+### La URL del API Gateway entra al construir
+
+A diferencia del *user pool*, la plataforma es efímera: cada ventana de *staging* levanta su propio gateway con un
+dominio distinto. Por eso la URL no está escrita en el repositorio, sino que se toma de la variable de entorno
+`URL_API_GATEWAY` en el momento de construir:
+
+```powershell
+$env:URL_API_GATEWAY = "https://abc123.execute-api.us-east-2.amazonaws.com"
+```
+
+```powershell
+.\gradlew :app:assembleRelease
+```
+
+Sin la variable, el valor queda en `PENDIENTE` y la aplicación arranca igual: el ingreso funciona, porque Cognito es
+permanente, y lo que falla son las llamadas al API, que es exactamente lo que ocurre cuando no hay ninguna ventana
+abierta. Cambiar de ventana es volver a construir, sin tocar código ni abrir un *pull request*.
 
 ---
 
