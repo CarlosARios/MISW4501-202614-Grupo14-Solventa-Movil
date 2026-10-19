@@ -1,5 +1,6 @@
 package co.solventa.movil.core.di
 
+import co.solventa.movil.core.auth.interceptores.InterceptorDeAutenticacion
 import co.solventa.movil.core.errores.InterceptorDeCorrelacion
 import dagger.Module
 import dagger.Provides
@@ -18,8 +19,7 @@ import javax.inject.Singleton
  * petición antes de enviarla; los errores van al final para ver la respuesta
  * ya resuelta.
  *
- * Hoy solo está el de correlación. El de autenticación entra cuando exista
- * el *user pool* de Cognito, y el de errores con el primer contrato de API.
+ * El de errores entra con el primer contrato de API.
  *
  * **Sin `HttpLoggingInterceptor`, a propósito.** Lo que hace falta registrar
  * —método, ruta, código, duración y correlación— ya lo deja
@@ -35,8 +35,9 @@ object RedModule {
 
     @Provides
     @Singleton
-    fun proveerClienteHttp(): OkHttpClient = OkHttpClient.Builder()
+    fun proveerClienteHttp(autenticacion: InterceptorDeAutenticacion): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(InterceptorDeCorrelacion())
+        .addInterceptor(autenticacion)
         .connectTimeout(TIEMPO_DE_CONEXION_S, TimeUnit.SECONDS)
         .readTimeout(TIEMPO_DE_LECTURA_S, TimeUnit.SECONDS)
         .build()

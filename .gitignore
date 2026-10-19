@@ -17,9 +17,10 @@
 .cxx
 local.properties
 
-# Cuaderno de pendientes del responsable del cliente movil: control interno,
-# no documentacion del proyecto. Se mantiene fuera del repositorio a proposito.
+# Material de control interno del responsable del cliente movil: no es
+# documentacion del proyecto y se mantiene fuera del repositorio a proposito.
 /docs/pendientes.md
+/docs/cierre-sprint-1-movil.md
 
 # Almacenes de claves de firma. Nunca entran al repositorio: quien tenga el
 # archivo y la contrasena puede publicar una version que los telefonos

@@ -17,7 +17,6 @@
     <string name="bienvenida_lema">Your insurance, with you</string>
     <string name="bienvenida_crear_cuenta">Create my account</string>
     <string name="bienvenida_ya_tengo_cuenta">I already have an account</string>
-    <string name="pendiente_pantalla">Screen pending: %1$s</string>
 
     <!-- M2a and M2c - sign in with device biometrics -->
     <string name="ingreso_saludo">Hi, %1$s</string>
@@ -152,4 +151,14 @@
     <string name="registro_demora_documento">Identity document received and legible</string>
     <string name="registro_demora_en_proceso">Identity verification in progress</string>
     <string name="registro_demora_cuenta_inactiva">Your account will not be active until verification finishes</string>
+
+    <!-- M3 · home, provisional version. -->
+    <string name="inicio_saludo">Hello, %1$s</string>
+    <string name="inicio_provisional">This screen is provisional. M3 · Home belongs to another user story and is not built yet; in the meantime, the delivered screens can be reached from here.</string>
+    <string name="inicio_pantallas_titulo">Delivered screens</string>
+    <string name="inicio_ir_registro">Identity verification sign-up</string>
+    <string name="inicio_ir_verificacion_exitosa">Verification succeeded</string>
+    <string name="inicio_ir_verificacion_no_superada">Verification failed</string>
+    <string name="inicio_ir_verificacion_demorada">Verification is taking longer</string>
+    <string name="inicio_cerrar_sesion">Sign out</string>
 </resources>
