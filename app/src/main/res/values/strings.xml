@@ -19,7 +19,6 @@
     <string name="bienvenida_lema">Tu seguro, contigo</string>
     <string name="bienvenida_crear_cuenta">Crear mi cuenta</string>
     <string name="bienvenida_ya_tengo_cuenta">Ya tengo cuenta</string>
-    <string name="pendiente_pantalla">Pantalla pendiente: %1$s</string>
 
     <!-- M2a y M2c · ingreso con la biometría del dispositivo -->
     <string name="ingreso_saludo">Hola, %1$s</string>
@@ -154,4 +153,17 @@
     <string name="registro_demora_documento">Documento de identidad recibido y legible</string>
     <string name="registro_demora_en_proceso">Verificación de identidad en proceso</string>
     <string name="registro_demora_cuenta_inactiva">Tu cuenta no estará activa hasta que la verificación termine</string>
+
+    <!-- M3 · inicio, en version provisional: la pantalla definitiva es de
+         otra historia. Saluda con la identidad que devolvio el user pool y
+         da acceso a las pantallas entregadas, para poder recorrerlas en una
+         demostracion. -->
+    <string name="inicio_saludo">Hola, %1$s</string>
+    <string name="inicio_provisional">Esta pantalla es provisional. M3 · Inicio pertenece a otra historia y todavía no está construida; mientras tanto, desde aquí se alcanzan las pantallas entregadas.</string>
+    <string name="inicio_pantallas_titulo">Pantallas entregadas</string>
+    <string name="inicio_ir_registro">Registro con verificación de identidad</string>
+    <string name="inicio_ir_verificacion_exitosa">Verificación exitosa</string>
+    <string name="inicio_ir_verificacion_no_superada">Verificación no superada</string>
+    <string name="inicio_ir_verificacion_demorada">La verificación tarda</string>
+    <string name="inicio_cerrar_sesion">Cerrar sesión</string>
 </resources>

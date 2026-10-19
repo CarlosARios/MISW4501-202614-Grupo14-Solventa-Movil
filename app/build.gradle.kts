@@ -16,6 +16,33 @@ plugins {
  */
 val rutaDelAlmacen: String? = System.getenv("RUTA_ALMACEN_DE_CLAVES")
 
+/**
+ * Identificadores del user pool permanente de Cognito (`solventa-users`, en
+ * us-east-2). No son secretos: un user pool se identifica por ellos y el
+ * cliente movil es publico, sin secreto de cliente. Los crea y administra
+ * `infra/terraform/bootstrap/identity` del repositorio de servicios, y se
+ * aplicaron una sola vez, asi que no cambian con cada ventana de staging.
+ */
+val regionDeCognito = "us-east-2"
+val poolDeCognito = "us-east-2_EWwg8NL2C"
+val clienteMovilDeCognito = "6dri40bi3sk74cr0jb5djq43c0"
+
+/**
+ * URL del API Gateway del ambiente contra el que se construye.
+ *
+ * A diferencia del user pool, la plataforma es efimera: cada ventana de
+ * staging levanta su propio gateway con un dominio distinto. Por eso el valor
+ * entra por variable de entorno al construir, y no escrito en este archivo:
+ * cambiar de ventana es construir otra vez, sin commit ni pull request.
+ *
+ *     $env:URL_API_GATEWAY = "https://abc123.execute-api.us-east-2.amazonaws.com"
+ *
+ * Sin la variable queda en PENDIENTE y la aplicacion arranca igual: el
+ * ingreso funciona, porque Cognito si es permanente, y lo que falla son las
+ * llamadas al API, que es exactamente lo que ocurre sin una ventana abierta.
+ */
+val urlDelApiGateway: String = System.getenv("URL_API_GATEWAY") ?: "PENDIENTE"
+
 android {
     namespace = "co.solventa.movil"
     compileSdk {
@@ -30,6 +57,16 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Contrasena de los usuarios de prueba del user pool permanente, para
+        // la unica prueba que consulta Cognito de verdad
+        // (RenovacionContraElPoolTest). Entra por el entorno y no por este
+        // archivo: en el repositorio no hay ninguna credencial. Sin la
+        // variable, esa prueba se omite en lugar de fallar, asi que el
+        // pipeline sigue en verde sin conocerla.
+        System.getenv("CLAVE_POOL_SOLVENTA")?.let {
+            testInstrumentationRunnerArguments["claveDePrueba"] = it
+        }
     }
 
     signingConfigs {
@@ -50,9 +87,14 @@ android {
         debug {
             buildConfigField("String", "AMBIENTE", "\"local\"")
             buildConfigField("String", "API_GATEWAY_URL", "\"http://10.0.2.2:8080\"")
-            buildConfigField("String", "COGNITO_REGION", "\"us-east-2\"")
-            buildConfigField("String", "COGNITO_USER_POOL_ID", "\"local\"")
-            buildConfigField("String", "COGNITO_CLIENTE_ID", "\"local\"")
+            // Depuracion autentica contra el pool real, el mismo de
+            // produccion. Es lo que permite comprobar en el dispositivo el
+            // ingreso, la renovacion silenciosa y el vencimiento sin tener
+            // que construir y firmar la version de produccion. El pool no
+            // tiene datos personales: sus cuatro usuarios son de prueba.
+            buildConfigField("String", "COGNITO_REGION", "\"$regionDeCognito\"")
+            buildConfigField("String", "COGNITO_USER_POOL_ID", "\"$poolDeCognito\"")
+            buildConfigField("String", "COGNITO_CLIENTE_ID", "\"$clienteMovilDeCognito\"")
         }
 
         // Producción (demo): la entrega evaluable que despliega el pipeline.
@@ -62,10 +104,10 @@ android {
                 signingConfig = signingConfigs.getByName("publicacion")
             }
             buildConfigField("String", "AMBIENTE", "\"produccion\"")
-            buildConfigField("String", "API_GATEWAY_URL", "\"PENDIENTE\"")
-            buildConfigField("String", "COGNITO_REGION", "\"us-east-2\"")
-            buildConfigField("String", "COGNITO_USER_POOL_ID", "\"PENDIENTE\"")
-            buildConfigField("String", "COGNITO_CLIENTE_ID", "\"PENDIENTE\"")
+            buildConfigField("String", "API_GATEWAY_URL", "\"$urlDelApiGateway\"")
+            buildConfigField("String", "COGNITO_REGION", "\"$regionDeCognito\"")
+            buildConfigField("String", "COGNITO_USER_POOL_ID", "\"$poolDeCognito\"")
+            buildConfigField("String", "COGNITO_CLIENTE_ID", "\"$clienteMovilDeCognito\"")
             // Sin `packageScope`: el valor por omisión es `**`, o sea todo.
             //
             // El andamiaje traía `setOf("androidx.**", "kotlin.**",
@@ -92,7 +134,7 @@ android {
             applicationIdSuffix = ".staging"
             matchingFallbacks += listOf("release")
             buildConfigField("String", "AMBIENTE", "\"staging\"")
-            buildConfigField("String", "API_GATEWAY_URL", "\"PENDIENTE\"")
+            buildConfigField("String", "API_GATEWAY_URL", "\"$urlDelApiGateway\"")
         }
     }
     compileOptions {
@@ -230,6 +272,13 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    // La comprobacion de la renovacion contra el user pool real usa el mismo
+    // cliente HTTP que la aplicacion. Sin kotlinx-coroutines-test: en el
+    // dispositivo resuelve a una version mas nueva que el nucleo de corrutinas
+    // que la aplicacion empaqueta, y runTest falla con NoSuchMethodError. Esa
+    // prueba espera llamadas de red reales, asi que runBlocking basta.
+    androidTestImplementation(libs.retrofit)
+    androidTestImplementation(libs.retrofit.kotlinx.serialization)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

@@ -26,6 +26,7 @@ import co.solventa.movil.core.navegacion.Ruta
 import co.solventa.movil.features.acceso.ingreso.HojaDeSesionExpirada
 import co.solventa.movil.features.acceso.ingreso.destinoIngreso
 import co.solventa.movil.features.acceso.registro.grafoRegistro
+import co.solventa.movil.features.inicio.PantallaInicio
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoBoton
 import co.solventa.movil.ui.theme.Espacio
@@ -39,7 +40,9 @@ import co.solventa.movil.ui.theme.Espacio
  * que sí es transversal.
  *
  * Hoy contiene los recorridos de registro (HU-M1.1-01) e ingreso
- * (HU-M1.1-02), más un marcador en M3, que corresponde a otra historia.
+ * (HU-M1.1-02). M3 corresponde a otra historia y de momento tiene una
+ * versión provisional que saluda con la identidad del *user pool* y da
+ * acceso a las pantallas entregadas.
  *
  * Aquí vive también la vigilancia de inactividad, porque la sesión puede
  * expirar en cualquier pantalla y la hoja de M2d aparece encima de donde esté
@@ -84,7 +87,20 @@ fun SolventaNavHost(
             composable<Ruta.Inicio> {
                 // Entrar al inicio es lo que marca que hay sesión abierta.
                 LaunchedEffect(Unit) { sesion.iniciarVigilancia() }
-                PantallaPendiente("M3 · Inicio")
+                PantallaInicio(
+                    onRegistro = { navegacion.navigate(Ruta.Registro) },
+                    onVerificacionExitosa = { navegacion.navigate(Ruta.VerificacionExitosa) },
+                    onVerificacionNoSuperada = { navegacion.navigate(Ruta.VerificacionNoSuperada) },
+                    onVerificacionDemorada = { navegacion.navigate(Ruta.VerificacionDemorada) },
+                    onCerrarSesion = {
+                        // Se deja de vigilar antes de salir: sin sesión, el
+                        // temporizador de inactividad no tiene qué expirar.
+                        sesion.salirAIngreso()
+                        navegacion.navigate(Ruta.Bienvenida) {
+                            popUpTo(Ruta.Bienvenida) { inclusive = true }
+                        }
+                    },
+                )
             }
         }
     }
@@ -136,22 +152,6 @@ private fun BienvenidaPantalla(
             texto = stringResource(R.string.bienvenida_ya_tengo_cuenta),
             onClick = onYaTengoCuenta,
             tipo = TipoBoton.SECUNDARIO,
-        )
-    }
-}
-
-@Composable
-private fun PantallaPendiente(nombre: String) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Espacio.x24),
-    ) {
-        Text(
-            text = stringResource(R.string.pendiente_pantalla, nombre),
-            style = MaterialTheme.typography.bodyLarge,
         )
     }
 }

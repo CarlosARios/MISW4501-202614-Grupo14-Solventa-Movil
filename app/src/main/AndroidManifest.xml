@@ -8,6 +8,11 @@
          funciona sin ella. -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Ingreso y renovación de la sesión contra el user pool de Cognito, y
+         las llamadas al API Gateway. Es un permiso normal: se concede al
+         instalar y no se pide en caliente. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- No se exige cámara para instalar: un dispositivo sin ella puede usar
          el resto de la aplicación, y el emulador de las pruebas nocturnas no
          siempre la tiene. -->
