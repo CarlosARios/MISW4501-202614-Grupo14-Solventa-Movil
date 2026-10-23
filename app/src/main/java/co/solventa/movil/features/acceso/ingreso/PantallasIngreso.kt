@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -384,7 +388,10 @@ private fun ArmazonDeAcceso(
                 verticalArrangement = Arrangement.spacedBy(Espacio.x8),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
+                    // Igual que en el contenedor de registro: con el dibujo
+                    // de borde a borde, apartarse del teclado es cosa de la
+                    // barra de acciones.
+                    .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
                     .padding(horizontal = Espacio.x16, vertical = Espacio.x16),
                 content = acciones,
             )

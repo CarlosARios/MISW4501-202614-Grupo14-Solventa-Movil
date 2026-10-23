@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tres puntos. Equivalente a more-horizontal del prototipo (Lucide).
+     El color lo pone Icon(tint = ...). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="20dp"
+    android:height="20dp"
+    android:viewportWidth="20"
+    android:viewportHeight="20">
+    <path
+        android:pathData="M10.8333 10C10.8333 10.4602 10.4602 10.8333 10 10.8333C9.53976 10.8333 9.16667 10.4602 9.16667 10C9.16667 9.53976 9.53976 9.16667 10 9.16667C10.4602 9.16667 10.8333 9.53976 10.8333 10Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M16.6667 10C16.6667 10.4602 16.2936 10.8333 15.8333 10.8333C15.3731 10.8333 15 10.4602 15 10C15 9.53976 15.3731 9.16667 15.8333 9.16667C16.2936 9.16667 16.6667 9.53976 16.6667 10Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M5 10C5 10.4602 4.6269 10.8333 4.16667 10.8333C3.70643 10.8333 3.33333 10.4602 3.33333 10C3.33333 9.53976 3.70643 9.16667 4.16667 9.16667C4.6269 9.16667 5 9.53976 5 10Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

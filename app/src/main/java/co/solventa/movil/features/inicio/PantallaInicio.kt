@@ -37,6 +37,7 @@ import co.solventa.movil.ui.theme.SolventaTheme
 @Composable
 fun PantallaInicio(
     onRegistro: () -> Unit,
+    onReportarSiniestro: () -> Unit,
     onVerificacionExitosa: () -> Unit,
     onVerificacionNoSuperada: () -> Unit,
     onVerificacionDemorada: () -> Unit,
@@ -50,6 +51,7 @@ fun PantallaInicio(
         nombre = sesion?.nombre.orEmpty(),
         correo = sesion?.correo.orEmpty(),
         onRegistro = onRegistro,
+        onReportarSiniestro = onReportarSiniestro,
         onVerificacionExitosa = onVerificacionExitosa,
         onVerificacionNoSuperada = onVerificacionNoSuperada,
         onVerificacionDemorada = onVerificacionDemorada,
@@ -63,6 +65,7 @@ private fun ContenidoInicio(
     nombre: String,
     correo: String,
     onRegistro: () -> Unit,
+    onReportarSiniestro: () -> Unit,
     onVerificacionExitosa: () -> Unit,
     onVerificacionNoSuperada: () -> Unit,
     onVerificacionDemorada: () -> Unit,
@@ -85,6 +88,14 @@ private fun ContenidoInicio(
         Text(
             text = stringResource(R.string.inicio_provisional),
             style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.padding(top = Espacio.x12),
+        )
+
+        // La radicacion del siniestro (HU-M2.2-01) es lo primero que se hace
+        // desde el inicio, no una pantalla mas de la lista de entregadas.
+        BotonSolventa(
+            texto = stringResource(R.string.inicio_reportar_siniestro),
+            onClick = onReportarSiniestro,
             modifier = Modifier.padding(top = Espacio.x12),
         )
 
@@ -126,6 +137,7 @@ private fun VistaPreviaInicio() {
             nombre = "Carolina",
             correo = "asegurado@example.com",
             onRegistro = {},
+            onReportarSiniestro = {},
             onVerificacionExitosa = {},
             onVerificacionNoSuperada = {},
             onVerificacionDemorada = {},
