@@ -54,4 +54,19 @@ sealed interface Ruta {
     /** M3 · Inicio. Primera pantalla con sesión activa. */
     @Serializable
     data object Inicio : Ruta
+
+    /**
+     * M11 · Asistente de radicación del siniestro (HU-M2.2-01).
+     *
+     * Las cuatro etapas comparten un destino: cuál se muestra lo decide el
+     * estado del asistente, que es el mismo que se guarda en el borrador. Así
+     * el indicador de pasos, el botón de avanzar y lo que se retoma al volver
+     * a entrar salen de una sola fuente.
+     */
+    @Serializable
+    data object Radicacion : Ruta
+
+    /** M11e · Radicado generado. Cierra el flujo de la radicación. */
+    @Serializable
+    data object RadicacionRadicado : Ruta
 }

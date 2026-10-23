@@ -1,0 +1,83 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "03c55fb8e83ba4f56cd9c83e01a9be80",
+    "entities": [
+      {
+        "tableName": "borrador_de_radicacion",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `etapa` TEXT NOT NULL, `poliza` TEXT NOT NULL, `tipo` TEXT, `ocurrioEn` INTEGER, `lugar` TEXT NOT NULL, `descripcion` TEXT NOT NULL, `respuestasJson` TEXT NOT NULL, `declaracionAceptada` INTEGER NOT NULL, `actualizadoEn` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "etapa",
+            "columnName": "etapa",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "poliza",
+            "columnName": "poliza",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ocurrioEn",
+            "columnName": "ocurrioEn",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lugar",
+            "columnName": "lugar",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "respuestasJson",
+            "columnName": "respuestasJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "declaracionAceptada",
+            "columnName": "declaracionAceptada",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actualizadoEn",
+            "columnName": "actualizadoEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '03c55fb8e83ba4f56cd9c83e01a9be80')"
+    ]
+  }
+}
