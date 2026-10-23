@@ -43,6 +43,18 @@ val clienteMovilDeCognito = "6dri40bi3sk74cr0jb5djq43c0"
  */
 val urlDelApiGateway: String = System.getenv("URL_API_GATEWAY") ?: "PENDIENTE"
 
+/**
+ * URL del servicio local, el de la variante de depuracion.
+ *
+ * Por omision 10.0.2.2, que es como el emulador alcanza el localhost del PC.
+ * Un telefono conectado por USB no entiende esa direccion: ahi se abre el
+ * puente con `adb reverse tcp:8080 tcp:8080`, que hace que el localhost del
+ * telefono llegue al del PC, y se construye apuntando a el.
+ *
+ *     $env:URL_API_LOCAL = "http://localhost:8080"
+ */
+val urlDelServicioLocal: String = System.getenv("URL_API_LOCAL") ?: "http://10.0.2.2:8080"
+
 android {
     namespace = "co.solventa.movil"
     compileSdk {
@@ -86,7 +98,7 @@ android {
         // "localhost" dentro del emulador es el propio dispositivo virtual.
         debug {
             buildConfigField("String", "AMBIENTE", "\"local\"")
-            buildConfigField("String", "API_GATEWAY_URL", "\"http://10.0.2.2:8080\"")
+            buildConfigField("String", "API_GATEWAY_URL", "\"$urlDelServicioLocal\"")
             // Depuracion autentica contra el pool real, el mismo de
             // produccion. Es lo que permite comprobar en el dispositivo el
             // ingreso, la renovacion silenciosa y el vencimiento sin tener

@@ -63,8 +63,13 @@ private fun VistaPreviaCapturaReverso() {
 private fun VistaPreviaConfirmacionDatos() {
     SolventaTheme {
         ConfirmacionDatosPantalla(
-            estado = RegistroUiState(datos = DATOS_DE_MUESTRA, terminosAceptados = true),
+            estado = RegistroUiState(
+                datos = DATOS_DE_MUESTRA,
+                contrasena = "Solventa.2026.4821",
+                terminosAceptados = true,
+            ),
             onDatosCambian = {},
+            onContrasenaCambia = {},
             onTerminos = {},
             onVerificar = {},
             onAtras = {},

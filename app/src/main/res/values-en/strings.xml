@@ -107,10 +107,15 @@
     <string name="registro_datos_documento">Document</string>
     <string name="registro_datos_documento_ayuda">Read from the captured document</string>
     <string name="registro_datos_nacimiento">Date of birth</string>
-    <string name="registro_datos_nacimiento_formato">MM/DD/YYYY</string>
+    <string name="registro_datos_nacimiento_formato">DD/MM/YYYY</string>
     <string name="registro_datos_correo">Email address</string>
     <string name="registro_datos_celular">Mobile number</string>
     <string name="registro_datos_celular_ayuda">You will receive a verification code by SMS</string>
+    <string name="registro_datos_contrasena">Password</string>
+    <string name="registro_datos_contrasena_ayuda">At least 12 characters, with an uppercase letter, a lowercase letter, a number and a symbol. You sign in with it</string>
+    <string name="registro_datos_campo_rechazado">Check this value</string>
+    <string name="registro_datos_duplicado_titulo">An account already exists</string>
+    <string name="registro_datos_duplicado_detalle">That document or that email address is already registered. Correct the value or sign in to that account.</string>
     <string name="registro_datos_terminos">I accept Solventa\'s terms of use and personal data processing policy.</string>
     <string name="registro_datos_accion">Confirm and verify my identity</string>
 
