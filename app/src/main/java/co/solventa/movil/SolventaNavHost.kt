@@ -29,6 +29,7 @@ import co.solventa.movil.core.i18n.ConIdioma
 import co.solventa.movil.core.i18n.IdiomaViewModel
 import co.solventa.movil.features.acceso.bienvenida.PantallaBienvenida
 import co.solventa.movil.features.acceso.registro.grafoRegistro
+import co.solventa.movil.features.auditoria.consentimientos.grafoConsentimientos
 import co.solventa.movil.features.siniestros.radicacion.grafoRadicacion
 import co.solventa.movil.features.inicio.PantallaInicio
 import co.solventa.movil.shared.ui.BotonSolventa
@@ -94,6 +95,7 @@ fun SolventaNavHost(
 
             grafoRegistro(navegacion)
             grafoRadicacion(navegacion)
+            grafoConsentimientos(navegacion)
             destinoIngreso(navegacion)
 
             composable<Ruta.Inicio> {

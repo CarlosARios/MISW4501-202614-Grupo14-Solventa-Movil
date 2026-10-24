@@ -300,4 +300,37 @@
     <string name="navegacion_pestana_perfil">Profile</string>
     <string name="navegacion_pestana_polizas_en_espera">Policies, coming soon</string>
     <string name="navegacion_pestana_siniestros_en_espera">Claims, coming soon</string>
+
+    <!-- M8 · Privacy and consents and M8b · Details (HU-M1.3-01, frames 37:1233, 37:1418 and 38:1503) -->
+    <string name="auditoria_consentimientos_titulo">Privacy and consents</string>
+    <string name="auditoria_consentimientos_intro">Authorizations to access your financial data (Open Finance).</string>
+    <string name="auditoria_consentimientos_seccion_activos">Active (%1$d)</string>
+    <string name="auditoria_consentimientos_seccion_historial">Revoked and expired (%1$d)</string>
+    <string name="auditoria_consentimientos_otorgado_vence">Granted %1$s · expires %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_revocado">Granted %1$s · revoked %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_vencio">Granted %1$s · expired %2$s</string>
+    <string name="auditoria_consentimientos_otorgado">Granted %1$s</string>
+    <string name="auditoria_consentimientos_comprobante">Receipt %1$s</string>
+    <string name="auditoria_consentimientos_ver_detalle">See the details</string>
+    <string name="auditoria_consentimientos_sin_conexion">Offline: you are viewing the information synced on %1$s at %2$s.</string>
+    <string name="auditoria_consentimientos_sin_conexion_sin_copia">Offline: there is no synced information on this device yet.</string>
+    <string name="auditoria_consentimientos_vacio">You have no registered consents yet.</string>
+    <string name="auditoria_consentimientos_error">We could not update your consents. Please try again.</string>
+    <string name="auditoria_consentimientos_sin_vincular">Your account is not linked to your consents yet.</string>
+    <string name="auditoria_consentimientos_reintentar">Try again</string>
+    <string name="auditoria_consentimientos_cargando">Loading your consents</string>
+    <string name="auditoria_detalle_titulo">Consent</string>
+    <string name="auditoria_detalle_otorgado">Granted</string>
+    <string name="auditoria_detalle_vence">Expires</string>
+    <string name="auditoria_detalle_vencio_el">Expired on</string>
+    <string name="auditoria_detalle_revocado_el">Revoked on</string>
+    <string name="auditoria_detalle_comprobante">Revocation receipt</string>
+    <string name="auditoria_detalle_alcance">Scope</string>
+    <string name="auditoria_detalle_finalidad">Purpose</string>
+    <string name="auditoria_detalle_historial">Status history</string>
+    <string name="auditoria_detalle_fecha_hora_canal">%1$s · %2$s · %3$s</string>
+    <string name="auditoria_detalle_fecha_hora">%1$s · %2$s</string>
+    <string name="auditoria_detalle_fuente">%1$s: %2$s (%3$s)</string>
+    <string name="auditoria_detalle_revocar">Revoke consent</string>
+    <string name="auditoria_detalle_no_disponible">This consent is no longer available.</string>
 </resources>

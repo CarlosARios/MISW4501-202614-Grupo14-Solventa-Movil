@@ -305,4 +305,37 @@
     <string name="navegacion_pestana_perfil">Perfil</string>
     <string name="navegacion_pestana_polizas_en_espera">Pólizas, próximamente</string>
     <string name="navegacion_pestana_siniestros_en_espera">Siniestros, próximamente</string>
+
+    <!-- M8 · Privacidad y consentimientos y M8b · Detalle (HU-M1.3-01, frames 37:1233, 37:1418 y 38:1503) -->
+    <string name="auditoria_consentimientos_titulo">Privacidad y consentimientos</string>
+    <string name="auditoria_consentimientos_intro">Autorizaciones de acceso a tus datos financieros (Open Finance).</string>
+    <string name="auditoria_consentimientos_seccion_activos">Activos (%1$d)</string>
+    <string name="auditoria_consentimientos_seccion_historial">Revocados y vencidos (%1$d)</string>
+    <string name="auditoria_consentimientos_otorgado_vence">Otorgado %1$s · vence %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_revocado">Otorgado %1$s · revocado %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_vencio">Otorgado %1$s · venció %2$s</string>
+    <string name="auditoria_consentimientos_otorgado">Otorgado %1$s</string>
+    <string name="auditoria_consentimientos_comprobante">Comprobante %1$s</string>
+    <string name="auditoria_consentimientos_ver_detalle">Ver el detalle</string>
+    <string name="auditoria_consentimientos_sin_conexion">Sin conexión: estás viendo la información sincronizada el %1$s a las %2$s.</string>
+    <string name="auditoria_consentimientos_sin_conexion_sin_copia">Sin conexión: todavía no hay información sincronizada en este dispositivo.</string>
+    <string name="auditoria_consentimientos_vacio">Aún no tienes consentimientos registrados.</string>
+    <string name="auditoria_consentimientos_error">No pudimos actualizar tus consentimientos. Inténtalo de nuevo.</string>
+    <string name="auditoria_consentimientos_sin_vincular">Tu cuenta todavía no está vinculada a tus consentimientos.</string>
+    <string name="auditoria_consentimientos_reintentar">Reintentar</string>
+    <string name="auditoria_consentimientos_cargando">Cargando tus consentimientos</string>
+    <string name="auditoria_detalle_titulo">Consentimiento</string>
+    <string name="auditoria_detalle_otorgado">Otorgado</string>
+    <string name="auditoria_detalle_vence">Vence</string>
+    <string name="auditoria_detalle_vencio_el">Venció el</string>
+    <string name="auditoria_detalle_revocado_el">Revocado el</string>
+    <string name="auditoria_detalle_comprobante">Comprobante de la revocación</string>
+    <string name="auditoria_detalle_alcance">Alcance</string>
+    <string name="auditoria_detalle_finalidad">Finalidad</string>
+    <string name="auditoria_detalle_historial">Historial de estados</string>
+    <string name="auditoria_detalle_fecha_hora_canal">%1$s · %2$s · %3$s</string>
+    <string name="auditoria_detalle_fecha_hora">%1$s · %2$s</string>
+    <string name="auditoria_detalle_fuente">%1$s: %2$s (%3$s)</string>
+    <string name="auditoria_detalle_revocar">Revocar consentimiento</string>
+    <string name="auditoria_detalle_no_disponible">Este consentimiento ya no está disponible.</string>
 </resources>
