@@ -157,6 +157,21 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // Robolectric (HU-M1.3-01): Room y WorkManager se prueban en la JVM con
+    // los recursos de la aplicacion, y los esquemas exportados de la base
+    // viajan como assets de las pruebas para que MigrationTestHelper pueda
+    // comprobar cada migracion contra el esquema versionado.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+    sourceSets {
+        getByName("test") {
+            assets.directories.add("$projectDir/schemas")
+        }
+    }
 }
 
 // Compuerta de cobertura: la misma que el pipeline del cliente web (>= 70 %).
@@ -286,6 +301,9 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.work.testing)
+    testImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
