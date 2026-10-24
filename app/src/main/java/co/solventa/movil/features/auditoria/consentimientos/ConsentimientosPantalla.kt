@@ -74,6 +74,11 @@ fun ContenidoConsentimientos(
         titulo = stringResource(R.string.auditoria_consentimientos_titulo),
         onAtras = onAtras,
         modifier = modifier,
+        indicador = if (estado.sinConexion) {
+            { IconoSinConexion() }
+        } else {
+            null
+        },
     ) {
         Text(
             text = stringResource(R.string.auditoria_consentimientos_intro),
@@ -222,4 +227,17 @@ private fun TarjetaDeConsentimiento(c: Consentimiento, idioma: Idioma, onAbrir: 
             }
         }
     }
+}
+
+/** Icono de sin red de la barra superior (frame 38:1503), en color de error. */
+@Composable
+private fun IconoSinConexion() {
+    Icon(
+        painter = painterResource(R.drawable.ic_sin_conexion),
+        contentDescription = stringResource(R.string.auditoria_consentimientos_sin_conexion_icono),
+        tint = MaterialTheme.colorScheme.error,
+        modifier = Modifier
+            .size(40.dp)
+            .padding(Espacio.x8),
+    )
 }

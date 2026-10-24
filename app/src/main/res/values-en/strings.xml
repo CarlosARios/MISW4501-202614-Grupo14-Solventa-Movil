@@ -314,6 +314,7 @@
     <string name="auditoria_consentimientos_ver_detalle">See the details</string>
     <string name="auditoria_consentimientos_sin_conexion">Offline: you are viewing the information synced on %1$s at %2$s.</string>
     <string name="auditoria_consentimientos_sin_conexion_sin_copia">Offline: there is no synced information on this device yet.</string>
+    <string name="auditoria_consentimientos_sin_conexion_icono">Offline</string>
     <string name="auditoria_consentimientos_vacio">You have no registered consents yet.</string>
     <string name="auditoria_consentimientos_error">We could not update your consents. Please try again.</string>
     <string name="auditoria_consentimientos_sin_vincular">Your account is not linked to your consents yet.</string>

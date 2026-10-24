@@ -51,12 +51,15 @@ fun PantallaRegistro(
     onAtras: (() -> Unit)? = null,
     onCerrar: (() -> Unit)? = null,
     acciones: @Composable ColumnScope.() -> Unit = {},
+    indicador: (@Composable () -> Unit)? = null,
     contenido: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { EncabezadoPantalla(titulo = titulo, onAtras = onAtras, onCerrar = onCerrar) },
+        topBar = {
+            EncabezadoPantalla(titulo = titulo, onAtras = onAtras, onCerrar = onCerrar, indicador = indicador)
+        },
         bottomBar = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Espacio.x8),
@@ -96,6 +99,7 @@ private fun EncabezadoPantalla(
     titulo: String,
     onAtras: (() -> Unit)?,
     onCerrar: (() -> Unit)? = null,
+    indicador: (@Composable () -> Unit)? = null,
 ) {
     // La aplicacion dibuja de borde a borde, asi que el encabezado tiene que
     // dejarle su espacio a la barra de estado: sin esto el titulo queda
@@ -124,6 +128,9 @@ private fun EncabezadoPantalla(
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.weight(1f),
                 )
+                // Un estado de la pantalla a la derecha del titulo, como el
+                // icono de sin red de M8 (frame 38:1503). No se toca.
+                indicador?.invoke()
                 // Salir del flujo sin terminarlo, como en M11a. Lo que ya se
                 // diligencio queda guardado como borrador.
                 if (onCerrar != null) {

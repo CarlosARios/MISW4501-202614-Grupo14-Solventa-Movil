@@ -2,6 +2,7 @@ package co.solventa.movil.features.auditoria.consentimientos
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -108,7 +109,20 @@ class ConsentimientosPantallaTest {
 
         // El aviso expone su texto como descripcion para el lector de pantalla.
         composicion.onNodeWithContentDescription(aviso).assertIsDisplayed()
+        // Y la barra superior muestra el icono de sin red (frame 38:1503).
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_consentimientos_sin_conexion_icono)).assertIsDisplayed()
         composicion.onNodeWithText("Banco Aliado").assertIsDisplayed()
+    }
+
+    @Test
+    fun en_linea_no_muestra_el_icono_de_sin_conexion() {
+        montar(conContenido())
+
+        assertEquals(
+            0,
+            composicion.onAllNodes(hasContentDescription(texto(R.string.auditoria_consentimientos_sin_conexion_icono)))
+                .fetchSemanticsNodes().size,
+        )
     }
 
     @Test

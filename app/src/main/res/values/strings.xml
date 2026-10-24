@@ -319,6 +319,7 @@
     <string name="auditoria_consentimientos_ver_detalle">Ver el detalle</string>
     <string name="auditoria_consentimientos_sin_conexion">Sin conexión: estás viendo la información sincronizada el %1$s a las %2$s.</string>
     <string name="auditoria_consentimientos_sin_conexion_sin_copia">Sin conexión: todavía no hay información sincronizada en este dispositivo.</string>
+    <string name="auditoria_consentimientos_sin_conexion_icono">Sin conexión</string>
     <string name="auditoria_consentimientos_vacio">Aún no tienes consentimientos registrados.</string>
     <string name="auditoria_consentimientos_error">No pudimos actualizar tus consentimientos. Inténtalo de nuevo.</string>
     <string name="auditoria_consentimientos_sin_vincular">Tu cuenta todavía no está vinculada a tus consentimientos.</string>
