@@ -159,16 +159,18 @@ android {
     }
 
     // Robolectric (HU-M1.3-01): Room y WorkManager se prueban en la JVM con
-    // los recursos de la aplicacion, y los esquemas exportados de la base
-    // viajan como assets de las pruebas para que MigrationTestHelper pueda
-    // comprobar cada migracion contra el esquema versionado.
+    // los recursos de la aplicacion. Robolectric solo lee los assets fusionados
+    // de la variante (no los del conjunto `test`), asi que los esquemas
+    // exportados de la base entran como assets de `debug` para que
+    // MigrationTestHelper compruebe cada migracion contra el esquema
+    // versionado. Son dos JSON de pocos KB y no llegan a release ni a staging.
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
         }
     }
     sourceSets {
-        getByName("test") {
+        getByName("debug") {
             assets.directories.add("$projectDir/schemas")
         }
     }
