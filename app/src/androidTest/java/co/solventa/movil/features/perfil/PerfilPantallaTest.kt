@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onChildren
@@ -119,6 +120,17 @@ class PerfilPantallaTest {
         composicion.onNodeWithContentDescription(texto(R.string.perfil_biometria)).performScrollTo().performClick()
 
         assertEquals(listOf(true), biometria)
+    }
+
+    @Test
+    fun el_interruptor_de_la_biometria_va_antes_del_texto_como_en_el_frame() {
+        montar()
+
+        val interruptor = composicion.onNodeWithContentDescription(texto(R.string.perfil_biometria))
+            .performScrollTo().getUnclippedBoundsInRoot()
+        val titulo = composicion.onNodeWithText(texto(R.string.perfil_biometria)).getUnclippedBoundsInRoot()
+
+        assertTrue("el interruptor queda a la izquierda del texto", interruptor.right <= titulo.left)
     }
 
     @Test

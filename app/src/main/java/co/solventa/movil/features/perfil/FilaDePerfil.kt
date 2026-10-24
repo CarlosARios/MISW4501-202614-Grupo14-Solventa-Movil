@@ -108,8 +108,9 @@ fun FilaInformativaDePerfil(@DrawableRes icono: Int, titulo: String, valor: Stri
 }
 
 /**
- * La fila de la biometria con su interruptor. Sin huella o rostro configurado
- * queda deshabilitada y lo dice.
+ * La fila de la biometria con su interruptor, que va entre el icono y el texto
+ * como en el frame 1376:3396. Sin huella o rostro configurado queda
+ * deshabilitada y lo dice.
  */
 @Composable
 fun FilaConInterruptor(
@@ -130,15 +131,15 @@ fun FilaConInterruptor(
             .padding(vertical = Espacio.x8),
     ) {
         Icon(painter = painterResource(icono), contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = titulo, style = MaterialTheme.typography.bodyLarge)
-            detalle?.let { Text(text = it, style = MaterialTheme.typography.bodySmall, color = colores.textoSecundario) }
-        }
         Switch(
             checked = activado,
             onCheckedChange = onCambio,
             enabled = habilitado,
             modifier = Modifier.semantics { contentDescription = titulo },
         )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = titulo, style = MaterialTheme.typography.bodyLarge)
+            detalle?.let { Text(text = it, style = MaterialTheme.typography.bodySmall, color = colores.textoSecundario) }
+        }
     }
 }
