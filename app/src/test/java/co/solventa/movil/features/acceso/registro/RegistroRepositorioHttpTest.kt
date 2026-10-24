@@ -2,6 +2,7 @@ package co.solventa.movil.features.acceso.registro
 
 import co.solventa.movil.core.api.originacion.OriginacionApi
 import co.solventa.movil.core.errores.Correlacion
+import co.solventa.movil.core.imagen.PreparadorDeCaptura
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
@@ -25,6 +26,7 @@ class RegistroRepositorioHttpTest {
 
     private lateinit var servidor: MockWebServer
     private lateinit var repositorio: RegistroRepositorioHttp
+    private lateinit var preparador: PreparadorFalso
 
     @Before
     fun antes() {
@@ -36,7 +38,30 @@ class RegistroRepositorioHttpTest {
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(OriginacionApi::class.java)
-        repositorio = RegistroRepositorioHttp(api)
+        preparador = PreparadorFalso()
+        repositorio = RegistroRepositorioHttp(api, preparador)
+    }
+
+    private suspend fun registrar(datos: DatosDocumento = DATOS) =
+        repositorio.registrar(datos, CONTRASENA, FRENTE, REVERSO)
+
+    /**
+     * El preparador reduce la captura y la codifica; aquí basta con saber qué
+     * ruta se le pidió y qué devolvió.
+     */
+    private class PreparadorFalso : PreparadorDeCaptura {
+        var ilegibles: Set<String> = emptySet()
+        val descartados = mutableListOf<String>()
+
+        override suspend fun aBase64(rutaArchivo: String): String? = when {
+            rutaArchivo in ilegibles -> null
+            rutaArchivo == FRENTE.rutaArchivo -> FRENTE_EN_BASE64
+            else -> REVERSO_EN_BASE64
+        }
+
+        override suspend fun descartar(rutaArchivo: String) {
+            descartados += rutaArchivo
+        }
     }
 
     @After
@@ -48,7 +73,7 @@ class RegistroRepositorioHttpTest {
     fun `un registro aceptado devuelve la cuenta del user pool`() = runTest {
         servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
 
-        val resultado = repositorio.registrar(DATOS, CONTRASENA)
+        val resultado = registrar()
 
         assertEquals(ResultadoRegistro.Exitoso("sub-carolina"), resultado)
         val peticion = servidor.takeRequest()
@@ -64,7 +89,7 @@ class RegistroRepositorioHttpTest {
     fun `el cuerpo se traduce a lo que el contrato recibe`() = runTest {
         servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
 
-        repositorio.registrar(DATOS, CONTRASENA)
+        registrar()
 
         val enviado = servidor.takeRequest().body?.utf8().orEmpty()
         assertTrue(enviado, enviado.contains("\"document_id\":\"1020345678\""))
@@ -79,7 +104,7 @@ class RegistroRepositorioHttpTest {
     fun `la fecha se completa con ceros`() = runTest {
         servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
 
-        repositorio.registrar(DATOS.copy(fechaNacimiento = "5/9/1991"), CONTRASENA)
+        registrar(DATOS.copy(fechaNacimiento = "5/9/1991"))
 
         val enviado = servidor.takeRequest().body?.utf8().orEmpty()
         assertTrue(enviado, enviado.contains("\"birth_date\":\"1991-09-05\""))
@@ -94,7 +119,7 @@ class RegistroRepositorioHttpTest {
     fun `la referencia de la falla es el identificador que se envio`() = runTest {
         servidor.enqueue(MockResponse(code = 503, body = """{"error":"registration_unavailable"}"""))
 
-        val resultado = repositorio.registrar(DATOS, CONTRASENA)
+        val resultado = registrar()
 
         val enviado = servidor.takeRequest().headers[Correlacion.ENCABEZADO]
         assertTrue(Correlacion.esValido(enviado.orEmpty()))
@@ -105,14 +130,14 @@ class RegistroRepositorioHttpTest {
     fun `un documento ya registrado es conflicto y no una falla`() = runTest {
         servidor.enqueue(MockResponse(code = 409, body = """{"error":"already_registered"}"""))
 
-        assertEquals(ResultadoRegistro.YaRegistrado, repositorio.registrar(DATOS, CONTRASENA))
+        assertEquals(ResultadoRegistro.YaRegistrado, registrar())
     }
 
     @Test
     fun `los campos rechazados se traducen a los del formulario`() = runTest {
         servidor.enqueue(MockResponse(code = 422, body = CUERPO_INVALIDO))
 
-        val resultado = repositorio.registrar(DATOS, CONTRASENA)
+        val resultado = registrar()
 
         assertEquals(
             ResultadoRegistro.DatosInvalidos(
@@ -127,7 +152,7 @@ class RegistroRepositorioHttpTest {
     fun `un rechazo sin campos reconocibles marca todo el formulario`() = runTest {
         servidor.enqueue(MockResponse(code = 422, body = """{"error":"validation_failed"}"""))
 
-        val resultado = repositorio.registrar(DATOS, CONTRASENA)
+        val resultado = registrar()
 
         assertEquals(
             ResultadoRegistro.DatosInvalidos(CampoDeRegistro.entries.toSet()),
@@ -144,7 +169,7 @@ class RegistroRepositorioHttpTest {
     fun `una respuesta creada pero ilegible se trata como falla`() = runTest {
         servidor.enqueue(MockResponse(code = 201, body = "{"))
 
-        val resultado = repositorio.registrar(DATOS, CONTRASENA)
+        val resultado = registrar()
 
         assertTrue(resultado is ResultadoRegistro.NoDisponible)
     }
@@ -153,17 +178,100 @@ class RegistroRepositorioHttpTest {
     fun `sin red el registro queda reintentable`() = runTest {
         servidor.close()
 
-        val resultado = repositorio.registrar(DATOS, CONTRASENA)
+        val resultado = registrar()
 
         assertTrue(resultado is ResultadoRegistro.NoDisponible)
+    }
+
+    // Las dos caras del documento son parte del cuerpo: es lo que hace que un
+    // 201 signifique cliente, cuenta y documento guardados.
+    @Test
+    fun `las dos caras viajan en el cuerpo`() = runTest {
+        servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
+
+        registrar()
+
+        val enviado = servidor.takeRequest().body?.utf8().orEmpty()
+        assertTrue(enviado, enviado.contains("\"document_front\":\"$FRENTE_EN_BASE64\""))
+        assertTrue(enviado, enviado.contains("\"document_back\":\"$REVERSO_EN_BASE64\""))
+    }
+
+    /**
+     * La caché del sistema se puede vaciar en cualquier momento. Sin la imagen
+     * no hay nada que verificar, así que no se llama al servicio.
+     */
+    @Test
+    fun `una captura que ya no se puede leer no se envia`() = runTest {
+        preparador.ilegibles = setOf(FRENTE.rutaArchivo)
+
+        val resultado = registrar()
+
+        assertTrue(resultado is ResultadoRegistro.DocumentoNoLegible)
+        assertEquals("no se llamó al servicio", 0, servidor.requestCount)
+    }
+
+    /**
+     * Una cara rechazada no se corrige en M1c: el camino es volver a capturar,
+     * que es lo que ofrece M1e (criterio 3).
+     */
+    @Test
+    fun `una cara rechazada lleva a volver a capturar`() = runTest {
+        servidor.enqueue(MockResponse(code = 422, body = CUERPO_CARA_INVALIDA))
+
+        val resultado = registrar()
+
+        val enviado = servidor.takeRequest().headers[Correlacion.ENCABEZADO]
+        assertEquals(ResultadoRegistro.DocumentoNoLegible(enviado.orEmpty()), resultado)
+    }
+
+    /**
+     * Si el servicio rechaza una cara y además un campo del formulario, manda
+     * la cara: corregir el correo no arregla la foto.
+     */
+    @Test
+    fun `la cara rechazada manda sobre los campos del formulario`() = runTest {
+        servidor.enqueue(MockResponse(code = 422, body = CUERPO_CARA_Y_CORREO))
+
+        val resultado = registrar()
+
+        assertTrue(resultado.toString(), resultado is ResultadoRegistro.DocumentoNoLegible)
+    }
+
+    /**
+     * Borrar las capturas del teléfono es del ViewModel, que es el que sabe
+     * cuándo una imagen dejó de hacer falta. El repositorio solo las envía.
+     */
+    @Test
+    fun `el repositorio no borra las capturas`() = runTest {
+        servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
+
+        registrar()
+
+        assertTrue(preparador.descartados.isEmpty())
     }
 
     private companion object {
         const val CONTRASENA = "Solventa.2026.4821"
 
+        val FRENTE = ImagenDocumento(CaraDocumento.FRENTE, "/cache/documento-frente-1.jpg")
+        val REVERSO = ImagenDocumento(CaraDocumento.REVERSO, "/cache/documento-reverso-1.jpg")
+        const val FRENTE_EN_BASE64 = "ZnJlbnRl"
+        const val REVERSO_EN_BASE64 = "cmV2ZXJzbw=="
+
         const val CUERPO_CREADO = """
             {"customer_id":"cus-1","document_id":"1020345678","subject":"sub-carolina",
              "registered_at":"2026-10-22T15:00:00Z"}
+        """
+
+        const val CUERPO_CARA_INVALIDA = """
+            {"error":"validation_failed","message":"one or more fields are missing or invalid",
+             "fields":[{"field":"document_front","code":"invalid_format"}]}
+        """
+
+        const val CUERPO_CARA_Y_CORREO = """
+            {"error":"validation_failed","message":"one or more fields are missing or invalid",
+             "fields":[{"field":"email","code":"invalid_format"},
+                       {"field":"document_back","code":"out_of_range"}]}
         """
 
         const val CUERPO_INVALIDO = """

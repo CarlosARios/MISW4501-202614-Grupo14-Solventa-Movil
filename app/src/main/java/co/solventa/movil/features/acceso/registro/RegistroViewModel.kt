@@ -3,6 +3,7 @@ package co.solventa.movil.features.acceso.registro
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import co.solventa.movil.core.auth.sesion.SesionRepositorio
+import co.solventa.movil.core.imagen.PreparadorDeCaptura
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,12 @@ import javax.inject.Inject
  * Vive en el grafo de navegación del registro, no en una pantalla: el estado
  * tiene que sobrevivir el paso de M1a a M1h.
  *
+ * **Las capturas del documento son archivos del teléfono y este ViewModel es
+ * su dueño:** las borra cuando dejan de hacer falta —rechazadas por calidad,
+ * reemplazadas por otra toma de la misma cara, enviadas al servicio o
+ * descartadas al reiniciar—. Son la fotografía de un documento de identidad,
+ * así que no se quedan esperando a que el sistema vacíe la caché.
+ *
  * **Después del registro la sesión se abre sola.** El servicio acaba de
  * crear la cuenta con el correo y la contraseña que se enviaron, así que
  * pedirle al usuario que los teclee otra vez para entrar no aporta nada. Si
@@ -30,6 +37,7 @@ class RegistroViewModel @Inject constructor(
     private val registro: RegistroRepositorio,
     private val generador: GeneradorDeDatosDeDemostracion,
     private val sesion: SesionRepositorio,
+    private val capturas: PreparadorDeCaptura,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(RegistroUiState())
@@ -40,27 +48,47 @@ class RegistroViewModel @Inject constructor(
         viewModelScope.launch {
             _estado.update { it.copy(analizando = true, problemaCalidad = null) }
             when (val resultado = kyc.analizarCaptura(imagen)) {
-                is ResultadoCaptura.CalidadInsuficiente -> _estado.update {
-                    it.copy(analizando = false, problemaCalidad = resultado.motivo)
+                is ResultadoCaptura.CalidadInsuficiente -> {
+                    // La foto que no sirve no se queda en el teléfono.
+                    capturas.descartar(imagen.rutaArchivo)
+                    _estado.update {
+                        it.copy(analizando = false, problemaCalidad = resultado.motivo)
+                    }
                 }
 
-                ResultadoCaptura.Aceptada -> _estado.update {
-                    when (imagen.cara) {
-                        CaraDocumento.FRENTE -> it.copy(analizando = false, frente = imagen)
+                ResultadoCaptura.Aceptada -> {
+                    // Volver a tomar una cara reemplaza la foto anterior, que
+                    // ya no se va a enviar.
+                    descartarLaAnteriorDe(imagen)
+                    _estado.update {
+                        when (imagen.cara) {
+                            CaraDocumento.FRENTE -> it.copy(analizando = false, frente = imagen)
 
-                        // Los datos se generan al cerrar la captura, no se
-                        // leen de la foto, y se generan una sola vez: si el
-                        // usuario ya corrigió algo en M1c y vuelve atrás, no
-                        // se le borra.
-                        CaraDocumento.REVERSO -> it.copy(
-                            analizando = false,
-                            reverso = imagen,
-                            datos = it.datos ?: generador.datos(),
-                            contrasena = it.contrasena.ifBlank { generador.contrasena() },
-                        )
+                            // Los datos se generan al cerrar la captura, no se
+                            // leen de la foto, y se generan una sola vez: si el
+                            // usuario ya corrigió algo en M1c y vuelve atrás, no
+                            // se le borra.
+                            CaraDocumento.REVERSO -> it.copy(
+                                analizando = false,
+                                reverso = imagen,
+                                datos = it.datos ?: generador.datos(),
+                                contrasena = it.contrasena.ifBlank { generador.contrasena() },
+                            )
+                        }
                     }
                 }
             }
+        }
+    }
+
+    /** La toma anterior de esa misma cara, si hubo una y es otro archivo. */
+    private suspend fun descartarLaAnteriorDe(nueva: ImagenDocumento) {
+        val anterior = when (nueva.cara) {
+            CaraDocumento.FRENTE -> _estado.value.frente
+            CaraDocumento.REVERSO -> _estado.value.reverso
+        }
+        if (anterior != null && anterior.rutaArchivo != nueva.rutaArchivo) {
+            capturas.descartar(anterior.rutaArchivo)
         }
     }
 
@@ -100,6 +128,10 @@ class RegistroViewModel @Inject constructor(
     fun registrar() {
         val estadoActual = _estado.value
         val datos = estadoActual.datos ?: return
+        // Las dos caras son parte de la petición, no un adjunto opcional: sin
+        // ellas no hay verificación de identidad que registrar.
+        val frente = estadoActual.frente ?: return
+        val reverso = estadoActual.reverso ?: return
         if (!estadoActual.puedeVerificar) return
 
         viewModelScope.launch {
@@ -122,11 +154,14 @@ class RegistroViewModel @Inject constructor(
                 }
             }
 
-            val resultado = registro.registrar(datos, estadoActual.contrasena)
+            val resultado = registro.registrar(datos, estadoActual.contrasena, frente, reverso)
             reloj.cancel()
 
             if (resultado is ResultadoRegistro.Exitoso) {
                 sesion.ingresarConContrasena(datos.correo.trim(), estadoActual.contrasena)
+                // Las imágenes ya están guardadas en el servicio: la copia del
+                // teléfono deja de hacer falta.
+                descartar(frente, reverso)
             }
 
             _estado.update {
@@ -157,7 +192,13 @@ class RegistroViewModel @Inject constructor(
      * los mismos solo serviría para recibir un `409`.
      */
     fun reiniciar() {
+        val anterior = _estado.value
         _estado.value = RegistroUiState()
+        viewModelScope.launch { descartar(anterior.frente, anterior.reverso) }
+    }
+
+    private suspend fun descartar(vararg imagenes: ImagenDocumento?) {
+        imagenes.filterNotNull().forEach { capturas.descartar(it.rutaArchivo) }
     }
 
     private fun RegistroUiState.conResultado(resultado: ResultadoRegistro) = when (resultado) {
@@ -174,6 +215,12 @@ class RegistroViewModel @Inject constructor(
         )
 
         is ResultadoRegistro.NoDisponible ->
+            copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
+
+        // Criterio 3: el documento no se pudo leer. Va a M1e, que informa el
+        // resultado sin el motivo técnico y ofrece volver a intentar y
+        // contactar al soporte.
+        is ResultadoRegistro.DocumentoNoLegible ->
             copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
     }
 

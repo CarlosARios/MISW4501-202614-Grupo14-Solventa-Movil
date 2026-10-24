@@ -18,6 +18,14 @@ sealed interface ResultadoRegistro {
     data object YaRegistrado : ResultadoRegistro
 
     /**
+     * La foto del documento no sirvió: el servicio rechazó una de las caras,
+     * o el archivo ya no estaba en la caché del teléfono. Es el criterio 3 de
+     * la historia —documento no legible— y no se corrige en M1c: hay que
+     * volver a capturar, que es lo que ofrece M1e.
+     */
+    data class DocumentoNoLegible(val referencia: String) : ResultadoRegistro
+
+    /**
      * `503`, red o tiempo agotado. La referencia es el identificador de
      * correlación de la petición, que es con lo que soporte la encuentra en
      * los registros del backend.
@@ -26,5 +34,14 @@ sealed interface ResultadoRegistro {
 }
 
 interface RegistroRepositorio {
-    suspend fun registrar(datos: DatosDocumento, contrasena: String): ResultadoRegistro
+    /**
+     * Envía el formulario con las dos caras del documento. Son parte de la
+     * petición: sin ellas no hay verificación de identidad que registrar.
+     */
+    suspend fun registrar(
+        datos: DatosDocumento,
+        contrasena: String,
+        frente: ImagenDocumento,
+        reverso: ImagenDocumento,
+    ): ResultadoRegistro
 }

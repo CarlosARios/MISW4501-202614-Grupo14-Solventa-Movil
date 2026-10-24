@@ -5,6 +5,7 @@ import co.solventa.movil.core.api.originacion.OriginacionApi
 import co.solventa.movil.core.api.originacion.RespuestaDeRegistro
 import co.solventa.movil.core.api.originacion.SolicitudDeRegistro
 import co.solventa.movil.core.errores.Correlacion
+import co.solventa.movil.core.imagen.PreparadorDeCaptura
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import retrofit2.Response
@@ -28,14 +29,32 @@ import javax.inject.Singleton
 @Singleton
 class RegistroRepositorioHttp @Inject constructor(
     private val api: OriginacionApi,
+    private val preparador: PreparadorDeCaptura,
 ) : RegistroRepositorio {
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    override suspend fun registrar(datos: DatosDocumento, contrasena: String): ResultadoRegistro {
+    override suspend fun registrar(
+        datos: DatosDocumento,
+        contrasena: String,
+        frente: ImagenDocumento,
+        reverso: ImagenDocumento,
+    ): ResultadoRegistro {
         val correlacion = Correlacion.nuevo()
+        // Una captura que no se puede leer no llega a salir: sin el documento
+        // no hay nada que verificar, y el usuario tiene que volver a tomarla.
+        val frenteEnBase64 = preparador.aBase64(frente.rutaArchivo)
+            ?: return ResultadoRegistro.DocumentoNoLegible(correlacion)
+        val reversoEnBase64 = preparador.aBase64(reverso.rutaArchivo)
+            ?: return ResultadoRegistro.DocumentoNoLegible(correlacion)
+
+        // Quién borra las capturas del teléfono es el ViewModel, que es el
+        // que sabe cuándo una imagen dejó de hacer falta: aquí solo se envían.
         return try {
-            interpretar(api.registrar(correlacion, solicitud(datos, contrasena)), correlacion)
+            interpretar(
+                api.registrar(correlacion, solicitud(datos, contrasena, frenteEnBase64, reversoEnBase64)),
+                correlacion,
+            )
         } catch (sinRed: IOException) {
             ResultadoRegistro.NoDisponible(correlacion)
         } catch (ilegible: SerializationException) {
@@ -51,32 +70,44 @@ class RegistroRepositorioHttp @Inject constructor(
         return when {
             respuesta.isSuccessful && cuerpo != null -> ResultadoRegistro.Exitoso(cuerpo.cuenta)
             respuesta.code() == CONFLICTO -> ResultadoRegistro.YaRegistrado
-            respuesta.code() == DATO_INVALIDO -> ResultadoRegistro.DatosInvalidos(camposDe(respuesta))
+            respuesta.code() == DATO_INVALIDO -> rechazo(respuesta, correlacion)
             else -> ResultadoRegistro.NoDisponible(correlacion)
         }
     }
 
     /**
+     * Reparte el `422` entre los dos caminos que tiene: una cara rechazada no
+     * se arregla corrigiendo el formulario, así que manda sobre los demás
+     * campos.
+     *
      * Un `422` que no trae campos reconocibles deja marcado el formulario
      * completo: algo hay que corregir y no se sabe qué.
      */
-    private fun camposDe(respuesta: Response<*>): Set<CampoDeRegistro> {
-        val detalle = respuesta.errorBody()?.string().orEmpty()
-        val campos = runCatching { json.decodeFromString<ErrorDeRegistro>(detalle) }
-            .getOrNull()
-            ?.campos
-            ?.mapNotNull { CAMPOS[it.campo] }
-            ?.toSet()
-            .orEmpty()
-        return campos.ifEmpty { CampoDeRegistro.entries.toSet() }
+    private fun rechazo(respuesta: Response<*>, correlacion: String): ResultadoRegistro {
+        val nombres = runCatching {
+            json.decodeFromString<ErrorDeRegistro>(respuesta.errorBody()?.string().orEmpty())
+        }.getOrNull()?.campos?.map { it.campo }?.toSet().orEmpty()
+
+        if (nombres.any { it in CARAS_DEL_DOCUMENTO }) {
+            return ResultadoRegistro.DocumentoNoLegible(correlacion)
+        }
+        val campos = nombres.mapNotNull { CAMPOS[it] }.toSet()
+        return ResultadoRegistro.DatosInvalidos(campos.ifEmpty { CampoDeRegistro.entries.toSet() })
     }
 
-    private fun solicitud(datos: DatosDocumento, contrasena: String) = SolicitudDeRegistro(
+    private fun solicitud(
+        datos: DatosDocumento,
+        contrasena: String,
+        frenteEnBase64: String,
+        reversoEnBase64: String,
+    ) = SolicitudDeRegistro(
         documento = datos.numeroDocumento.filter(Char::isLetterOrDigit),
         nombreCompleto = "${datos.nombres.trim()} ${datos.apellidos.trim()}".trim(),
         correo = datos.correo.trim(),
         fechaNacimiento = enFormatoDelContrato(datos.fechaNacimiento),
         contrasena = contrasena,
+        frenteDelDocumento = frenteEnBase64,
+        reversoDelDocumento = reversoEnBase64,
     )
 
     /**
@@ -94,6 +125,12 @@ class RegistroRepositorioHttp @Inject constructor(
     private companion object {
         const val CONFLICTO = 409
         const val DATO_INVALIDO = 422
+
+        /**
+         * Las dos caras del documento, como las nombra el contrato. No son
+         * campos de M1c: se corrigen volviendo a capturar.
+         */
+        val CARAS_DEL_DOCUMENTO = setOf("document_front", "document_back")
 
         /** Los nombres del contrato, en el orden en que aparecen en M1c. */
         val CAMPOS = mapOf(

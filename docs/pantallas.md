@@ -26,7 +26,7 @@ Las ocho pantallas de esta sección cubren los seis criterios de aceptación de 
 | [M2c](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=23-571) | Biometría no reconocida · tres intentos | `features/acceso/ingreso` | **HU-M1.1-02** | **Must** | Completa. Criterio 3 |
 | [M2d](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=23-631) | Sesión expirada a los cinco minutos | `features/acceso/ingreso` | HU-M1.1-02 · HA-S01 | Must | Completa. Criterio 5 |
 
-Recorrido del registro: **M0 → M1a → M1b → M1c → M1g → M1d → M3**. Desvíos: M1a o M1b → M1f (calidad) · M1g → M1e (el servicio no respondió) · M1g → M1h (tarda) → M0. Un dato rechazado o un documento ya registrado no sacan de M1c.
+Recorrido del registro: **M0 → M1a → M1b → M1c → M1g → M1d → M3**. Desvíos: M1a o M1b → M1f (calidad) · M1g → M1e (el servicio no respondió o rechazó la foto del documento) · M1g → M1h (tarda) → M0. Un dato rechazado o un documento ya registrado no sacan de M1c.
 
 El idioma de M0 se elige en la aplicación y el cambio se ve **sin reiniciarla**: la jerarquía se recompone con el idioma elegido, y la hoja de selección se dibuja en su propia ventana, así que vuelve a aplicarlo dentro. Sin elección previa manda el del dispositivo. Cada idioma se lee en el suyo: «Español (Colombia)» y «English».
 
