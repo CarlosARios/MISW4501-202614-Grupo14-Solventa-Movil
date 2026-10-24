@@ -12,7 +12,7 @@ Las ocho pantallas de esta sección cubren los seis criterios de aceptación de 
 
 | Frame | Pantalla | Paquete | Historia | Prioridad | Estado del prototipo |
 |---|---|---|---|---|---|
-| [M0](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=13-177) | Bienvenida | `features/acceso/ingreso` | — | — | Completa. *Crear mi cuenta* → M1a · *Ya tengo cuenta* → M2a |
+| [M0](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=13-177) | Bienvenida | `features/acceso/bienvenida` | — | — | Completa. *Crear mi cuenta* → M1a · *Ya tengo cuenta* → M2a · el selector de idioma abre una hoja inferior que el prototipo no dibuja |
 | [M1a](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=18-227) | Captura del documento (frente) | `features/acceso/registro` | **HU-M1.1-01** | **Must** | Completa. Criterio 1, con la cámara del dispositivo |
 | [M1b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=18-324) | Captura del reverso | `features/acceso/registro` | **HU-M1.1-01** | **Must** | Completa. Criterio 1, con la cámara del dispositivo |
 | [M1c](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=18-412) | Confirmación de los datos | `features/acceso/registro` | **HU-M1.1-01** | **Must** | **Lleva un campo que el frame no tiene: la contraseña.** Criterio 1 |
@@ -27,6 +27,8 @@ Las ocho pantallas de esta sección cubren los seis criterios de aceptación de 
 | [M2d](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=23-631) | Sesión expirada a los cinco minutos | `features/acceso/ingreso` | HU-M1.1-02 · HA-S01 | Must | Completa. Criterio 5 |
 
 Recorrido del registro: **M0 → M1a → M1b → M1c → M1g → M1d → M3**. Desvíos: M1a o M1b → M1f (calidad) · M1g → M1e (el servicio no respondió) · M1g → M1h (tarda) → M0. Un dato rechazado o un documento ya registrado no sacan de M1c.
+
+El idioma de M0 se elige en la aplicación y el cambio se ve **sin reiniciarla**: la jerarquía se recompone con el idioma elegido, y la hoja de selección se dibuja en su propia ventana, así que vuelve a aplicarlo dentro. Sin elección previa manda el del dispositivo. Cada idioma se lee en el suyo: «Español (Colombia)» y «English».
 
 M1a y M1b usan la cámara de verdad (CameraX). El permiso se pide en caliente y la pantalla tiene estado propio para cada caso: sin permiso ofrece concederlo, negado manda a los ajustes —Android ya no deja volver a preguntar— y sin cámara lo dice y deja el marcador. **La poca luz se mide en el dispositivo**, promediando la luminancia del plano Y de la vista previa, y el aviso sale antes de tomar la foto, que es lo que pide el criterio 4. La foto va a la caché de la aplicación, no a la galería. Los datos que M1c muestra **los genera la aplicación** y el usuario los corrige en pantalla: el documento no se lee de la foto. Leerlo en el propio teléfono con reconocimiento de texto se descartó el 17/10/2026, y lo que la historia tiene que demostrar es que el dato diligenciado llega a la base de datos y que con esas credenciales se puede entrar.
 
