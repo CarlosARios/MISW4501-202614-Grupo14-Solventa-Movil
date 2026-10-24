@@ -24,7 +24,7 @@ turbine = "1.2.1"
 
 # Procesamiento de anotaciones. El sufijo "-2.0.2" es la versión de KSP;
 # el prefijo debe coincidir exactamente con la versión de Kotlin de arriba.
-ksp = "2.2.10-2.0.2"
+ksp = "2.3.12"
 hilt = "2.60.1"
 androidxHilt = "1.4.0"
 room = "2.8.5"
