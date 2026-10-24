@@ -10,7 +10,22 @@ package co.solventa.movil.core.auth.sesion
 data class Sesion(
     val correo: String,
     val nombre: String,
+    /**
+     * Identificador estable de la cuenta en el *user pool* (`sub` del token),
+     * derivado del *id token* guardado (HU-M1.3-01). Es el propietario de lo
+     * que la aplicacion guarda en el dispositivo; vacio si el token no lo trae.
+     */
+    val sub: String = "",
 )
+
+/**
+ * Lo que un dominio borra del dispositivo al cerrar la sesion (HU-M1.3-01,
+ * criterio 6): cada uno se registra en un conjunto de Hilt y `core` lo llama
+ * sin conocer a ningun dominio.
+ */
+fun interface AlCerrarSesion {
+    suspend fun limpiar()
+}
 
 sealed interface ResultadoIngreso {
     data class Exitoso(val sesion: Sesion) : ResultadoIngreso

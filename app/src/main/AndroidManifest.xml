@@ -13,6 +13,12 @@
          instalar y no se pide en caliente. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Saber si hay red (HU-M1.3-01): la consulta de consentimientos avisa
+         cuando muestra la copia sin conexion y se actualiza sola al volver la
+         red. ConnectivityManager lo exige; hasta ahora solo llegaba por el
+         manifiesto de WorkManager. Es un permiso normal. -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <!-- No se exige cámara para instalar: un dispositivo sin ella puede usar
          el resto de la aplicación, y el emulador de las pruebas nocturnas no
          siempre la tiene. -->
