@@ -1,11 +1,16 @@
 package co.solventa.movil.features.perfil
 
 import android.content.res.Configuration
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onParent
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
@@ -145,5 +150,21 @@ class PerfilPantallaTest {
         composicion.onNodeWithText(texto(R.string.perfil_cerrar_sesion)).performScrollTo().performClick()
 
         assertTrue(cierres == 1)
+    }
+
+    @Test
+    fun cerrar_sesion_no_lleva_flecha_y_las_filas_que_abren_otra_pantalla_si() {
+        montar()
+
+        fun flechasDe(fila: Int) = composicion.onNodeWithText(texto(fila), useUnmergedTree = true)
+            .performScrollTo()
+            .onParent()
+            .onChildren()
+            .filter(hasTestTag(ETIQUETA_FLECHA_DE_FILA))
+
+        // Como en el frame 1376:3396: cerrar sesion no abre otra pantalla.
+        flechasDe(R.string.perfil_cerrar_sesion).assertCountEquals(0)
+        flechasDe(R.string.perfil_idioma).assertCountEquals(1)
+        flechasDe(R.string.perfil_privacidad_consentimientos).assertCountEquals(1)
     }
 }

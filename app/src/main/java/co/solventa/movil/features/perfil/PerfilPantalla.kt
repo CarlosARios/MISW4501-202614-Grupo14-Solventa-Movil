@@ -135,6 +135,8 @@ fun ContenidoPerfil(
                 valor = null,
                 alTocar = onCerrarSesion,
                 color = MaterialTheme.colorScheme.error,
+                // Sin flecha, como en el frame 1376:3396: cierra la sesion, no abre otra pantalla.
+                conFlecha = false,
             )
         }
 

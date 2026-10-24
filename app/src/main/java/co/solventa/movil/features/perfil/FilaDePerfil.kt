@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -26,10 +27,15 @@ import co.solventa.movil.R
 import co.solventa.movil.ui.theme.Espacio
 import co.solventa.movil.ui.theme.LocalColoresSolventa
 
+/** Etiqueta de prueba de la flecha de una fila que abre otra pantalla. */
+const val ETIQUETA_FLECHA_DE_FILA = "perfil_flecha_de_fila"
+
 /**
  * Una fila del perfil (frame 1376:3396). Con [alTocar] nulo queda **en
  * espera**: atenuada, sin flecha, sin responder al toque y con «Próximamente»
- * como valor, porque todavia no tiene servicio detras (D-7 e).
+ * como valor, porque todavia no tiene servicio detras (D-7 e). Con
+ * [conFlecha] en falso una fila activa responde sin flecha, como «Cerrar
+ * sesión», que no abre otra pantalla.
  */
 @Composable
 fun FilaDePerfil(
@@ -40,6 +46,7 @@ fun FilaDePerfil(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.onSurface,
     adorno: (@Composable () -> Unit)? = null,
+    conFlecha: Boolean = true,
 ) {
     val colores = LocalColoresSolventa.current
     val enEspera = alTocar == null
@@ -69,12 +76,14 @@ fun FilaDePerfil(
         valorVisible?.let {
             Text(text = it, style = MaterialTheme.typography.bodySmall, color = colores.textoSecundario)
         }
-        if (!enEspera) {
+        if (!enEspera && conFlecha) {
             Icon(
                 painter = painterResource(R.drawable.ic_chevron_derecha),
                 contentDescription = null,
                 tint = colores.textoSecundario,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier
+                    .size(20.dp)
+                    .testTag(ETIQUETA_FLECHA_DE_FILA),
             )
         }
     }
