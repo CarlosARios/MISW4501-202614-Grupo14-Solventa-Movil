@@ -31,9 +31,9 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
 const val ETIQUETA_FLECHA_DE_FILA = "perfil_flecha_de_fila"
 
 /**
- * Una fila del perfil (frame 1376:3396). Con [alTocar] nulo queda **en
- * espera**: atenuada, sin flecha, sin responder al toque y con «Próximamente»
- * como valor, porque todavia no tiene servicio detras (D-7 e). Con
+ * Una fila del perfil (M19). Con [alTocar] nulo queda **en espera**:
+ * atenuada, sin flecha, sin responder al toque y con «Próximamente» como
+ * valor, porque todavia no tiene servicio detras. Con
  * [conFlecha] en falso una fila activa responde sin flecha, como «Cerrar
  * sesión», que no abre otra pantalla.
  */
@@ -108,9 +108,8 @@ fun FilaInformativaDePerfil(@DrawableRes icono: Int, titulo: String, valor: Stri
 }
 
 /**
- * La fila de la biometria con su interruptor, que va entre el icono y el texto
- * como en el frame 1376:3396. Sin huella o rostro configurado queda
- * deshabilitada y lo dice.
+ * La fila de la biometria con su interruptor, que va entre el icono y el
+ * texto. Sin huella o rostro configurado queda deshabilitada y lo dice.
  */
 @Composable
 fun FilaConInterruptor(

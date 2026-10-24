@@ -32,7 +32,7 @@ import org.junit.runner.RunWith
 import org.robolectric.shadows.ShadowLooper
 
 /**
- * El estado de M19 · Perfil (HU-M1.3-01, D-7 e), con la copia local real de
+ * El estado de M19 · Perfil (HU-M1.3-01), con la copia local real de
  * los consentimientos (Robolectric) para la insignia «N activos».
  */
 @OptIn(ExperimentalCoroutinesApi::class)

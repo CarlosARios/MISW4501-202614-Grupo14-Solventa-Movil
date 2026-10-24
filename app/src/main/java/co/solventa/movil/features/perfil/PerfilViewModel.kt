@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * M19 · Perfil (HU-M1.3-01, D-7 e): la identidad de la sesion, la biometria,
+ * M19 · Perfil (HU-M1.3-01): la identidad de la sesion, la biometria,
  * el idioma, los consentimientos activos y el cierre de la sesion. Las demas
  * filas del prototipo quedan en espera en la pantalla, sin datos inventados.
  */

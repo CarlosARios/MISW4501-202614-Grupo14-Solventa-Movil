@@ -36,9 +36,8 @@ import co.solventa.movil.ui.theme.Espacio
 import co.solventa.movil.ui.theme.LocalColoresSolventa
 
 /**
- * M19 · Perfil (HU-M1.3-01, frame 1376:3396 con la barra superior de 55:3017,
- * D-7 e). Es una pestaña de la barra inferior, asi que no tiene flecha de
- * volver.
+ * M19 · Perfil (HU-M1.3-01). Es una pestaña de la barra inferior, asi que no
+ * tiene flecha de volver.
  */
 @Composable
 fun PerfilPantalla(
@@ -135,7 +134,7 @@ fun ContenidoPerfil(
                 valor = null,
                 alTocar = onCerrarSesion,
                 color = MaterialTheme.colorScheme.error,
-                // Sin flecha, como en el frame 1376:3396: cierra la sesion, no abre otra pantalla.
+                // Sin flecha: cierra la sesion, no abre otra pantalla.
                 conFlecha = false,
             )
         }

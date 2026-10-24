@@ -343,7 +343,7 @@
     <string name="auditoria_detalle_paso_vigente_sincronizado">Vigente · sincronizado con Solventa</string>
     <string name="auditoria_detalle_paso_vigente">Vigente</string>
 
-    <!-- M19 · Perfil (HU-M1.3-01, frame 1376:3396, D-7 e). Las filas sin servicio dicen «Próximamente» -->
+    <!-- M19 · Perfil (HU-M1.3-01). Las filas sin servicio dicen «Próximamente» -->
     <string name="perfil_titulo">Perfil</string>
     <string name="perfil_seccion_cuenta">Cuenta</string>
     <string name="perfil_seccion_seguridad">Seguridad</string>

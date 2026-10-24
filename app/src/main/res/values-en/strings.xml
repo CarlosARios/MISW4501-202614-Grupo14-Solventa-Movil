@@ -338,7 +338,7 @@
     <string name="auditoria_detalle_paso_vigente_sincronizado">In force · synced with Solventa</string>
     <string name="auditoria_detalle_paso_vigente">In force</string>
 
-    <!-- M19 · Profile (HU-M1.3-01, frame 1376:3396, D-7 e). Rows without a service say «Coming soon» -->
+    <!-- M19 · Profile (HU-M1.3-01). Rows without a service say «Coming soon» -->
     <string name="perfil_titulo">Profile</string>
     <string name="perfil_seccion_cuenta">Account</string>
     <string name="perfil_seccion_seguridad">Security</string>

@@ -24,7 +24,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * M19 · Perfil (HU-M1.3-01, D-7 e): las filas en espera dicen
+ * M19 · Perfil (HU-M1.3-01): las filas en espera dicen
  * «Próximamente» y no responden; las activas si; Idioma abre la hoja.
  */
 class PerfilPantallaTest {
@@ -174,7 +174,7 @@ class PerfilPantallaTest {
             .onChildren()
             .filter(hasTestTag(ETIQUETA_FLECHA_DE_FILA))
 
-        // Como en el frame 1376:3396: cerrar sesion no abre otra pantalla.
+        // Cerrar sesion no abre otra pantalla, asi que no lleva flecha.
         flechasDe(R.string.perfil_cerrar_sesion).assertCountEquals(0)
         flechasDe(R.string.perfil_idioma).assertCountEquals(1)
         flechasDe(R.string.perfil_privacidad_consentimientos).assertCountEquals(1)

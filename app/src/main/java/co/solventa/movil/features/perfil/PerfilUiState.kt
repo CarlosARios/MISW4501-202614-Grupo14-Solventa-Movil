@@ -3,7 +3,7 @@ package co.solventa.movil.features.perfil
 import co.solventa.movil.core.i18n.Idioma
 
 /**
- * Estado de M19 · Perfil (HU-M1.3-01, D-7 e). Solo lo que tiene un servicio
+ * Estado de M19 · Perfil (HU-M1.3-01). Solo lo que tiene un servicio
  * detras; las filas sin servicio se muestran en espera y no estan aqui.
  */
 data class PerfilUiState(

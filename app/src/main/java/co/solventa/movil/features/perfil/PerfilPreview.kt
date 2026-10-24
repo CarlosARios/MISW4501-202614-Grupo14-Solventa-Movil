@@ -5,7 +5,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.ui.theme.SolventaTheme
 
-/** Vista previa de M19 · Perfil con los datos del prototipo (frame 1376:3396). */
+/** Vista previa de M19 · Perfil con los datos del prototipo. */
 @Preview(showBackground = true, heightDp = 1100)
 @Composable
 private fun PerfilPreview() {
