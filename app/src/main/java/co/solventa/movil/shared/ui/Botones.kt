@@ -21,7 +21,20 @@ import co.solventa.movil.ui.theme.Espacio
 import co.solventa.movil.ui.theme.Radio
 
 /** Variantes del componente `Botón` del sistema de diseño. */
-enum class TipoBoton { PRIMARIO, SECUNDARIO, TERCIARIO }
+enum class TipoBoton {
+    PRIMARIO,
+    SECUNDARIO,
+    TERCIARIO,
+
+    /**
+     * Sobre fondo oscuro: relleno claro con el texto en azul. Es el primario
+     * de la bienvenida, donde el azul del tema desapareceria contra el fondo.
+     */
+    CLARO,
+
+    /** Sobre fondo oscuro, sin relleno ni borde: solo el texto en blanco. */
+    TEXTO_CLARO,
+}
 
 private val AlturaBoton = 48.dp
 
@@ -75,6 +88,28 @@ fun BotonSolventa(
             enabled = habilitado,
             shape = forma,
             modifier = alto,
+        ) { contenido() }
+
+        TipoBoton.CLARO -> Button(
+            onClick = onClick,
+            enabled = habilitado,
+            shape = forma,
+            modifier = alto,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.primary,
+            ),
+            contentPadding = ButtonDefaults.ContentPadding,
+        ) { contenido() }
+
+        TipoBoton.TEXTO_CLARO -> TextButton(
+            onClick = onClick,
+            enabled = habilitado,
+            shape = forma,
+            modifier = alto,
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+            ),
         ) { contenido() }
     }
 }
