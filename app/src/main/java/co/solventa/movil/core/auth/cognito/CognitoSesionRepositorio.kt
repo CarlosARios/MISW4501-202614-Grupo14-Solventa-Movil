@@ -12,6 +12,7 @@ import kotlinx.coroutines.sync.withLock
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 
 /**
@@ -34,8 +35,12 @@ import javax.inject.Singleton
 class CognitoSesionRepositorio @Inject constructor(
     private val api: CognitoApi,
     private val almacen: AlmacenDeSesion,
-    /** Lo que cada dominio borra del dispositivo al cerrar la sesion (HU-M1.3-01). */
-    private val limpiezas: Set<@JvmSuppressWildcards AlCerrarSesion>,
+    /**
+     * Lo que cada dominio borra del dispositivo al cerrar la sesion
+     * (HU-M1.3-01). Va detras de un `Provider` porque esas limpiezas dependen
+     * a su vez de la sesion: asi se rompe el ciclo sin que `core` las conozca.
+     */
+    private val limpiezas: Provider<Set<@JvmSuppressWildcards AlCerrarSesion>>,
 ) : SesionRepositorio {
 
     /** Una renovación a la vez: varias peticiones en paralelo comparten la misma. */
@@ -81,7 +86,7 @@ class CognitoSesionRepositorio @Inject constructor(
      * sesion abierta.
      */
     override suspend fun cerrar() {
-        limpiezas.forEach { limpieza -> runCatching { limpieza.limpiar() } }
+        limpiezas.get().forEach { limpieza -> runCatching { limpieza.limpiar() } }
         almacen.borrarTokens()
     }
 

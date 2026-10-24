@@ -19,6 +19,7 @@ import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.Base64
+import javax.inject.Provider
 
 /**
  * La sesión contra el *user pool* de Cognito (HA-S01), con la API de Cognito
@@ -49,7 +50,8 @@ class CognitoSesionRepositorioTest {
         servidor.close()
     }
 
-    private fun repositorio(limpiezas: Set<AlCerrarSesion> = emptySet()) = CognitoSesionRepositorio(api, almacen, limpiezas)
+    private fun repositorio(limpiezas: Set<AlCerrarSesion> = emptySet()) =
+        CognitoSesionRepositorio(api, almacen, Provider { limpiezas })
 
     @Test
     fun `el ingreso usa USER_PASSWORD_AUTH y guarda la sesion del token`() = runTest {

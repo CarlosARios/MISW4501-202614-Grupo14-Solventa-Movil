@@ -272,4 +272,28 @@
     <string name="radicacion_borrador_continuar">Continuar el borrador</string>
     <string name="radicacion_borrador_descartar">Descartar borrador</string>
     <string name="inicio_reportar_siniestro">Reportar un siniestro</string>
+
+    <!-- Consentimientos de Open Finance (HU-M1.3-01): textos de los codigos del servicio de auditoria -->
+    <string name="auditoria_consentimientos_estado_activo">Activo</string>
+    <string name="auditoria_consentimientos_estado_vencido">Vencido</string>
+    <string name="auditoria_consentimientos_estado_revocado">Revocado</string>
+    <string name="auditoria_consentimientos_estado_revocacion_pendiente">Revocación pendiente</string>
+    <string name="auditoria_consentimientos_estado_revocado_parcial">Revocado parcialmente</string>
+    <string name="auditoria_consentimientos_historial_otorgado">Otorgado</string>
+    <string name="auditoria_consentimientos_historial_vencido">Venció</string>
+    <string name="auditoria_consentimientos_historial_revocacion_solicitada">Revocación solicitada</string>
+    <string name="auditoria_consentimientos_historial_revocado">Revocado</string>
+    <string name="auditoria_consentimientos_fuente_open_finance">Open Finance</string>
+    <string name="auditoria_consentimientos_fuente_open_data">Datos públicos (Open Data)</string>
+    <string name="auditoria_consentimientos_fuente_kyc">Verificación de identidad (KYC)</string>
+    <string name="auditoria_consentimientos_categoria_productos_de_credito">Productos de crédito</string>
+    <string name="auditoria_consentimientos_categoria_saldos">Saldos</string>
+    <string name="auditoria_consentimientos_categoria_comportamiento_de_pago">Comportamiento de pago</string>
+    <string name="auditoria_consentimientos_categoria_registros_publicos">Registros públicos</string>
+    <string name="auditoria_consentimientos_categoria_verificacion_de_identidad">Verificación de identidad</string>
+    <string name="auditoria_consentimientos_vigencia_12_meses">12 meses</string>
+    <string name="auditoria_consentimientos_vigencia_un_uso">Un solo uso</string>
+    <string name="auditoria_consentimientos_finalidad_perfil_y_oferta">Cálculo del perfil de riesgo y de la oferta de seguro</string>
+    <string name="auditoria_consentimientos_canal_aliado">recorrido del aliado</string>
+    <string name="auditoria_consentimientos_canal_movil">app móvil</string>
 </resources>
