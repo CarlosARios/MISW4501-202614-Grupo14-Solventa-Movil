@@ -293,6 +293,20 @@ Sin la variable, el valor queda en `PENDIENTE` y la aplicación arranca igual: e
 permanente, y lo que falla son las llamadas al API, que es exactamente lo que ocurre cuando no hay ninguna ventana
 abierta. Cambiar de ventana es volver a construir, sin tocar código ni abrir un *pull request*.
 
+### El registro es la única llamada sin sesión
+
+El registro del asegurado (HU-M1.1-01) es `POST /v1/registrations` en el API Gateway, y sale sin encabezado
+`Authorization` porque la cuenta todavía no existe: la crea el servicio de originación en el *user pool* y el
+teléfono inicia sesión con esas mismas credenciales en cuanto recibe el `201`.
+
+**Los datos del formulario los genera la aplicación** y el usuario los corrige en M1c antes de enviarlos. El
+documento y el correo tienen que ser nuevos en cada intento —el servicio responde `409` si ya tienen cuenta—, así
+que un dato fijo serviría una sola vez. Nada de esto lee la cédula real de quien prueba la aplicación.
+
+Para probarlo en un dispositivo físico hay que construir `staging` o `release` con `URL_API_GATEWAY` apuntando al
+gateway de la ventana abierta. La variante `debug` apunta a `http://10.0.2.2:8080`, que solo significa algo dentro
+del emulador.
+
 ---
 
 ## 7. Pruebas

@@ -19,4 +19,10 @@ abstract class RegistroModule {
     abstract fun enlazarRepositorioKyc(
         simulado: RegistroKycRepositorioSimulado,
     ): RegistroKycRepositorio
+
+    @Binds
+    @Singleton
+    abstract fun enlazarRepositorioDeRegistro(
+        http: RegistroRepositorioHttp,
+    ): RegistroRepositorio
 }

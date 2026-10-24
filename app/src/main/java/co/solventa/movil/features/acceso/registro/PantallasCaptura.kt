@@ -386,11 +386,19 @@ internal fun PasoDelRegistro(
     }
 }
 
-/** M1c · confirmación de los datos que el proveedor extrajo del documento. */
+/**
+ * M1c · confirmación de los datos personales.
+ *
+ * **La contraseña no está en el frame.** El contrato del registro la exige
+ * para crear la cuenta en el *user pool*, y en el prototipo se pasó por
+ * alto: el campo se agregó aquí el 22/10/2026 y queda anotado en
+ * `docs/pantallas.md` como diferencia que hay que llevar a Figma.
+ */
 @Composable
 fun ConfirmacionDatosPantalla(
     estado: RegistroUiState,
     onDatosCambian: (DatosDocumento) -> Unit,
+    onContrasenaCambia: (String) -> Unit,
     onTerminos: (Boolean) -> Unit,
     onVerificar: () -> Unit,
     onAtras: () -> Unit,
@@ -422,15 +430,25 @@ fun ConfirmacionDatosPantalla(
             color = colores.textoSecundario,
         )
 
+        if (estado.yaRegistrado) {
+            AvisoSolventa(
+                tipo = TipoAviso.ERROR,
+                titulo = stringResource(R.string.registro_datos_duplicado_titulo),
+                texto = stringResource(R.string.registro_datos_duplicado_detalle),
+            )
+        }
+
         CampoDato(
             etiqueta = stringResource(R.string.registro_datos_nombres),
             valor = datos.nombres,
             onCambio = { onDatosCambian(datos.copy(nombres = it)) },
+            error = estado.camposInvalidos.contains(CampoDeRegistro.NOMBRE),
         )
         CampoDato(
             etiqueta = stringResource(R.string.registro_datos_apellidos),
             valor = datos.apellidos,
             onCambio = { onDatosCambian(datos.copy(apellidos = it)) },
+            error = estado.camposInvalidos.contains(CampoDeRegistro.NOMBRE),
         )
         CampoDato(
             etiqueta = stringResource(R.string.registro_datos_documento),
@@ -438,23 +456,36 @@ fun ConfirmacionDatosPantalla(
             onCambio = {},
             soloLectura = true,
             ayuda = stringResource(R.string.registro_datos_documento_ayuda),
+            error = estado.camposInvalidos.contains(CampoDeRegistro.DOCUMENTO),
         )
         CampoDato(
             etiqueta = stringResource(R.string.registro_datos_nacimiento),
             valor = datos.fechaNacimiento,
             onCambio = { onDatosCambian(datos.copy(fechaNacimiento = it)) },
             ayuda = stringResource(R.string.registro_datos_nacimiento_formato),
+            error = estado.camposInvalidos.contains(CampoDeRegistro.FECHA_NACIMIENTO),
         )
         CampoDato(
             etiqueta = stringResource(R.string.registro_datos_correo),
             valor = datos.correo,
             onCambio = { onDatosCambian(datos.copy(correo = it)) },
+            error = estado.camposInvalidos.contains(CampoDeRegistro.CORREO),
         )
         CampoDato(
             etiqueta = stringResource(R.string.registro_datos_celular),
             valor = datos.celular,
             onCambio = { onDatosCambian(datos.copy(celular = it)) },
             ayuda = stringResource(R.string.registro_datos_celular_ayuda),
+        )
+
+        // Visible y no enmascarada: es una credencial de prueba que hay que
+        // poder leer para volver a entrar por M2a.
+        CampoDato(
+            etiqueta = stringResource(R.string.registro_datos_contrasena),
+            valor = estado.contrasena,
+            onCambio = onContrasenaCambia,
+            ayuda = stringResource(R.string.registro_datos_contrasena_ayuda),
+            error = estado.camposInvalidos.contains(CampoDeRegistro.CONTRASENA),
         )
 
         Row(
@@ -479,6 +510,7 @@ private fun CampoDato(
     modifier: Modifier = Modifier,
     soloLectura: Boolean = false,
     ayuda: String? = null,
+    error: Boolean = false,
 ) {
     OutlinedTextField(
         value = valor,
@@ -486,7 +518,9 @@ private fun CampoDato(
         label = { Text(etiqueta) },
         readOnly = soloLectura,
         singleLine = true,
-        supportingText = ayuda?.let { { Text(it) } },
+        isError = error,
+        supportingText = (if (error) stringResource(R.string.registro_datos_campo_rechazado) else ayuda)
+            ?.let { { Text(it) } },
         shape = MaterialTheme.shapes.small,
         modifier = modifier.fillMaxWidth(),
     )

@@ -14,18 +14,17 @@ enum class ProblemaCalidad { ILUMINACION_INSUFICIENTE, DOCUMENTO_INCOMPLETO, IMA
 data class ImagenDocumento(val cara: CaraDocumento, val rutaArchivo: String)
 
 /**
- * Datos que el proveedor extrae del documento y que el usuario confirma.
+ * Datos personales que el usuario confirma en M1c antes de registrarse.
  *
- * **Por qué los extrae el proveedor y no el teléfono.** La revisión INVEST de
- * HU-M1.1-01 dejó el algoritmo de extracción sin fijar y aceptó un proveedor
- * KYC simulado como evidencia de la historia, así que hoy llegan desde
- * [RegistroKycRepositorio.analizarCaptura] y no se calculan aquí.
+ * **No se leen del documento.** La revisión INVEST de HU-M1.1-01 dejó el
+ * algoritmo de extracción sin fijar, y el reconocimiento de texto en el
+ * dispositivo se descartó el 17/10/2026. Los produce
+ * [GeneradorDeDatosDeDemostracion] y el usuario los corrige en pantalla:
+ * lo que la historia tiene que demostrar es que el dato diligenciado llega a
+ * la base de datos y que con esas credenciales se puede entrar.
  *
- * Se evaluó leerlos en el dispositivo con reconocimiento de texto, que además
- * evitaría sacar la imagen del documento del teléfono. Se descartó el
- * 17/10/2026 por una razón de secuencia y no de técnica: **no hay todavía
- * infraestructura que reciba los datos**, así que extraerlos no habilita
- * nada. Vuelve a la mesa cuando exista el servicio de registro.
+ * `tipoDocumento` y `celular` se conservan porque están en el frame M1c. El
+ * contrato del registro no los recibe todavía.
  */
 data class DatosDocumento(
     val nombres: String,
@@ -37,29 +36,17 @@ data class DatosDocumento(
     val celular: String = "",
 )
 
+/**
+ * Juicio sobre la imagen capturada. No trae datos: la calidad de la foto y
+ * los datos personales dejaron de ser lo mismo.
+ */
 sealed interface ResultadoCaptura {
-    /** La imagen sirve. En el reverso llegan además los datos extraídos. */
-    data class Aceptada(val datos: DatosDocumento?) : ResultadoCaptura
+    data object Aceptada : ResultadoCaptura
 
     data class CalidadInsuficiente(val motivo: ProblemaCalidad) : ResultadoCaptura
 }
 
-/**
- * Resultado de la verificación de identidad.
- *
- * El fallo **no trae motivo**. El criterio 3 exige no revelarle al usuario por
- * qué falló —documento ilegible, identidad no verificable o coincidencia en
- * listas restrictivas son información que no debe salir—, así que el motivo
- * tampoco cruza esta frontera: lo que viaja es una referencia con la que
- * soporte puede rastrear el intento.
- */
-sealed interface ResultadoVerificacion {
-    data object Exitosa : ResultadoVerificacion
-    data class NoSuperada(val referencia: String) : ResultadoVerificacion
-}
-
+/** Lo que queda del proveedor simulado: juzgar la imagen. */
 interface RegistroKycRepositorio {
     suspend fun analizarCaptura(imagen: ImagenDocumento): ResultadoCaptura
-
-    suspend fun verificarIdentidad(datos: DatosDocumento): ResultadoVerificacion
 }

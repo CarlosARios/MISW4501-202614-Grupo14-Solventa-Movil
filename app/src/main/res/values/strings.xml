@@ -113,6 +113,11 @@
     <string name="registro_datos_correo">Correo electrónico</string>
     <string name="registro_datos_celular">Celular</string>
     <string name="registro_datos_celular_ayuda">Recibirás un código de verificación por SMS</string>
+    <string name="registro_datos_contrasena">Contraseña</string>
+    <string name="registro_datos_contrasena_ayuda">Mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo. Con ella inicias sesión</string>
+    <string name="registro_datos_campo_rechazado">Revisa este dato</string>
+    <string name="registro_datos_duplicado_titulo">Ya hay una cuenta con estos datos</string>
+    <string name="registro_datos_duplicado_detalle">Ese documento o ese correo ya están registrados. Corrige el dato o inicia sesión con esa cuenta.</string>
     <string name="registro_datos_terminos">Acepto los términos de uso y la política de tratamiento de datos personales de Solventa.</string>
     <string name="registro_datos_accion">Confirmar y verificar mi identidad</string>
 
