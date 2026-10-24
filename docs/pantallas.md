@@ -12,7 +12,7 @@ Las ocho pantallas de esta sección cubren los seis criterios de aceptación de 
 
 | Frame | Pantalla | Paquete | Historia | Prioridad | Estado del prototipo |
 |---|---|---|---|---|---|
-| [M0](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=13-177) | Bienvenida | `features/acceso/bienvenida` | — | — | Completa. *Crear mi cuenta* → M1a · *Ya tengo cuenta* → M2a · el selector de idioma abre una hoja inferior que el prototipo no dibuja |
+| [M0](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=13-177) | Bienvenida | `features/acceso/bienvenida` | — | — | Completa. *Crear mi cuenta* → M1a · *Ya tengo cuenta* → M2a · el selector de idioma abre una hoja inferior que el prototipo no dibuja (`shared/ui/HojaDeIdioma` desde HU-M1.3-01, porque también la abre M19) |
 | [M1a](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=18-227) | Captura del documento (frente) | `features/acceso/registro` | **HU-M1.1-01** | **Must** | Completa. Criterio 1, con la cámara del dispositivo |
 | [M1b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=18-324) | Captura del reverso | `features/acceso/registro` | **HU-M1.1-01** | **Must** | Completa. Criterio 1, con la cámara del dispositivo |
 | [M1c](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=18-412) | Confirmación de los datos | `features/acceso/registro` | **HU-M1.1-01** | **Must** | **Lleva un campo que el frame no tiene: la contraseña.** Criterio 1 |
@@ -111,10 +111,10 @@ del componente `Campo` y no se leen desde fuera.
 
 | Frame | Pantalla | Paquete | Historia | Prioridad | Estado del prototipo |
 |---|---|---|---|---|---|
-| M19 | Perfil | `features/perfil` | — | — | Completa |
-| M19b | Idioma · English (US) | `features/perfil/idioma` | OBJ 12 | — | Completa. Espejo de M10 con formatos de EE. UU. |
-| M8 | Privacidad y consentimientos | `features/auditoria/consentimientos` | RN-02 | — | Completa |
-| M8b | Detalle del consentimiento | `features/auditoria/consentimientos` | RN-02 | — | Completa |
+| M19 | Perfil | `features/perfil` | **HU-M1.3-01** | **Must** | **Se construye la variante [`1376:3396`](https://www.figma.com/design/PvaIbF3OlV5AwjdnI4Cm1n?node-id=1376-3396) de la copia de trabajo (D-7 e)** con la barra superior de [`55:3017`](https://www.figma.com/design/PvaIbF3OlV5AwjdnI4Cm1n?node-id=55-3017) (es pestaña: sin flecha). Activas: huella o rostro, cierre automático de 5 min, Privacidad y consentimientos con «N activos», Idioma (abre la hoja de M0) y Cerrar sesión. **En espera con «Próximamente»**, atenuadas y sin toque: Datos personales, Medios de pago, Cambiar contraseña, Descargar mis datos, Notificaciones y Sincronización. Sin documento, «Identidad verificada (KYC)», ícono de ajustes ni términos (sin datos detrás) |
+| M19b | Idioma · English (US) | `features/perfil/idioma` | OBJ 12 | — | Completa. Espejo de M10 con formatos de EE. UU. **No se construye en HU-M1.3-01:** la fila Idioma de M19 abre la hoja de M0 |
+| [M8](https://www.figma.com/design/PvaIbF3OlV5AwjdnI4Cm1n?node-id=37-1233) | Privacidad y consentimientos | `features/auditoria/consentimientos` | **HU-M1.3-01** · RN-02 | **Must** | Criterios 1, 3, 5 y 6: activos y revocados o vencidos con fecha, vigencia, insignia y comprobante; aviso sin conexión del frame [`38:1503`](https://www.figma.com/design/PvaIbF3OlV5AwjdnI4Cm1n?node-id=38-1503) con la fecha y hora de la copia; cargando, vacío, error y cuenta sin vincular. Quedan para HU-M1.3-02 la segunda frase del texto, la tarjeta «Revocación efectiva en segundos» y la cola de envío; «Última consulta» no tiene criterio ni datos |
+| [M8b](https://www.figma.com/design/PvaIbF3OlV5AwjdnI4Cm1n?node-id=37-1418) | Detalle del consentimiento | `features/auditoria/consentimientos` | **HU-M1.3-01** · RN-02 | **Must** | Criterios 2 a 4: identificador, entidad, alcance, finalidad, otorgamiento con canal, vigencia o fin con comprobante e historial de estados. «Revocar consentimiento» visible y **deshabilitado** solo en activos hasta HU-M1.3-02 (D-8 b). Sin «Última consulta», comprobante PDF ni dispositivo del otorgamiento (sin datos) |
 | — | Preferencias de notificación | `features/notificaciones/preferencias` | M3.3-01 | Should | Entra desde M19 |
 
 ## Convenciones del prototipo que el código debe respetar
@@ -122,4 +122,4 @@ del componente `Campo` y no se leen desde fuera.
 - Lienzo de referencia **390 × 844**, `minSdk 26`.
 - Los datos de la demostración coinciden con el portal: los cuatro siniestros (SIN-2026-01877, -01655, -01702, -01410), la renovación de AU-2025-118204 y el pago paramétrico de $ 180.000 COP son los mismos en A7/A8/A4 y en M9/M10/M17. **No inventar datos nuevos** en las pruebas de interfaz.
 - En el prototipo, los íconos de filtro y de compartir se usan como atajo para alternar los estados de excepción (M9 → M9b → M9c, M10 → M10c). Eso es un recurso de la demostración: **en el código esos estados dependen de la respuesta del servicio, no de un ícono**.
-- La barra inferior es Inicio (M3) · Pólizas (M4) · Siniestros (M9) · Perfil (M19) y vive en `core/navegacion/`.
+- La barra inferior es Inicio (M3) · Pólizas (M4) · Siniestros (M9) · Perfil (M19) y vive en `core/navegacion/BarraInferior.kt` (HU-M1.3-01, D-14 b). Se muestra en Inicio, Perfil y Privacidad y consentimientos (que deja Perfil seleccionada). **Pólizas y Siniestros quedan en espera** —visibles, atenuadas y sin navegar, con la descripción «…, próximamente»— hasta que existan M4 (HU-M1.2-01) y M9 (HU-M2.4-01); la radicación sigue entrando por el botón de Inicio.
