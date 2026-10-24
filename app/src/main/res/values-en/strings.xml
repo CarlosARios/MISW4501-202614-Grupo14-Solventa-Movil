@@ -14,7 +14,10 @@
 
     <!-- M0 - welcome -->
     <string name="bienvenida_titulo">Solventa</string>
-    <string name="bienvenida_lema">Your insurance, with you</string>
+    <string name="bienvenida_lema">Your insurance, always with you</string>
+    <string name="bienvenida_descripcion">Check your policies even without a connection, report a claim from where it happened and manage your data consents.</string>
+    <string name="bienvenida_cambiar_idioma">Change the language</string>
+    <string name="bienvenida_idioma_titulo">Choose the language</string>
     <string name="bienvenida_crear_cuenta">Create my account</string>
     <string name="bienvenida_ya_tengo_cuenta">I already have an account</string>
 

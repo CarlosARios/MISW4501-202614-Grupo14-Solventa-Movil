@@ -25,6 +25,9 @@ import co.solventa.movil.core.auth.sesion.SesionViewModel
 import co.solventa.movil.core.navegacion.Ruta
 import co.solventa.movil.features.acceso.ingreso.HojaDeSesionExpirada
 import co.solventa.movil.features.acceso.ingreso.destinoIngreso
+import co.solventa.movil.core.i18n.ConIdioma
+import co.solventa.movil.core.i18n.IdiomaViewModel
+import co.solventa.movil.features.acceso.bienvenida.PantallaBienvenida
 import co.solventa.movil.features.acceso.registro.grafoRegistro
 import co.solventa.movil.features.inicio.PantallaInicio
 import co.solventa.movil.shared.ui.BotonSolventa
@@ -53,9 +56,14 @@ fun SolventaNavHost(
     modifier: Modifier = Modifier,
     navegacion: NavHostController = rememberNavController(),
     sesion: SesionViewModel = hiltViewModel(),
+    idiomas: IdiomaViewModel = hiltViewModel(),
 ) {
     val expirada by sesion.expirada.collectAsStateWithLifecycle()
+    val idioma by idiomas.actual.collectAsStateWithLifecycle()
 
+    // Todo lo que se dibuje debajo lee sus textos del idioma elegido. Al
+    // cambiarlo, la jerarquia se recompone traducida sin reiniciar nada.
+    ConIdioma(idioma) {
     Box(
         modifier = modifier
             // Cualquier toque reinicia la cuenta de los cinco minutos. Se
@@ -75,7 +83,9 @@ fun SolventaNavHost(
             startDestination = Ruta.Bienvenida,
         ) {
             composable<Ruta.Bienvenida> {
-                BienvenidaPantalla(
+                PantallaBienvenida(
+                    idioma = idioma,
+                    onElegirIdioma = idiomas::elegir,
                     onCrearCuenta = { navegacion.navigate(Ruta.Registro) },
                     onYaTengoCuenta = { navegacion.navigate(Ruta.Ingreso) },
                 )
@@ -116,42 +126,5 @@ fun SolventaNavHost(
             },
         )
     }
-}
-
-/**
- * M0 · Bienvenida. Versión mínima: es el punto de entrada que el recorrido
- * del registro necesita. Su construcción contra el frame es de HU-M1.1-02.
- */
-@Composable
-private fun BienvenidaPantalla(
-    onCrearCuenta: () -> Unit,
-    onYaTengoCuenta: () -> Unit,
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(Espacio.x12, Alignment.CenterVertically),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(Espacio.x24),
-    ) {
-        Text(
-            text = stringResource(R.string.bienvenida_titulo),
-            style = MaterialTheme.typography.headlineSmall,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Text(
-            text = stringResource(R.string.bienvenida_lema),
-            style = MaterialTheme.typography.bodyLarge,
-        )
-        BotonSolventa(
-            texto = stringResource(R.string.bienvenida_crear_cuenta),
-            onClick = onCrearCuenta,
-            modifier = Modifier.padding(top = Espacio.x24),
-        )
-        BotonSolventa(
-            texto = stringResource(R.string.bienvenida_ya_tengo_cuenta),
-            onClick = onYaTengoCuenta,
-            tipo = TipoBoton.SECUNDARIO,
-        )
     }
 }
