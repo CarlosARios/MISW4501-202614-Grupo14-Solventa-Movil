@@ -333,4 +333,30 @@
     <string name="auditoria_detalle_fuente">%1$s: %2$s (%3$s)</string>
     <string name="auditoria_detalle_revocar">Revoke consent</string>
     <string name="auditoria_detalle_no_disponible">This consent is no longer available.</string>
+
+    <!-- M19 · Profile (HU-M1.3-01, frame 1376:3396, D-7 e). Rows without a service say «Coming soon» -->
+    <string name="perfil_titulo">Profile</string>
+    <string name="perfil_seccion_cuenta">Account</string>
+    <string name="perfil_seccion_seguridad">Security</string>
+    <string name="perfil_seccion_privacidad">Privacy</string>
+    <string name="perfil_seccion_preferencias">Preferences</string>
+    <string name="perfil_datos_personales">Personal data</string>
+    <string name="perfil_medios_de_pago">Payment methods</string>
+    <string name="perfil_biometria">Sign in with fingerprint or face</string>
+    <string name="perfil_biometria_no_disponible">Not available on this device</string>
+    <string name="perfil_cambiar_contrasena">Change password</string>
+    <string name="perfil_cierre_automatico">Automatic sign-out</string>
+    <string name="perfil_cierre_minutos">%1$d min</string>
+    <string name="perfil_privacidad_consentimientos">Privacy and consents</string>
+    <plurals name="perfil_consentimientos_activos">
+        <item quantity="one">%1$d active</item>
+        <item quantity="other">%1$d active</item>
+    </plurals>
+    <string name="perfil_descargar_datos">Download my data</string>
+    <string name="perfil_idioma">Language</string>
+    <string name="perfil_notificaciones">Notifications</string>
+    <string name="perfil_sincronizacion">Sync</string>
+    <string name="perfil_cerrar_sesion">Sign out</string>
+    <string name="perfil_version">Solventa %1$s</string>
+    <string name="perfil_en_espera_descripcion">%1$s, coming soon</string>
 </resources>

@@ -338,4 +338,31 @@
     <string name="auditoria_detalle_fuente">%1$s: %2$s (%3$s)</string>
     <string name="auditoria_detalle_revocar">Revocar consentimiento</string>
     <string name="auditoria_detalle_no_disponible">Este consentimiento ya no está disponible.</string>
+
+    <!-- M19 · Perfil (HU-M1.3-01, frame 1376:3396, D-7 e). Las filas sin servicio dicen «Próximamente» -->
+    <string name="perfil_titulo">Perfil</string>
+    <string name="perfil_seccion_cuenta">Cuenta</string>
+    <string name="perfil_seccion_seguridad">Seguridad</string>
+    <string name="perfil_seccion_privacidad">Privacidad</string>
+    <string name="perfil_seccion_preferencias">Preferencias</string>
+    <string name="perfil_datos_personales">Datos personales</string>
+    <string name="perfil_medios_de_pago">Medios de pago</string>
+    <string name="perfil_biometria">Iniciar sesión con huella o rostro</string>
+    <string name="perfil_biometria_no_disponible">No disponible en este dispositivo</string>
+    <string name="perfil_cambiar_contrasena">Cambiar contraseña</string>
+    <string name="perfil_cierre_automatico">Cierre automático de sesión</string>
+    <string name="perfil_cierre_minutos">%1$d min</string>
+    <string name="perfil_privacidad_consentimientos">Privacidad y consentimientos</string>
+    <plurals name="perfil_consentimientos_activos">
+        <item quantity="one">%1$d activo</item>
+        <item quantity="many">%1$d activos</item>
+        <item quantity="other">%1$d activos</item>
+    </plurals>
+    <string name="perfil_descargar_datos">Descargar mis datos</string>
+    <string name="perfil_idioma">Idioma</string>
+    <string name="perfil_notificaciones">Notificaciones</string>
+    <string name="perfil_sincronizacion">Sincronización</string>
+    <string name="perfil_cerrar_sesion">Cerrar sesión</string>
+    <string name="perfil_version">Solventa %1$s</string>
+    <string name="perfil_en_espera_descripcion">%1$s, próximamente</string>
 </resources>
