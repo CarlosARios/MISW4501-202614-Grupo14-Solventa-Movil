@@ -291,4 +291,13 @@
     <string name="auditoria_consentimientos_finalidad_perfil_y_oferta">Risk profile and insurance offer calculation</string>
     <string name="auditoria_consentimientos_canal_aliado">partner journey</string>
     <string name="auditoria_consentimientos_canal_movil">mobile app</string>
+
+    <!-- Bottom bar (HU-M1.3-01, frame 55:3017). Policies and Claims wait for their screen -->
+    <string name="comun_proximamente">Coming soon</string>
+    <string name="navegacion_pestana_inicio">Home</string>
+    <string name="navegacion_pestana_polizas">Policies</string>
+    <string name="navegacion_pestana_siniestros">Claims</string>
+    <string name="navegacion_pestana_perfil">Profile</string>
+    <string name="navegacion_pestana_polizas_en_espera">Policies, coming soon</string>
+    <string name="navegacion_pestana_siniestros_en_espera">Claims, coming soon</string>
 </resources>

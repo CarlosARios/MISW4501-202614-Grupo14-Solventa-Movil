@@ -296,4 +296,13 @@
     <string name="auditoria_consentimientos_finalidad_perfil_y_oferta">Cálculo del perfil de riesgo y de la oferta de seguro</string>
     <string name="auditoria_consentimientos_canal_aliado">recorrido del aliado</string>
     <string name="auditoria_consentimientos_canal_movil">app móvil</string>
+
+    <!-- Barra inferior (HU-M1.3-01, frame 55:3017). Pólizas y Siniestros esperan su pantalla -->
+    <string name="comun_proximamente">Próximamente</string>
+    <string name="navegacion_pestana_inicio">Inicio</string>
+    <string name="navegacion_pestana_polizas">Pólizas</string>
+    <string name="navegacion_pestana_siniestros">Siniestros</string>
+    <string name="navegacion_pestana_perfil">Perfil</string>
+    <string name="navegacion_pestana_polizas_en_espera">Pólizas, próximamente</string>
+    <string name="navegacion_pestana_siniestros_en_espera">Siniestros, próximamente</string>
 </resources>

@@ -69,4 +69,16 @@ sealed interface Ruta {
     /** M11e · Radicado generado. Cierra el flujo de la radicación. */
     @Serializable
     data object RadicacionRadicado : Ruta
+
+    /** M19 · Perfil, pestaña de la barra inferior (HU-M1.3-01). */
+    @Serializable
+    data object Perfil : Ruta
+
+    /** M8 · Privacidad y consentimientos (HU-M1.3-01). */
+    @Serializable
+    data object Consentimientos : Ruta
+
+    /** M8b · Detalle de un consentimiento (HU-M1.3-01). */
+    @Serializable
+    data class DetalleConsentimiento(val id: String) : Ruta
 }

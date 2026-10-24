@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Persona, pestaña Perfil y Datos personales (user de Lucide, trazo de 2).
+     El color lo pone Icon(tint = ...). HU-M1.3-01. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M19,21 L19,19 A4,4 0 0 0 15,15 L9,15 A4,4 0 0 0 5,19 L5,21"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,3 A4,4 0 1 0 12,11 A4,4 0 1 0 12,3 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>
