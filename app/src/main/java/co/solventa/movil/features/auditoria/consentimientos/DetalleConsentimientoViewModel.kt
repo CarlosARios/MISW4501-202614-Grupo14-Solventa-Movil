@@ -7,12 +7,15 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
  * El detalle de un consentimiento (HU-M1.3-01, criterio 2). Se lee de la copia
  * local, asi que tambien sirve sin conexion; es de solo lectura (criterio 4).
+ * Sigue ademas la conexion, para que el ultimo paso del historial diga si lo
+ * que se ve esta sincronizado (frame 37:1418).
  */
 @HiltViewModel
 class DetalleConsentimientoViewModel internal constructor(
@@ -33,13 +36,14 @@ class DetalleConsentimientoViewModel internal constructor(
         // nombre de la propiedad.
         val id = estadoGuardado.get<String>(ARGUMENTO_ID).orEmpty()
         viewModelScope.launch {
-            repositorio.observarUno(id).collect { consentimiento ->
-                _estado.value = DetalleConsentimientoUiState(
+            combine(repositorio.observarUno(id), repositorio.conectado) { consentimiento, conectado ->
+                DetalleConsentimientoUiState(
                     cargando = false,
                     consentimiento = consentimiento?.visibleEn(reloj()),
                     noDisponible = consentimiento == null,
+                    sinConexion = !conectado,
                 )
-            }
+            }.collect { _estado.value = it }
         }
     }
 

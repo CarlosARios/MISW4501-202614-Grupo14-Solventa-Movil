@@ -1,13 +1,18 @@
 package co.solventa.movil.features.auditoria.consentimientos
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -19,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +33,7 @@ import co.solventa.movil.core.i18n.FormatoDeFecha
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.core.i18n.IdiomaViewModel
 import co.solventa.movil.shared.ui.BotonSolventa
+import co.solventa.movil.shared.ui.CirculoConIcono
 import co.solventa.movil.shared.ui.PantallaRegistro
 import co.solventa.movil.shared.ui.TarjetaSolventa
 import co.solventa.movil.shared.ui.TipoBoton
@@ -85,7 +92,7 @@ fun ContenidoDetalleConsentimiento(
             else -> {
                 Cabecera(c)
                 Campos(c, idioma)
-                Historial(c, idioma)
+                Historial(c, estado.pasoFinal, idioma)
             }
         }
     }
@@ -180,22 +187,28 @@ private fun Campo(rotulo: String, valor: String) {
     }
 }
 
+/**
+ * El historial como linea de tiempo (frame 37:1418): un circulo relleno con
+ * visto por cada hecho ocurrido, unidos por una linea vertical, y al final,
+ * si el estado actual no es ya el ultimo hecho, un paso con circulo de
+ * contorno y su numero ([PasoFinalDelHistorial]).
+ */
 @Composable
-private fun Historial(c: Consentimiento, idioma: Idioma) {
+private fun Historial(c: Consentimiento, pasoFinal: PasoFinalDelHistorial?, idioma: Idioma) {
     Rotulo(stringResource(R.string.auditoria_detalle_historial))
     TarjetaSolventa {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(Espacio.x12),
-            modifier = Modifier.padding(vertical = Espacio.x16),
-        ) {
-            c.historial.forEach { cambio -> EntradaDeHistorial(cambio, idioma) }
+        Column(modifier = Modifier.padding(vertical = Espacio.x16)) {
+            val pasos = c.historial.size + if (pasoFinal != null) 1 else 0
+            c.historial.forEachIndexed { indice, cambio ->
+                EntradaDeHistorial(cambio, idioma, conLinea = indice < pasos - 1)
+            }
+            pasoFinal?.let { PasoFinal(it, numero = pasos, idioma = idioma) }
         }
     }
 }
 
 @Composable
-private fun EntradaDeHistorial(cambio: CambioDeEstado, idioma: Idioma) {
-    val colores = LocalColoresSolventa.current
+private fun EntradaDeHistorial(cambio: CambioDeEstado, idioma: Idioma, conLinea: Boolean) {
     val estado = textoDe(EtiquetasDeConsentimiento.cambio(cambio.estado), cambio.estado)
     val cuando = listOfNotNull(
         stringResource(
@@ -206,20 +219,86 @@ private fun EntradaDeHistorial(cambio: CambioDeEstado, idioma: Idioma) {
         cambio.canal?.let { textoDe(EtiquetasDeConsentimiento.canal(it), it) },
         cambio.comprobante?.let { stringResource(R.string.auditoria_consentimientos_comprobante, it) },
     ).joinToString(" · ")
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(Espacio.x12),
-        verticalAlignment = Alignment.Top,
-        modifier = Modifier.semantics(mergeDescendants = true) { contentDescription = "$estado. $cuando" },
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(top = 6.dp)
-                .size(10.dp)
-                .background(MaterialTheme.colorScheme.primary, CircleShape),
+    PasoDeLaLinea(titulo = estado, detalle = cuando, conLinea = conLinea) {
+        CirculoConIcono(
+            icono = R.drawable.ic_check,
+            tinte = MaterialTheme.colorScheme.onPrimary,
+            fondo = MaterialTheme.colorScheme.primary,
+            descripcion = null,
+            diametro = DIAMETRO_DEL_PASO,
+            tamanoIcono = 16.dp,
         )
-        Column {
-            Text(text = estado, style = MaterialTheme.typography.titleSmall)
-            Text(text = cuando, style = MaterialTheme.typography.bodySmall, color = colores.textoSecundario)
+    }
+}
+
+@Composable
+private fun PasoFinal(paso: PasoFinalDelHistorial, numero: Int, idioma: Idioma) {
+    val (titulo, detalle) = when (paso) {
+        is PasoFinalDelHistorial.Activo -> stringResource(R.string.auditoria_consentimientos_estado_activo) to
+            stringResource(
+                if (paso.sincronizado) R.string.auditoria_detalle_paso_vigente_sincronizado else R.string.auditoria_detalle_paso_vigente,
+            )
+        is PasoFinalDelHistorial.Vencido -> stringResource(R.string.auditoria_consentimientos_estado_vencido) to
+            FormatoDeFecha.fecha(paso.vencioEn, idioma)
+    }
+    PasoDeLaLinea(titulo = titulo, detalle = detalle, conLinea = false) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(DIAMETRO_DEL_PASO)
+                .background(MaterialTheme.colorScheme.surface, CircleShape)
+                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+        ) {
+            Text(
+                text = numero.toString(),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }
+
+/**
+ * Una fila de la linea de tiempo: el circulo en una columna de 28 con la
+ * linea de 2 que baja hasta el paso siguiente, y a 12 el estado con su
+ * detalle. Se anuncia como una sola unidad para el lector de pantalla.
+ */
+@Composable
+private fun PasoDeLaLinea(titulo: String, detalle: String, conLinea: Boolean, marca: @Composable () -> Unit) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(Espacio.x12),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+            .semantics(mergeDescendants = true) { contentDescription = "$titulo. $detalle" },
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .width(DIAMETRO_DEL_PASO)
+                .fillMaxHeight(),
+        ) {
+            marca()
+            if (conLinea) {
+                Box(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .weight(1f)
+                        .background(MaterialTheme.colorScheme.primary),
+                )
+            }
+        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier
+                .weight(1f)
+                .padding(bottom = if (conLinea) Espacio.x12 else 0.dp),
+        ) {
+            Text(text = titulo, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium))
+            Text(text = detalle, style = MaterialTheme.typography.bodyMedium, color = LocalColoresSolventa.current.textoSecundario)
+        }
+    }
+}
+
+/** El circulo de cada paso del historial mide 28 en el movil (componente «Paso de flujo»). */
+private val DIAMETRO_DEL_PASO = 28.dp

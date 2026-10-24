@@ -94,7 +94,12 @@ fun AvisoSolventa(
     }
 }
 
-/** Medallón circular con un ícono, en el color que indique el estado. */
+/**
+ * Medallón circular con un ícono, en el color que indique el estado.
+ * [tamanoIcono] permite un ícono menor que 24 dp en un círculo pequeño, como
+ * el paso con visto del historial de M8b (círculo de 28, visto de 16, frame
+ * 37:1418); por omisión conserva la medida de siempre.
+ */
 @Composable
 fun CirculoConIcono(
     icono: Int,
@@ -103,6 +108,7 @@ fun CirculoConIcono(
     descripcion: String?,
     modifier: Modifier = Modifier,
     diametro: androidx.compose.ui.unit.Dp = 96.dp,
+    tamanoIcono: androidx.compose.ui.unit.Dp = max(diametro / 2, 24.dp),
 ) {
     Box(
         contentAlignment = Alignment.Center,
@@ -114,7 +120,7 @@ fun CirculoConIcono(
             painter = painterResource(icono),
             contentDescription = descripcion,
             tint = tinte,
-            modifier = Modifier.size(max(diametro / 2, 24.dp)),
+            modifier = Modifier.size(tamanoIcono),
         )
     }
 }

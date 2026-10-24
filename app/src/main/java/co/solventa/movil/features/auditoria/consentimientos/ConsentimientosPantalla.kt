@@ -80,12 +80,8 @@ fun ContenidoConsentimientos(
             null
         },
     ) {
-        Text(
-            text = stringResource(R.string.auditoria_consentimientos_intro),
-            style = MaterialTheme.typography.bodyMedium,
-            color = LocalColoresSolventa.current.textoSecundario,
-        )
-
+        // Sin conexion, el aviso va justo bajo el encabezado, antes del texto
+        // introductorio (frame 38:1503).
         if (estado.sinConexion) {
             val sincronizado = estado.sincronizadoEn
             AvisoSolventa(
@@ -101,6 +97,12 @@ fun ContenidoConsentimientos(
                 },
             )
         }
+
+        Text(
+            text = stringResource(R.string.auditoria_consentimientos_intro),
+            style = MaterialTheme.typography.bodyMedium,
+            color = LocalColoresSolventa.current.textoSecundario,
+        )
 
         when {
             estado.cargando -> Cargando()
@@ -217,15 +219,32 @@ private fun TarjetaDeConsentimiento(c: Consentimiento, idioma: Idioma, onAbrir: 
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 InsigniaDeConsentimiento(c.estado)
-                c.comprobante?.let {
-                    Text(
-                        text = stringResource(R.string.auditoria_consentimientos_comprobante, it),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colores.textoSecundario,
-                    )
-                }
+                c.comprobante?.let { ComprobanteDeLaTarjeta(it) }
             }
         }
+    }
+}
+
+/**
+ * El comprobante de un revocado (frame 37:1233): icono de comprobante de 16
+ * y, a 8 de el, «Comprobante REV-…». El icono se describe para el lector de
+ * pantalla como el comprobante de la revocacion.
+ */
+@Composable
+private fun ComprobanteDeLaTarjeta(comprobante: String) {
+    val colores = LocalColoresSolventa.current
+    Row(horizontalArrangement = Arrangement.spacedBy(Espacio.x8), verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(R.drawable.ic_comprobante),
+            contentDescription = stringResource(R.string.auditoria_detalle_comprobante),
+            tint = colores.textoSecundario,
+            modifier = Modifier.size(16.dp),
+        )
+        Text(
+            text = stringResource(R.string.auditoria_consentimientos_comprobante, comprobante),
+            style = MaterialTheme.typography.bodySmall,
+            color = colores.textoSecundario,
+        )
     }
 }
 

@@ -76,6 +76,39 @@ class DetalleConsentimientoViewModelTest {
     }
 
     @Test
+    fun `el ultimo paso del historial de un activo sigue la conexion`() = runTest(despachador) {
+        val repositorio = RepositorioFalso(CopiaDeConsentimientos(listOf(consentimiento("cns-1")), AHORA, sinConexion = false))
+
+        val vm = vm("cns-1", repositorio)
+        testScheduler.advanceUntilIdle()
+        assertFalse(vm.estado.value.sinConexion)
+        assertEquals(PasoFinalDelHistorial.Activo(sincronizado = true), vm.estado.value.pasoFinal)
+
+        repositorio.red.value = false
+        testScheduler.advanceUntilIdle()
+        assertTrue(vm.estado.value.sinConexion)
+        assertEquals(PasoFinalDelHistorial.Activo(sincronizado = false), vm.estado.value.pasoFinal)
+
+        repositorio.red.value = true
+        testScheduler.advanceUntilIdle()
+        assertEquals(PasoFinalDelHistorial.Activo(sincronizado = true), vm.estado.value.pasoFinal)
+        assertEquals("seguir la conexion no pide nada a la red", 0, repositorio.actualizaciones)
+    }
+
+    @Test
+    fun `un activo que vencio desde la ultima copia termina en su vencimiento, sin paso final`() = runTest(despachador) {
+        val repositorio = RepositorioFalso(
+            CopiaDeConsentimientos(listOf(consentimiento("vencido-en-la-copia", venceEn = AHORA - 1)), AHORA, sinConexion = false),
+        )
+
+        val vm = vm("vencido-en-la-copia", repositorio)
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(CambiosDeEstado.VENCIDO, vm.estado.value.consentimiento?.historial?.last()?.estado)
+        assertNull(vm.estado.value.pasoFinal)
+    }
+
+    @Test
     fun `un consentimiento que ya no esta en la copia no esta disponible`() = runTest(despachador) {
         val vm = vm("cns-borrado", RepositorioFalso())
         testScheduler.advanceUntilIdle()
@@ -83,5 +116,6 @@ class DetalleConsentimientoViewModelTest {
         assertTrue(vm.estado.value.noDisponible)
         assertNull(vm.estado.value.consentimiento)
         assertFalse(vm.estado.value.revocarVisible)
+        assertNull(vm.estado.value.pasoFinal)
     }
 }

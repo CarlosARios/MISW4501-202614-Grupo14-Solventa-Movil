@@ -2,12 +2,14 @@ package co.solventa.movil.features.auditoria.consentimientos
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
@@ -16,13 +18,15 @@ import co.solventa.movil.core.i18n.FormatoDeFecha
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.ui.theme.SolventaTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
 /**
  * M8b · Detalle del consentimiento (HU-M1.3-01): los campos del criterio 2,
- * el historial, la revocacion con su comprobante y el boton Revocar presente
- * y deshabilitado solo en un activo (D-8 b).
+ * el historial como linea de tiempo (frame 37:1418) con su paso final, la
+ * revocacion con su comprobante y el boton Revocar presente y deshabilitado
+ * solo en un activo (D-8 b).
  */
 class DetalleConsentimientoPantallaTest {
 
@@ -33,7 +37,7 @@ class DetalleConsentimientoPantallaTest {
 
     private fun texto(id: Int, vararg args: Any) = contexto.getString(id, *args)
 
-    private fun montar(consentimiento: Consentimiento?, cargando: Boolean = false) {
+    private fun montar(consentimiento: Consentimiento?, cargando: Boolean = false, sinConexion: Boolean = false) {
         composicion.setContent {
             SolventaTheme {
                 ContenidoDetalleConsentimiento(
@@ -41,6 +45,7 @@ class DetalleConsentimientoPantallaTest {
                         cargando = cargando,
                         consentimiento = consentimiento,
                         noDisponible = consentimiento == null && !cargando,
+                        sinConexion = sinConexion,
                     ),
                     idioma = Idioma.ESPANOL,
                     onAtras = {},
@@ -59,7 +64,9 @@ class DetalleConsentimientoPantallaTest {
 
         composicion.onNodeWithText("Banco Aliado").assertIsDisplayed()
         composicion.onNodeWithText("cns-activo").assertIsDisplayed()
-        composicion.onNodeWithText(texto(R.string.auditoria_consentimientos_estado_activo)).assertIsDisplayed()
+        // «Activo» esta en la insignia de la cabecera y en el ultimo paso del historial.
+        assertEquals(2, composicion.onAllNodesWithText(texto(R.string.auditoria_consentimientos_estado_activo)).fetchSemanticsNodes().size)
+        composicion.onAllNodesWithText(texto(R.string.auditoria_consentimientos_estado_activo)).onFirst().assertIsDisplayed()
         // La fecha, la hora y el canal salen en el campo Otorgado y en la
         // primera entrada del historial.
         val otorgadoTexto = texto(
@@ -129,6 +136,81 @@ class DetalleConsentimientoPantallaTest {
         montar(DatosDePantalla.activo)
 
         assertEquals(0, composicion.onAllNodes(hasSetTextAction()).fetchSemanticsNodes().size)
+    }
+
+    /** La parte de arriba de un paso de la linea de tiempo, buscado por su descripcion. */
+    private fun arribaDe(descripcion: String, substring: Boolean = false) =
+        composicion.onNode(hasContentDescription(descripcion, substring = substring)).performScrollTo()
+            .getUnclippedBoundsInRoot().top
+
+    private fun pasoNumerado(numero: Int) =
+        composicion.onAllNodes(hasText(numero.toString()), useUnmergedTree = true).fetchSemanticsNodes().size
+
+    @Test
+    fun el_activo_termina_en_el_paso_activo_vigente_y_sincronizado() {
+        montar(DatosDePantalla.activo)
+        val otorgado = texto(R.string.auditoria_consentimientos_historial_otorgado) + ". "
+        val activo = texto(R.string.auditoria_consentimientos_estado_activo) + ". " +
+            texto(R.string.auditoria_detalle_paso_vigente_sincronizado)
+
+        composicion.onNodeWithContentDescription(activo).performScrollTo().assertIsDisplayed()
+        // El paso final lleva su numero: el segundo, despues del otorgamiento.
+        assertEquals(1, pasoNumerado(2))
+        assertTrue("Otorgado va antes que Activo", arribaDe(otorgado, substring = true) < arribaDe(activo))
+    }
+
+    @Test
+    fun sin_conexion_el_paso_activo_dice_solo_vigente() {
+        montar(DatosDePantalla.activo, sinConexion = true)
+        val activo = texto(R.string.auditoria_consentimientos_estado_activo) + ". " + texto(R.string.auditoria_detalle_paso_vigente)
+
+        composicion.onNodeWithContentDescription(activo).performScrollTo().assertIsDisplayed()
+        assertEquals(
+            0,
+            composicion.onAllNodes(hasText(texto(R.string.auditoria_detalle_paso_vigente_sincronizado))).fetchSemanticsNodes().size,
+        )
+    }
+
+    @Test
+    fun el_revocado_termina_en_su_revocacion_sin_paso_final() {
+        montar(DatosDePantalla.revocado)
+        val otorgado = texto(R.string.auditoria_consentimientos_historial_otorgado) + ". "
+        val revocado = texto(R.string.auditoria_consentimientos_historial_revocado) + ". "
+
+        assertTrue("Otorgado va antes que Revocado", arribaDe(otorgado, substring = true) < arribaDe(revocado, substring = true))
+        assertEquals("sin paso numerado", 0, pasoNumerado(3))
+        assertEquals(
+            0,
+            composicion.onAllNodes(
+                hasContentDescription(texto(R.string.auditoria_consentimientos_estado_activo) + ". ", substring = true),
+            ).fetchSemanticsNodes().size,
+        )
+    }
+
+    @Test
+    fun el_vencido_que_termina_en_su_vencimiento_no_agrega_paso() {
+        montar(DatosDePantalla.vencido)
+
+        composicion.onNode(hasContentDescription(texto(R.string.auditoria_consentimientos_historial_vencido) + ". ", substring = true))
+            .performScrollTo().assertIsDisplayed()
+        assertEquals("sin paso numerado", 0, pasoNumerado(3))
+    }
+
+    @Test
+    fun el_vencido_con_una_revocacion_posterior_termina_en_el_paso_vencido() {
+        val revocadoDespues = DatosDePantalla.VENCE + 3_600_000L
+        montar(
+            DatosDePantalla.vencido.copy(
+                historial = DatosDePantalla.vencido.historial +
+                    CambioDeEstado(CambiosDeEstado.REVOCADO, revocadoDespues, "REV-2027-0001", "mobile", null),
+            ),
+        )
+        val revocado = texto(R.string.auditoria_consentimientos_historial_revocado) + ". "
+        val vencido = texto(R.string.auditoria_consentimientos_estado_vencido) + ". " + fecha(DatosDePantalla.VENCE)
+
+        composicion.onNodeWithContentDescription(vencido).performScrollTo().assertIsDisplayed()
+        assertEquals(1, pasoNumerado(4))
+        assertTrue("la revocacion va antes que el paso final", arribaDe(revocado, substring = true) < arribaDe(vencido))
     }
 
     @Test

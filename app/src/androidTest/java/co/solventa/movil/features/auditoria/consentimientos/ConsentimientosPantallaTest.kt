@@ -1,6 +1,7 @@
 package co.solventa.movil.features.auditoria.consentimientos
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
@@ -16,6 +17,7 @@ import co.solventa.movil.core.i18n.FormatoDeFecha
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.ui.theme.SolventaTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -87,6 +89,35 @@ class ConsentimientosPantallaTest {
         composicion.onNodeWithText(texto(R.string.auditoria_consentimientos_comprobante, "REV-2026-0012"))
             .performScrollTo().assertIsDisplayed()
         composicion.onNodeWithText(texto(R.string.auditoria_consentimientos_estado_vencido)).performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun el_comprobante_lleva_su_icono_descrito_para_el_lector_de_pantalla() {
+        montar(conContenido())
+
+        // Solo el revocado tiene comprobante (frame 37:1233).
+        val iconos = composicion.onAllNodes(
+            hasContentDescription(texto(R.string.auditoria_detalle_comprobante)),
+            useUnmergedTree = true,
+        )
+        assertEquals(1, iconos.fetchSemanticsNodes().size)
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_detalle_comprobante), useUnmergedTree = true)
+            .performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun sin_conexion_el_aviso_va_antes_del_texto_introductorio() {
+        montar(conContenido().copy(sinConexion = true, sincronizadoEn = DatosDePantalla.SINCRONIZADO))
+        val aviso = texto(
+            R.string.auditoria_consentimientos_sin_conexion,
+            FormatoDeFecha.fecha(DatosDePantalla.SINCRONIZADO, Idioma.ESPANOL),
+            FormatoDeFecha.hora(DatosDePantalla.SINCRONIZADO, Idioma.ESPANOL),
+        )
+
+        val arribaDelAviso = composicion.onNodeWithContentDescription(aviso).getUnclippedBoundsInRoot().top
+        val arribaDeLaIntro = composicion.onNodeWithText(texto(R.string.auditoria_consentimientos_intro))
+            .getUnclippedBoundsInRoot().top
+        assertTrue("el aviso va justo bajo el encabezado (frame 38:1503)", arribaDelAviso < arribaDeLaIntro)
     }
 
     @Test
