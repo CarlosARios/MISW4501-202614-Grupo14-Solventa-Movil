@@ -40,6 +40,7 @@ object RedModule {
         .addInterceptor(autenticacion)
         .connectTimeout(TIEMPO_DE_CONEXION_S, TimeUnit.SECONDS)
         .readTimeout(TIEMPO_DE_LECTURA_S, TimeUnit.SECONDS)
+        .writeTimeout(TIEMPO_DE_ESCRITURA_S, TimeUnit.SECONDS)
         .build()
 
     /**
@@ -50,4 +51,11 @@ object RedModule {
      */
     private const val TIEMPO_DE_CONEXION_S = 10L
     private const val TIEMPO_DE_LECTURA_S = 30L
+
+    /**
+     * El registro envía las dos caras del documento (HU-M1.1-01), que es el
+     * único cuerpo grande del canal. Con el valor por omisión de OkHttp, diez
+     * segundos, una red móvil lenta corta la subida a medias.
+     */
+    private const val TIEMPO_DE_ESCRITURA_S = 30L
 }

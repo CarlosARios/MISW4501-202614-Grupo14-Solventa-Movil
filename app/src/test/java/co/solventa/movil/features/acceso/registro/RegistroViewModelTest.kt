@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import co.solventa.movil.core.auth.sesion.ResultadoIngreso
 import co.solventa.movil.core.auth.sesion.Sesion
 import co.solventa.movil.core.auth.sesion.SesionRepositorio
+import co.solventa.movil.core.imagen.PreparadorDeCaptura
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +36,7 @@ class RegistroViewModelTest {
     private lateinit var kyc: KycFalso
     private lateinit var registro: RegistroFalso
     private lateinit var sesion: SesionFalsa
+    private lateinit var capturas: CapturasFalsas
 
     @Before
     fun antes() {
@@ -42,6 +44,7 @@ class RegistroViewModelTest {
         kyc = KycFalso()
         registro = RegistroFalso()
         sesion = SesionFalsa()
+        capturas = CapturasFalsas()
     }
 
     @After
@@ -50,7 +53,7 @@ class RegistroViewModelTest {
     }
 
     private fun crearViewModel() =
-        RegistroViewModel(kyc, registro, GeneradorDeDatosDeDemostracion(), sesion)
+        RegistroViewModel(kyc, registro, GeneradorDeDatosDeDemostracion(), sesion, capturas)
 
     // Criterio 1 — guiar la captura del frente y del reverso y confirmar los
     // datos antes de enviarlos.
@@ -386,6 +389,110 @@ class RegistroViewModelTest {
         assertNotEquals(primeros, viewModel.estado.value.datos)
     }
 
+    // Las dos capturas llegan al repositorio: son parte de la petición del
+    // registro, no un adjunto que se envía aparte.
+    @Test
+    fun `las dos caras capturadas llegan al repositorio`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        prepararParaRegistrar(viewModel)
+
+        viewModel.registrar()
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(
+                ImagenDocumento(CaraDocumento.FRENTE, "/tmp/frente.jpg"),
+                ImagenDocumento(CaraDocumento.REVERSO, "/tmp/reverso.jpg"),
+            ),
+            registro.carasEnviadas,
+        )
+    }
+
+    // Criterio 3: un documento que no se pudo leer informa el resultado sin el
+    // motivo técnico y deja la referencia con la que soporte lo encuentra.
+    @Test
+    fun `un documento ilegible lleva a la verificacion no superada`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        prepararParaRegistrar(viewModel)
+
+        viewModel.registrar()
+        registro.resultado.complete(ResultadoRegistro.DocumentoNoLegible("abc-123"))
+        advanceUntilIdle()
+
+        assertEquals(
+            EstadoVerificacion.NoSuperada("abc-123"),
+            viewModel.estado.value.verificacion,
+        )
+        assertFalse(viewModel.estado.value.cuentaActiva)
+        assertNull("no se abre sesión", sesion.correo)
+    }
+
+    // Las fotos del documento no se quedan en el teléfono más de lo necesario.
+
+    @Test
+    fun `una captura rechazada por calidad se borra del telefono`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        kyc.resultado = ResultadoCaptura.CalidadInsuficiente(ProblemaCalidad.IMAGEN_BORROSA)
+
+        viewModel.capturar(ImagenDocumento(CaraDocumento.FRENTE, "/tmp/borrosa.jpg"))
+        advanceUntilIdle()
+
+        assertEquals(listOf("/tmp/borrosa.jpg"), capturas.borrados)
+    }
+
+    @Test
+    fun `volver a tomar una cara borra la foto que reemplaza`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+
+        viewModel.capturar(ImagenDocumento(CaraDocumento.FRENTE, "/tmp/frente-1.jpg"))
+        advanceUntilIdle()
+        viewModel.capturar(ImagenDocumento(CaraDocumento.FRENTE, "/tmp/frente-2.jpg"))
+        advanceUntilIdle()
+
+        assertEquals(listOf("/tmp/frente-1.jpg"), capturas.borrados)
+        assertEquals(
+            "la que queda es la última",
+            "/tmp/frente-2.jpg",
+            viewModel.estado.value.frente?.rutaArchivo,
+        )
+    }
+
+    @Test
+    fun `las capturas se borran cuando el registro queda`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        prepararParaRegistrar(viewModel)
+
+        viewModel.registrar()
+        registro.resultado.complete(ResultadoRegistro.Exitoso("sub-1"))
+        advanceUntilIdle()
+
+        assertEquals(listOf("/tmp/frente.jpg", "/tmp/reverso.jpg"), capturas.borrados)
+    }
+
+    /** Mientras el registro no quede, las capturas se conservan: hay reintento. */
+    @Test
+    fun `una falla del servicio conserva las capturas`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        prepararParaRegistrar(viewModel)
+
+        viewModel.registrar()
+        registro.resultado.complete(ResultadoRegistro.NoDisponible("abc-123"))
+        advanceUntilIdle()
+
+        assertTrue(capturas.borrados.isEmpty())
+    }
+
+    @Test
+    fun `reiniciar borra las capturas que quedaban`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        capturarAmbasCaras(viewModel)
+
+        viewModel.reiniciar()
+        advanceUntilIdle()
+
+        assertEquals(listOf("/tmp/frente.jpg", "/tmp/reverso.jpg"), capturas.borrados)
+    }
+
     private suspend fun kotlinx.coroutines.test.TestScope.capturarAmbasCaras(
         viewModel: RegistroViewModel,
     ) {
@@ -429,11 +536,33 @@ private class RegistroFalso : RegistroRepositorio {
         private set
     var contrasenaEnviada: String? = null
         private set
+    var carasEnviadas: List<ImagenDocumento> = emptyList()
+        private set
 
-    override suspend fun registrar(datos: DatosDocumento, contrasena: String): ResultadoRegistro {
+    override suspend fun registrar(
+        datos: DatosDocumento,
+        contrasena: String,
+        frente: ImagenDocumento,
+        reverso: ImagenDocumento,
+    ): ResultadoRegistro {
         datosEnviados = datos
         contrasenaEnviada = contrasena
+        carasEnviadas = listOf(frente, reverso)
         return resultado.await()
+    }
+}
+
+/**
+ * Doble de las capturas: aquí solo interesa qué archivos se mandaron a borrar.
+ * El base64 lo produce el preparador de verdad, en el dispositivo.
+ */
+private class CapturasFalsas : PreparadorDeCaptura {
+    val borrados = mutableListOf<String>()
+
+    override suspend fun aBase64(rutaArchivo: String): String = "base64"
+
+    override suspend fun descartar(rutaArchivo: String) {
+        borrados += rutaArchivo
     }
 }
 

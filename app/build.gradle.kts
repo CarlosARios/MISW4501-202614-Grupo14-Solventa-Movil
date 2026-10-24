@@ -198,6 +198,12 @@ kover {
                     // pueden ejercer sin dispositivo. Lo que sí se prueba es
                     // la aritmética del medidor de luz, que queda fuera de
                     // esta lista a propósito.
+                    // Reduce la captura con Bitmap y BitmapFactory, que no
+                    // existen fuera del dispositivo. Lo que sí se prueba en la
+                    // JVM es el repositorio del registro, que lo usa detrás de
+                    // su interfaz, y la verificación de la imagen reducida se
+                    // hace en el teléfono.
+                    "co.solventa.movil.core.imagen.PreparadorDeCapturaJpeg",
                     "co.solventa.movil.shared.ui.camara.ControladorDeCamara",
                     "co.solventa.movil.shared.ui.camara.CamaraDeDocumento",
                     "co.solventa.movil.shared.ui.camara.VistaPreviaDeCamaraKt",

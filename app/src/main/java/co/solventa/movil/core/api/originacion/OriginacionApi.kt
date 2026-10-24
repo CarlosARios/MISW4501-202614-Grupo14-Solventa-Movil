@@ -36,6 +36,10 @@ interface OriginacionApi {
 /**
  * Cuerpo del registro. La contraseña viaja al *user pool* y no se almacena
  * en ninguna base, ni aquí ni en el servicio.
+ *
+ * Las dos caras del documento van en el mismo cuerpo, en base64: así un
+ * `201` significa que el cliente, la cuenta y el documento quedaron, sin
+ * estados a medias entre dos llamadas.
  */
 @Serializable
 data class SolicitudDeRegistro(
@@ -44,6 +48,8 @@ data class SolicitudDeRegistro(
     @SerialName("email") val correo: String,
     @SerialName("birth_date") val fechaNacimiento: String,
     @SerialName("password") val contrasena: String,
+    @SerialName("document_front") val frenteDelDocumento: String,
+    @SerialName("document_back") val reversoDelDocumento: String,
 )
 
 /** Solo lo que la aplicación usa; el resto del `201` se ignora. */
