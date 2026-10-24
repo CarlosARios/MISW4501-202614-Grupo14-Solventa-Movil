@@ -51,8 +51,40 @@ M1a y M1b usan la cámara de verdad (CameraX). El permiso se pide en caliente y 
 | M10 | Detalle del siniestro · línea de tiempo | `features/siniestros/seguimiento` | M2.4-01 | Should | Completa. Misma línea de tiempo que la web (A8) |
 | M10b | Siniestro paramétrico resuelto automáticamente | `features/siniestros/seguimiento` | M3.1-01 | **Must** | Completa. Parámetro, umbral, valor observado y clave de idempotencia — HA-D02 |
 | M10c | Detalle del siniestro sin conexión | `features/siniestros/seguimiento` | M2.4-02 | Could | Completa |
-| M11a | Reportar un siniestro · paso 1 | `features/siniestros/radicacion` | — | — | Completa |
-| M12 | Cámara | `features/siniestros/radicacion` | — | — | Completa |
+
+## Radicación del siniestro
+
+Las cuatro etapas del asistente guiado, su confirmación y los dos estados que el prototipo dibuja aparte.
+
+| Frame | Pantalla | Paquete | Historia | Prioridad | Estado del prototipo |
+|---|---|---|---|---|---|
+| [M11a](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-1925) | Paso 1 · Identificación | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | Completa |
+| [M11b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2072) | Paso 2 · Hechos | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | Completa. Las preguntas del tipo elegido salen aquí |
+| [M11c](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2208) | Paso 3 · Evidencias | `features/siniestros/radicacion` | HU-M2.2-01 · **HU-M2.1-01** | **Must** | Completa. La etapa es del asistente; lo que se captura es de HU-M2.1-01 |
+| [M11d](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2397) | Paso 4 · Declaración | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | Completa |
+| [M11d2](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=701-13532) | Declaración confirmada | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | **Es un estado de M11d**, con la casilla marcada |
+| [M11e](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2510) | Radicado generado | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | Completa. El código único y el resumen del caso |
+| [M11f](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2568) | Avanzar deshabilitado por faltantes | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | **Es un estado del paso 3**: el mínimo de fotos lo pone HU-M2.1-01 |
+| [M13b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=51-2519) | Continuar borrador al reabrir | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | La **hoja inferior** es de esta historia; la lista del fondo es de M2.4-01 |
+| [M12](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2222) | Cámara · captura de evidencia | `features/siniestros/radicacion` | HU-M2.1-01 | **Must** | Completa |
+| [M12b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2293) | Permisos de cámara y ubicación | `features/siniestros/radicacion` | HU-M2.1-01 | **Must** | Completa |
+| [M12c](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2413) | Precisión del GPS insuficiente | `features/siniestros/radicacion` | HU-M2.1-01 | **Must** | Completa |
+
+Recorrido: **M3 → M11a → M11b → M11c → M11d → M11e → M3**. Desvíos: al reabrir con un reporte sin terminar, la hoja
+de M13b ofrece retomarlo en su etapa; un dato que el servicio rechaza devuelve a la etapa donde se corrige.
+
+Tres diferencias con el prototipo, todas por historias que aún no existen:
+
+- **La hoja «Tienes un reporte sin terminar» aparece al abrir el asistente**, no sobre *Mis siniestros*: esa lista es
+  de HU-M2.4-01. El contenido es el del frame.
+- **El paso 3 no exige evidencia todavía.** La cuadrícula se muestra sin acción y con un aviso; el mínimo por tipo y
+  el estado de M11f se activan con HU-M2.1-01.
+- **El selector de pólizas lee una lista local** con la póliza del prototipo, hasta que `GET /v1/policies` esté en
+  `develop` (HU-M1.2-01).
+
+Y dos textos que el prototipo no define y hubo que escribir: las preguntas de **hurto**, **daños por terceros** y
+**otro** —M11b solo dibuja las de colisión— y las etiquetas de los campos del paso 2, que viven dentro de instancias
+del componente `Campo` y no se leen desde fuera.
 
 ## Asistencia en sitio
 
