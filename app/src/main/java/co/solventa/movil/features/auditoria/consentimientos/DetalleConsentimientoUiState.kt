@@ -41,14 +41,16 @@ sealed interface PasoFinalDelHistorial {
 /**
  * El paso final sale del estado visible que ya deriva la aplicacion, sin
  * inventar nada: un activo siempre lo tiene (no hay un hecho «activo» en el
- * historial); un vencido, solo si su ultimo hecho no es ya el vencimiento (por
- * ejemplo, una revocacion registrada despues de vencer, que no cambia el
- * estado); un revocado termina en su revocacion y no lleva paso.
+ * historial); un vencido, solo si su historial no trae ya el vencimiento en
+ * ningun punto, porque repetirlo despues de un hecho posterior (por ejemplo,
+ * una revocacion registrada despues de vencer, que no cambia el estado) lo
+ * dejaria duplicado y fuera de orden; un revocado termina en su revocacion y
+ * no lleva paso.
  */
 fun pasoFinalDelHistorial(c: Consentimiento, sinConexion: Boolean): PasoFinalDelHistorial? = when (c.estado) {
     EstadosDeConsentimiento.ACTIVO -> PasoFinalDelHistorial.Activo(sincronizado = !sinConexion)
     EstadosDeConsentimiento.VENCIDO ->
-        if (c.historial.lastOrNull()?.estado == CambiosDeEstado.VENCIDO) {
+        if (c.historial.any { it.estado == CambiosDeEstado.VENCIDO }) {
             null
         } else {
             PasoFinalDelHistorial.Vencido(vencioEn = c.finalizadoEn ?: c.venceEn)

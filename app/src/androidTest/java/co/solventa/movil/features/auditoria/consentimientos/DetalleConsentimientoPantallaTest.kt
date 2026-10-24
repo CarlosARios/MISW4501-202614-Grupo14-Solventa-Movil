@@ -197,7 +197,7 @@ class DetalleConsentimientoPantallaTest {
     }
 
     @Test
-    fun el_vencido_con_una_revocacion_posterior_termina_en_el_paso_vencido() {
+    fun el_vencido_con_una_revocacion_posterior_no_repite_el_vencimiento() {
         val revocadoDespues = DatosDePantalla.VENCE + 3_600_000L
         montar(
             DatosDePantalla.vencido.copy(
@@ -205,12 +205,19 @@ class DetalleConsentimientoPantallaTest {
                     CambioDeEstado(CambiosDeEstado.REVOCADO, revocadoDespues, "REV-2027-0001", "mobile", null),
             ),
         )
+        val vencio = texto(R.string.auditoria_consentimientos_historial_vencido) + ". "
         val revocado = texto(R.string.auditoria_consentimientos_historial_revocado) + ". "
-        val vencido = texto(R.string.auditoria_consentimientos_estado_vencido) + ". " + fecha(DatosDePantalla.VENCE)
+        val pasoVencido = texto(R.string.auditoria_consentimientos_estado_vencido) + ". " + fecha(DatosDePantalla.VENCE)
 
-        composicion.onNodeWithContentDescription(vencido).performScrollTo().assertIsDisplayed()
-        assertEquals(1, pasoNumerado(4))
-        assertTrue("la revocacion va antes que el paso final", arribaDe(revocado, substring = true) < arribaDe(vencido))
+        composicion.onNode(hasContentDescription(revocado, substring = true)).performScrollTo().assertIsDisplayed()
+        assertEquals(
+            "el vencimiento aparece una sola vez",
+            1,
+            composicion.onAllNodes(hasContentDescription(vencio, substring = true)).fetchSemanticsNodes().size,
+        )
+        assertEquals("sin paso final Vencido", 0, composicion.onAllNodes(hasContentDescription(pasoVencido)).fetchSemanticsNodes().size)
+        assertEquals("sin paso numerado", 0, pasoNumerado(4))
+        assertTrue("el vencimiento va antes que la revocacion", arribaDe(vencio, substring = true) < arribaDe(revocado, substring = true))
     }
 
     @Test

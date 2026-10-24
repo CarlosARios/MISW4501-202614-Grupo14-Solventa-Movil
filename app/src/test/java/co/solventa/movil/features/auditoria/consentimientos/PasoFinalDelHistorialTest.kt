@@ -33,7 +33,7 @@ class PasoFinalDelHistorialTest {
     }
 
     @Test
-    fun `un vencido con una revocacion posterior termina en Vencido con su fecha`() {
+    fun `un vencido con una revocacion posterior no repite el vencimiento`() {
         val vencido = consentimiento("cns-1", EstadosDeConsentimiento.VENCIDO, finalizadoEn = VENCE).copy(
             historial = listOf(
                 cambio(CambiosDeEstado.OTORGADO, OTORGADO),
@@ -42,7 +42,25 @@ class PasoFinalDelHistorialTest {
             ),
         )
 
-        assertEquals(PasoFinalDelHistorial.Vencido(vencioEn = VENCE), pasoFinalDelHistorial(vencido, sinConexion = true))
+        assertNull(pasoFinalDelHistorial(vencido, sinConexion = true))
+        assertNull(pasoFinalDelHistorial(vencido, sinConexion = false))
+    }
+
+    @Test
+    fun `un vencido cuyo historial no trae el vencimiento termina en Vencido con su fecha`() {
+        val vencido = consentimiento("cns-1", EstadosDeConsentimiento.VENCIDO, finalizadoEn = VENCE).copy(
+            historial = listOf(cambio(CambiosDeEstado.OTORGADO, OTORGADO), cambio(CambiosDeEstado.REVOCADO, VENCE + 1_000L)),
+        )
+
+        assertEquals(PasoFinalDelHistorial.Vencido(vencioEn = VENCE), pasoFinalDelHistorial(vencido, sinConexion = false))
+    }
+
+    @Test
+    fun `un vencido visible en la copia ya trae el vencimiento y no agrega paso`() {
+        val vencidoEnLaCopia = consentimiento("cns-1").visibleEn(VENCE)
+
+        assertEquals(EstadosDeConsentimiento.VENCIDO, vencidoEnLaCopia.estado)
+        assertNull(pasoFinalDelHistorial(vencidoEnLaCopia, sinConexion = true))
     }
 
     @Test
