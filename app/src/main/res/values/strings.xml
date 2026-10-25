@@ -417,6 +417,8 @@
     <string name="auditoria_revocacion_aviso_ya_revocado">Este consentimiento ya estaba revocado.</string>
     <string name="auditoria_revocacion_aviso_ya_no_activo">Este consentimiento venció y ya no se puede revocar.</string>
     <string name="auditoria_revocacion_aviso_no_se_pudo">No pudimos revocar el consentimiento. Inténtalo de nuevo.</string>
+    <string name="auditoria_revocacion_aviso_huella_no_reconocida">No reconocimos la huella. El consentimiento sigue activo; puedes intentarlo de nuevo.</string>
+    <string name="auditoria_revocacion_aviso_contrasena_incorrecta">La contraseña no es correcta. El consentimiento sigue activo; puedes intentarlo de nuevo.</string>
     <string name="auditoria_revocacion_aviso_comprobante_guardado">Guardamos el comprobante.</string>
     <string name="auditoria_revocacion_aviso_comprobante_sin_conexion">Necesitas conexión para descargar el comprobante.</string>
     <string name="auditoria_revocacion_aviso_comprobante_error">No pudimos descargar el comprobante. Inténtalo de nuevo.</string>

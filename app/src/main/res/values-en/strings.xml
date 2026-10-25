@@ -411,6 +411,8 @@
     <string name="auditoria_revocacion_aviso_ya_revocado">This consent was already revoked.</string>
     <string name="auditoria_revocacion_aviso_ya_no_activo">This consent expired and can no longer be revoked.</string>
     <string name="auditoria_revocacion_aviso_no_se_pudo">We could not revoke the consent. Please try again.</string>
+    <string name="auditoria_revocacion_aviso_huella_no_reconocida">We did not recognize the fingerprint. The consent is still active; you can try again.</string>
+    <string name="auditoria_revocacion_aviso_contrasena_incorrecta">The password is not correct. The consent is still active; you can try again.</string>
     <string name="auditoria_revocacion_aviso_comprobante_guardado">We saved the receipt.</string>
     <string name="auditoria_revocacion_aviso_comprobante_sin_conexion">You need a connection to download the receipt.</string>
     <string name="auditoria_revocacion_aviso_comprobante_error">We could not download the receipt. Please try again.</string>

@@ -12,8 +12,18 @@ import javax.inject.Inject
 sealed interface ResultadoDeConfirmacion {
     data object Confirmada : ResultadoDeConfirmacion
 
-    /** Cancelo, no se reconocio o la contraseña no es la suya: nada cambia (criterio 2). */
+    /** Cancelo, o no hay con que autenticar: nada cambia (criterio 2). */
     data object NoConfirmada : ResultadoDeConfirmacion
+
+    /**
+     * La huella no coincide: nada cambia (criterio 2), pero se le dice, porque
+     * el dialogo de HU-M1.1-02 se cierra al primer intento fallido sin
+     * explicarlo.
+     */
+    data object HuellaNoReconocida : ResultadoDeConfirmacion
+
+    /** La contraseña no es la suya: nada cambia (criterio 2), pero se le dice. */
+    data object ContrasenaIncorrecta : ResultadoDeConfirmacion
 
     /** La contraseña se verifica con el proveedor de identidad y no hay red. */
     data object SinConexion : ResultadoDeConfirmacion
@@ -42,13 +52,13 @@ class ConfirmadorDeRevocacion @Inject constructor(
 
     suspend fun conBiometria(): ResultadoDeConfirmacion = when (biometria.autenticar()) {
         ResultadoBiometrico.Exito -> ResultadoDeConfirmacion.Confirmada
-        ResultadoBiometrico.NoReconocido, ResultadoBiometrico.Cancelado, ResultadoBiometrico.NoDisponible ->
-            ResultadoDeConfirmacion.NoConfirmada
+        ResultadoBiometrico.NoReconocido -> ResultadoDeConfirmacion.HuellaNoReconocida
+        ResultadoBiometrico.Cancelado, ResultadoBiometrico.NoDisponible -> ResultadoDeConfirmacion.NoConfirmada
     }
 
     suspend fun conContrasena(valor: String): ResultadoDeConfirmacion = when (contrasena.verificarContrasena(valor)) {
         VerificacionDeContrasena.Correcta -> ResultadoDeConfirmacion.Confirmada
-        VerificacionDeContrasena.Incorrecta -> ResultadoDeConfirmacion.NoConfirmada
+        VerificacionDeContrasena.Incorrecta -> ResultadoDeConfirmacion.ContrasenaIncorrecta
         VerificacionDeContrasena.SinConexion -> ResultadoDeConfirmacion.SinConexion
     }
 }

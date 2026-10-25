@@ -42,7 +42,7 @@ class ConfirmadorDeRevocacionTest {
     fun `solo una huella reconocida confirma`() = runTest {
         mapOf(
             ResultadoBiometrico.Exito to ResultadoDeConfirmacion.Confirmada,
-            ResultadoBiometrico.NoReconocido to ResultadoDeConfirmacion.NoConfirmada,
+            ResultadoBiometrico.NoReconocido to ResultadoDeConfirmacion.HuellaNoReconocida,
             ResultadoBiometrico.Cancelado to ResultadoDeConfirmacion.NoConfirmada,
             ResultadoBiometrico.NoDisponible to ResultadoDeConfirmacion.NoConfirmada,
         ).forEach { (biometrico, esperado) ->
@@ -55,7 +55,7 @@ class ConfirmadorDeRevocacionTest {
     fun `la contraseña confirma, no confirma o pide red`() = runTest {
         mapOf(
             VerificacionDeContrasena.Correcta to ResultadoDeConfirmacion.Confirmada,
-            VerificacionDeContrasena.Incorrecta to ResultadoDeConfirmacion.NoConfirmada,
+            VerificacionDeContrasena.Incorrecta to ResultadoDeConfirmacion.ContrasenaIncorrecta,
             VerificacionDeContrasena.SinConexion to ResultadoDeConfirmacion.SinConexion,
         ).forEach { (verificacion, esperado) ->
             contrasena.resultado = verificacion

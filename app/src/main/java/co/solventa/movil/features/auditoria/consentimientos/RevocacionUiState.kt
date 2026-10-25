@@ -39,6 +39,12 @@ enum class AvisoDeLaRevocacion {
     /** El servicio rechazo la revocacion por otra causa. */
     NO_SE_PUDO,
 
+    /** La huella no coincidio: el consentimiento sigue igual. */
+    HUELLA_NO_RECONOCIDA,
+
+    /** La contraseña no era la de la cuenta: el consentimiento sigue igual. */
+    CONTRASENA_INCORRECTA,
+
     /** El comprobante quedo guardado donde el titular eligio. */
     COMPROBANTE_GUARDADO,
 

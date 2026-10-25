@@ -124,23 +124,28 @@ class RevocacionViewModelTest {
     }
 
     @Test
-    fun `una huella no reconocida, cancelada o bloqueada deja el detalle como estaba`() = runTest(despachador) {
+    fun `una huella no reconocida, cancelada o bloqueada deja el detalle como estaba y solo la no reconocida lo avisa`() = runTest(despachador) {
         conCopia(consentimiento("cns-1"))
         val vm = vm()
         advanceUntilIdle()
-        listOf(ResultadoBiometrico.NoReconocido, ResultadoBiometrico.Cancelado, ResultadoBiometrico.NoDisponible).forEach {
-            biometria.resultado = it
+        mapOf(
+            ResultadoBiometrico.NoReconocido to AvisoDeLaRevocacion.HUELLA_NO_RECONOCIDA,
+            ResultadoBiometrico.Cancelado to null,
+            ResultadoBiometrico.NoDisponible to null,
+        ).forEach { (resultado, aviso) ->
+            biometria.resultado = resultado
             vm.abrirHoja()
             advanceUntilIdle()
             vm.confirmarConBiometria()
             advanceUntilIdle()
-            assertEquals(it.toString(), PasoDeRevocacion.Oculto, vm.estado.value.paso)
+            assertEquals(resultado.toString(), PasoDeRevocacion.Oculto, vm.estado.value.paso)
+            assertEquals(resultado.toString(), aviso, vm.estado.value.aviso)
         }
         assertTrue(revocaciones.revocados.isEmpty())
     }
 
     @Test
-    fun `la contraseña correcta revoca y la incorrecta vuelve al detalle sin escribir`() = runTest(despachador) {
+    fun `la contraseña correcta revoca y la incorrecta vuelve al detalle sin escribir y lo avisa`() = runTest(despachador) {
         sesion.biometria = false
         conCopia(consentimiento("cns-1"))
         val vm = vm()
@@ -152,6 +157,7 @@ class RevocacionViewModelTest {
         vm.confirmarConContrasena("claveMala123")
         advanceUntilIdle()
         assertEquals(PasoDeRevocacion.Oculto, vm.estado.value.paso)
+        assertEquals(AvisoDeLaRevocacion.CONTRASENA_INCORRECTA, vm.estado.value.aviso)
         assertTrue(revocaciones.revocados.isEmpty())
 
         contrasena.resultado = VerificacionDeContrasena.Correcta

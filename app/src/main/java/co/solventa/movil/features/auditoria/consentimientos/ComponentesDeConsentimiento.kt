@@ -137,6 +137,8 @@ internal fun AvisoDeLaRevocacionVisible(aviso: AvisoDeLaRevocacion, onCerrar: ()
         AvisoDeLaRevocacion.YA_REVOCADO -> TipoAviso.INFORMACION to R.string.auditoria_revocacion_aviso_ya_revocado
         AvisoDeLaRevocacion.YA_NO_ACTIVO -> TipoAviso.ADVERTENCIA to R.string.auditoria_revocacion_aviso_ya_no_activo
         AvisoDeLaRevocacion.NO_SE_PUDO -> TipoAviso.ERROR to R.string.auditoria_revocacion_aviso_no_se_pudo
+        AvisoDeLaRevocacion.HUELLA_NO_RECONOCIDA -> TipoAviso.ERROR to R.string.auditoria_revocacion_aviso_huella_no_reconocida
+        AvisoDeLaRevocacion.CONTRASENA_INCORRECTA -> TipoAviso.ERROR to R.string.auditoria_revocacion_aviso_contrasena_incorrecta
         AvisoDeLaRevocacion.COMPROBANTE_GUARDADO -> TipoAviso.EXITO to R.string.auditoria_revocacion_aviso_comprobante_guardado
         AvisoDeLaRevocacion.COMPROBANTE_SIN_CONEXION ->
             TipoAviso.ADVERTENCIA to R.string.auditoria_revocacion_aviso_comprobante_sin_conexion

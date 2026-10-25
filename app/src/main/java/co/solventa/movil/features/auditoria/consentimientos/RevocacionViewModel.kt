@@ -21,7 +21,8 @@ import javax.inject.Inject
  *   confirmacion con la huella o, sin biometria habilitada, la contraseña.
  * - **Criterio 2:** cancelar, una huella no reconocida o una contraseña
  *   incorrecta cierran la hoja y dejan el detalle como estaba: **no se escribe
- *   nada** en el telefono ni se llama al servicio.
+ *   nada** en el telefono ni se llama al servicio. La huella no reconocida y
+ *   la contraseña incorrecta ademas dejan un aviso que lo dice.
  * - **Criterios 3 y 5:** confirmada, el repositorio la guarda primero en la
  *   cola y la envia; responde antes de 5 s con revocado o pendiente.
  * - **Criterio 6:** la accion no existe en un revocado, vencido o pendiente.
@@ -123,6 +124,10 @@ class RevocacionViewModel internal constructor(
         when (resultado) {
             ResultadoDeConfirmacion.Confirmada -> enviar(metodo)
             ResultadoDeConfirmacion.NoConfirmada -> _estado.update { it.copy(paso = PasoDeRevocacion.Oculto) }
+            ResultadoDeConfirmacion.HuellaNoReconocida ->
+                _estado.update { it.copy(paso = PasoDeRevocacion.Oculto, aviso = AvisoDeLaRevocacion.HUELLA_NO_RECONOCIDA) }
+            ResultadoDeConfirmacion.ContrasenaIncorrecta ->
+                _estado.update { it.copy(paso = PasoDeRevocacion.Oculto, aviso = AvisoDeLaRevocacion.CONTRASENA_INCORRECTA) }
             ResultadoDeConfirmacion.SinConexion -> _estado.update { it.copy(paso = hoja.copy(verificando = false, sinConexion = true)) }
         }
     }

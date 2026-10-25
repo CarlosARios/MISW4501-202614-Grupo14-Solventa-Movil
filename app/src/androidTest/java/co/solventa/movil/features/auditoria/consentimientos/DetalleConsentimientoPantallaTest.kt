@@ -225,6 +225,28 @@ class DetalleConsentimientoPantallaTest {
     }
 
     @Test
+    fun la_contrasena_incorrecta_se_avisa_en_el_detalle_que_sigue_activo() {
+        montar(
+            DatosDePantalla.activo,
+            revocacion = RevocacionUiState(consentimiento = DatosDePantalla.activo, aviso = AvisoDeLaRevocacion.CONTRASENA_INCORRECTA),
+        )
+
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_revocacion_aviso_contrasena_incorrecta)).assertIsDisplayed()
+        // «Activo» esta en la insignia y en el paso final del historial.
+        composicion.onAllNodesWithText(texto(R.string.auditoria_consentimientos_estado_activo)).onFirst().assertIsDisplayed()
+    }
+
+    @Test
+    fun la_huella_no_reconocida_se_avisa_en_el_detalle() {
+        montar(
+            DatosDePantalla.activo,
+            revocacion = RevocacionUiState(consentimiento = DatosDePantalla.activo, aviso = AvisoDeLaRevocacion.HUELLA_NO_RECONOCIDA),
+        )
+
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_revocacion_aviso_huella_no_reconocida)).assertIsDisplayed()
+    }
+
+    @Test
     fun un_aviso_de_la_revocacion_se_muestra_y_se_cierra() {
         montar(
             DatosDePantalla.activo,
