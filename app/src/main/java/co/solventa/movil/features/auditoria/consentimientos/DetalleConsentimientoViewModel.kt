@@ -16,7 +16,7 @@ import javax.inject.Inject
  * local, asi que tambien sirve sin conexion; es de solo lectura (criterio 4).
  * Sigue ademas la conexion, para que el ultimo paso del historial diga si lo
  * que se ve esta sincronizado (frame 37:1418), y la cola de revocaciones, para
- * mostrarlo «pendiente de envio» (HU-M1.3-02, `1379:3583`).
+ * mostrarlo «pendiente de envio» (HU-M1.3-02).
  */
 @HiltViewModel
 class DetalleConsentimientoViewModel internal constructor(

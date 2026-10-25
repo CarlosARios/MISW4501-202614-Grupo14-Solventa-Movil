@@ -84,7 +84,7 @@ class PasoFinalDelHistorialTest {
         assertNull(pasoFinalDelHistorial(consentimiento("cns-1", EstadosDeConsentimiento.REVOCACION_PENDIENTE), sinConexion = false))
     }
 
-    // HU-M1.3-02: la revocacion en cola y la revocacion parcial (frames 1379:3583 y 1379:3687).
+    // HU-M1.3-02: la revocacion en cola y la revocacion parcial.
 
     @Test
     fun `un activo con su revocacion en cola termina en pendiente de envio`() {

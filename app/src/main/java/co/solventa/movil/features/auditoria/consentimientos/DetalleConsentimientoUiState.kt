@@ -9,7 +9,7 @@ data class DetalleConsentimientoUiState(
     val noDisponible: Boolean = false,
     /** No hay red: lo que se ve es la copia local, sin confirmar con el servicio. */
     val sinConexion: Boolean = false,
-    /** Su revocacion pendiente de envio, si la hay (HU-M1.3-02, `1379:3583`). */
+    /** Su revocacion pendiente de envio, si la hay (HU-M1.3-02). */
     val pendiente: RevocacionPendiente? = null,
 ) {
     /**
@@ -20,7 +20,7 @@ data class DetalleConsentimientoUiState(
     val revocarVisible: Boolean
         get() = consentimiento?.let { it.estado == EstadosDeConsentimiento.ACTIVO && it.revocable } == true && pendiente == null
 
-    /** Revocado, pero alguna entidad no confirmo (HU-M1.3-02, `1379:3687`). */
+    /** Revocado, pero alguna entidad no confirmo (HU-M1.3-02). */
     val parcial: Boolean get() = consentimiento?.estado == EstadosDeConsentimiento.REVOCADO_PARCIAL
 
     /**
@@ -53,11 +53,11 @@ sealed interface PasoFinalDelHistorial {
     /** Vencido, con la fecha en que vencio. */
     data class Vencido(val vencioEn: Long) : PasoFinalDelHistorial
 
-    /** Revocacion solicitada en el telefono y pendiente de envio (HU-M1.3-02, `1379:3583`). */
+    /** Revocacion solicitada en el telefono y pendiente de envio (HU-M1.3-02). */
     data class RevocacionPendiente(val solicitadaEn: Long) : PasoFinalDelHistorial
 
     /**
-     * Revocado, con entidades sin confirmar (HU-M1.3-02, `1379:3687`): la
+     * Revocado, con entidades sin confirmar (HU-M1.3-02): la
      * revocacion con su hora y su comprobante, que todavia no termina.
      */
     data class RevocadoSinConfirmar(val efectivaEn: Long, val comprobante: String?, val entidades: List<String>) :

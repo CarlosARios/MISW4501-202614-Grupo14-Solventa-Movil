@@ -81,4 +81,8 @@ sealed interface Ruta {
     /** M8b · Detalle de un consentimiento (HU-M1.3-01). */
     @Serializable
     data class DetalleConsentimiento(val id: String) : Ruta
+
+    /** Consentimiento revocado y comprobante (HU-M1.3-02, frame 38:1414). */
+    @Serializable
+    data class ConsentimientoRevocado(val id: String) : Ruta
 }

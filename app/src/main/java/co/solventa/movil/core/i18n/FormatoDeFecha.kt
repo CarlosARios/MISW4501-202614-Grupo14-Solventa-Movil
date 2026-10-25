@@ -19,7 +19,7 @@ object FormatoDeFecha {
 
     /**
      * La hora con segundos, para las horas exactas de una revocacion
-     * (HU-M1.3-02, frames `38:1414` y `1379:3687`: «16:10:06»).
+     * (HU-M1.3-02, frame `38:1414` y la revocacion parcial del detalle: «16:10:06»).
      */
     fun horaConSegundos(instante: Long, idioma: Idioma, zona: ZoneId = ZoneId.systemDefault()): String =
         formatear(instante, if (idioma == Idioma.ESPANOL) "HH:mm:ss" else "h:mm:ss a", idioma, zona)

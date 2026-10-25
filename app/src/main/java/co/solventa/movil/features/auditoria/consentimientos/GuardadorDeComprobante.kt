@@ -1,7 +1,7 @@
 package co.solventa.movil.features.auditoria.consentimientos
 
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -25,7 +25,7 @@ class GuardadorDeComprobanteAndroid @Inject constructor(
 
     override suspend fun guardar(destino: String, bytes: ByteArray): Boolean = withContext(Dispatchers.IO) {
         try {
-            contexto.contentResolver.openOutputStream(Uri.parse(destino))?.use { it.write(bytes) } != null
+            contexto.contentResolver.openOutputStream(destino.toUri())?.use { it.write(bytes) } != null
         } catch (_: IOException) {
             false
         } catch (_: SecurityException) {

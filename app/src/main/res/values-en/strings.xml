@@ -416,7 +416,10 @@
     <string name="auditoria_revocacion_aviso_comprobante_error">We could not download the receipt. Please try again.</string>
     <string name="auditoria_revocacion_cerrar_aviso">Close the notice</string>
     <string name="perfil_cerrar_sesion_pendientes_titulo">You have unsent revocations</string>
-    <string name="perfil_cerrar_sesion_pendientes">There are %1$d consent revocation(s) queued. They are not lost: they will be sent when you sign in again with this account.</string>
+    <plurals name="perfil_cerrar_sesion_pendientes">
+        <item quantity="one">There is %1$d consent revocation queued. It is not lost: it will be sent when you sign in again with this account.</item>
+        <item quantity="other">There are %1$d consent revocations queued. They are not lost: they will be sent when you sign in again with this account.</item>
+    </plurals>
     <string name="perfil_cerrar_sesion_pendientes_confirmar">Sign out anyway</string>
     <string name="perfil_cerrar_sesion_pendientes_cancelar">Stay signed in</string>
 </resources>

@@ -10,7 +10,7 @@ sealed interface PasoDeRevocacion {
     data object Oculto : PasoDeRevocacion
 
     /**
-     * La hoja inferior con el efecto de la revocacion (`37:1519`, o `1379:3462`
+     * La hoja inferior con el efecto de la revocacion (`37:1519`, con la huella o
      * con la contraseña). [verificando] mientras el sistema pide la huella o
      * se verifica la contraseña; [sinConexion] si la contraseña no se pudo
      * verificar por falta de red.
@@ -75,7 +75,7 @@ data class RevocacionUiState(
     /** «Reintentar envio ahora» reemplaza a Revocar mientras hay una pendiente. */
     val reintentarVisible: Boolean get() = pendiente != null
 
-    /** Sin señal el reintento no puede salir: el boton queda deshabilitado (`1379:3583`). */
+    /** Sin señal el reintento no puede salir: el boton queda deshabilitado. */
     val reintentarHabilitado: Boolean get() = pendiente != null && conectado && !reenviando
 
     /** El comprobante se puede descargar de una revocacion registrada por el servicio. */

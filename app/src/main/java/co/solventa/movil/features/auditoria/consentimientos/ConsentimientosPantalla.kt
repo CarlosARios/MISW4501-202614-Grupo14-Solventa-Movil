@@ -39,6 +39,10 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
 /**
  * M8 · Privacidad y consentimientos (HU-M1.3-01, frame 37:1233; sin conexion,
  * frame 38:1503). Solo lectura: ninguna tarjeta modifica nada (criterio 4).
+ *
+ * HU-M1.3-02 (`38:1503`): las revocaciones en cola van en su propia seccion,
+ * «Pendientes de envio», con el aviso «Sin conexion: revocacion en cola» y el
+ * boton «Reintentar envio ahora», deshabilitado sin señal (criterio 5).
  */
 @Composable
 fun ConsentimientosPantalla(
@@ -57,6 +61,8 @@ fun ConsentimientosPantalla(
         onAbrir = onAbrir,
         onReintentar = vm::reintentar,
         modifier = modifier,
+        onReintentarEnvio = vm::reintentarEnvio,
+        onCerrarAviso = vm::descartarAviso,
     )
 }
 
@@ -69,6 +75,8 @@ fun ContenidoConsentimientos(
     onAbrir: (String) -> Unit,
     onReintentar: () -> Unit,
     modifier: Modifier = Modifier,
+    onReintentarEnvio: () -> Unit = {},
+    onCerrarAviso: (String) -> Unit = {},
 ) {
     PantallaRegistro(
         titulo = stringResource(R.string.auditoria_consentimientos_titulo),
@@ -79,10 +87,25 @@ fun ContenidoConsentimientos(
         } else {
             null
         },
+        acciones = {
+            if (estado.pendientes.isNotEmpty()) {
+                BotonSolventa(
+                    texto = stringResource(R.string.auditoria_revocacion_reintentar),
+                    onClick = onReintentarEnvio,
+                    tipo = TipoBoton.SECUNDARIO,
+                    icono = painterResource(R.drawable.ic_sincronizar),
+                    habilitado = estado.reintentarHabilitado,
+                )
+            }
+        },
     ) {
         // Sin conexion, el aviso va justo bajo el encabezado, antes del texto
-        // introductorio (frame 38:1503).
-        if (estado.sinConexion) {
+        // introductorio (frame 38:1503). Con una revocacion en cola, el aviso
+        // es el de la cola, con la entidad y la hora de la ultima solicitud.
+        val ultimaPendiente = estado.ultimaPendiente
+        if (ultimaPendiente != null) {
+            AvisoDeRevocacionEnCola(ultimaPendiente.revocacion, idioma)
+        } else if (estado.sinConexion) {
             val sincronizado = estado.sincronizadoEn
             AvisoSolventa(
                 tipo = TipoAviso.ADVERTENCIA,
@@ -96,6 +119,10 @@ fun ContenidoConsentimientos(
                     stringResource(R.string.auditoria_consentimientos_sin_conexion_sin_copia)
                 },
             )
+        }
+
+        estado.descartes.forEach { descarte ->
+            AvisoDeDescarte(descarte, onCerrar = { onCerrarAviso(descarte.consentimientoId) })
         }
 
         Text(
@@ -121,6 +148,9 @@ fun ContenidoConsentimientos(
             else -> {
                 if (estado.error) {
                     AvisoSolventa(tipo = TipoAviso.ERROR, texto = stringResource(R.string.auditoria_consentimientos_error))
+                }
+                if (estado.pendientes.isNotEmpty()) {
+                    SeccionDePendientes(estado.pendientes, idioma, onAbrir)
                 }
                 Seccion(
                     titulo = stringResource(R.string.auditoria_consentimientos_seccion_activos, estado.activos.size),
@@ -220,6 +250,72 @@ private fun TarjetaDeConsentimiento(c: Consentimiento, idioma: Idioma, onAbrir: 
             ) {
                 InsigniaDeConsentimiento(c.estado)
                 c.comprobante?.let { ComprobanteDeLaTarjeta(it) }
+            }
+        }
+    }
+}
+
+/** «Pendientes de envio (n)» (`38:1503`): las revocaciones que esperan en la cola. */
+@Composable
+private fun SeccionDePendientes(pendientes: List<ConsentimientoPendiente>, idioma: Idioma, onAbrir: (String) -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(Espacio.x8)) {
+        Rotulo(stringResource(R.string.auditoria_revocacion_seccion_pendientes, pendientes.size))
+        pendientes.forEach { TarjetaDePendiente(it, idioma, onAbrir) }
+    }
+}
+
+/**
+ * La tarjeta de una revocacion en cola (`38:1503`): la entidad, «Revocacion
+ * solicitada <fecha> <hora>», la insignia «Revocacion pendiente de envio» y
+ * «Se reintenta al recuperar señal» con el reloj. Abre el detalle.
+ */
+@Composable
+private fun TarjetaDePendiente(p: ConsentimientoPendiente, idioma: Idioma, onAbrir: (String) -> Unit) {
+    val colores = LocalColoresSolventa.current
+    val solicitada = p.revocacion.solicitadaEn
+    TarjetaSolventa(
+        modifier = Modifier.clickable(onClickLabel = stringResource(R.string.auditoria_consentimientos_ver_detalle)) {
+            onAbrir(p.consentimiento.id)
+        },
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(Espacio.x12),
+            modifier = Modifier.padding(vertical = Espacio.x16),
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(Espacio.x12), verticalAlignment = Alignment.Top) {
+                IconoDeEntidad(atenuado = false)
+                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Espacio.x4)) {
+                    Text(text = p.consentimiento.nombreDeEntidad, style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        text = stringResource(
+                            R.string.auditoria_revocacion_solicitada_el,
+                            FormatoDeFecha.fecha(solicitada, idioma),
+                            FormatoDeFecha.hora(solicitada, idioma),
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colores.textoSecundario,
+                    )
+                }
+                Icon(
+                    painter = painterResource(R.drawable.ic_chevron_derecha),
+                    contentDescription = null,
+                    tint = colores.textoSecundario,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            InsigniaDePendienteDeEnvio()
+            Row(horizontalArrangement = Arrangement.spacedBy(Espacio.x8), verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_reloj),
+                    contentDescription = null,
+                    tint = colores.advertenciaFuerte,
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    text = stringResource(R.string.auditoria_revocacion_se_reintenta),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colores.textoSecundario,
+                )
             }
         }
     }

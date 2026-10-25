@@ -422,7 +422,11 @@
     <string name="auditoria_revocacion_aviso_comprobante_error">No pudimos descargar el comprobante. Inténtalo de nuevo.</string>
     <string name="auditoria_revocacion_cerrar_aviso">Cerrar el aviso</string>
     <string name="perfil_cerrar_sesion_pendientes_titulo">Tienes revocaciones sin enviar</string>
-    <string name="perfil_cerrar_sesion_pendientes">Hay %1$d revocación(es) de consentimiento en cola. No se pierden: se enviarán cuando vuelvas a entrar con esta cuenta.</string>
+    <plurals name="perfil_cerrar_sesion_pendientes">
+        <item quantity="one">Hay %1$d revocación de consentimiento en cola. No se pierde: se enviará cuando vuelvas a entrar con esta cuenta.</item>
+        <item quantity="many">Hay %1$d revocaciones de consentimiento en cola. No se pierden: se enviarán cuando vuelvas a entrar con esta cuenta.</item>
+        <item quantity="other">Hay %1$d revocaciones de consentimiento en cola. No se pierden: se enviarán cuando vuelvas a entrar con esta cuenta.</item>
+    </plurals>
     <string name="perfil_cerrar_sesion_pendientes_confirmar">Cerrar sesión de todas formas</string>
     <string name="perfil_cerrar_sesion_pendientes_cancelar">Seguir en la sesión</string>
 </resources>
