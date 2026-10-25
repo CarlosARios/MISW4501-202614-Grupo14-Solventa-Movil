@@ -52,6 +52,22 @@ class ConsentimientosRepositorioImplTest {
     }
 
     @Test
+    fun `antes de pedir la lista envia la cola de revocaciones pendientes`() = runTest {
+        val orden = mutableListOf<String>()
+        val conCola = ConsentimientosRepositorioImpl(
+            api, dao, sesion, conectividad, programador,
+            enviador = { orden += "cola"; ResultadoDeEnvio.Enviadas(1) },
+        ) { ahora }
+        api.lista = listOf(dto("cns-1"))
+        val antes = api.llamadas
+
+        assertEquals(ResultadoDeActualizacion.Actualizado, conCola.actualizar())
+
+        assertEquals(listOf("cola"), orden)
+        assertEquals(antes + 1, api.llamadas)
+    }
+
+    @Test
     fun `en linea reemplaza la copia y anota cuando se sincronizo`() = runTest {
         api.lista = listOf(dto("cns-1"), dto("cns-2", "revoked", finalizado = "2026-10-01T10:00:00Z", comprobante = "REV-1"))
 

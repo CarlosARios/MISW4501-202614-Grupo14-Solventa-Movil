@@ -30,6 +30,8 @@ import javax.inject.Singleton
  *   plano, que corre cuando la red vuelve aunque la aplicacion este cerrada
  *   (criterio 5).
  * - Al cerrar la sesion se borra toda la copia ([AlCerrarSesion], D-6 a).
+ * - Antes de pedir la lista se envia la cola de revocaciones pendientes
+ *   (HU-M1.3-02): una revocacion en cola sale primero, con prioridad alta.
  */
 @Singleton
 class ConsentimientosRepositorioImpl internal constructor(
@@ -38,6 +40,7 @@ class ConsentimientosRepositorioImpl internal constructor(
     private val sesion: SesionRepositorio,
     private val conectividad: ObservadorDeConectividad,
     private val programador: ProgramadorDeSincronizacion,
+    private val enviador: EnviadorDeRevocaciones = EnviadorDeRevocaciones { ResultadoDeEnvio.Enviadas(0) },
     private val reloj: () -> Long,
 ) : ConsentimientosRepositorio, AlCerrarSesion {
 
@@ -48,7 +51,8 @@ class ConsentimientosRepositorioImpl internal constructor(
         sesion: SesionRepositorio,
         conectividad: ObservadorDeConectividad,
         programador: ProgramadorDeSincronizacion,
-    ) : this(api, dao, sesion, conectividad, programador, System::currentTimeMillis)
+        enviador: EnviadorDeRevocaciones,
+    ) : this(api, dao, sesion, conectividad, programador, enviador, System::currentTimeMillis)
 
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -84,6 +88,9 @@ class ConsentimientosRepositorioImpl internal constructor(
         val sub = sub()
         if (sub.isEmpty()) return ResultadoDeActualizacion.SinSesion
         return try {
+            // La cola de revocaciones va primero: si sale ahora, la lista que
+            // llega despues ya trae esos consentimientos revocados.
+            enviador.enviarPendientes()
             val respuesta = api.consentimientos()
             val cuerpo = respuesta.body()
             when {

@@ -369,4 +369,7 @@
     <string name="perfil_cerrar_sesion">Cerrar sesión</string>
     <string name="perfil_version">Solventa %1$s</string>
     <string name="perfil_en_espera_descripcion">%1$s, próximamente</string>
+    <!-- HU-M1.3-02 · Revocacion del consentimiento -->
+    <string name="auditoria_revocacion_notificacion_canal">Envío de revocaciones</string>
+    <string name="auditoria_revocacion_notificacion_titulo">Enviando tu revocación de consentimiento</string>
 </resources>

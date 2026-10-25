@@ -363,4 +363,7 @@
     <string name="perfil_cerrar_sesion">Sign out</string>
     <string name="perfil_version">Solventa %1$s</string>
     <string name="perfil_en_espera_descripcion">%1$s, coming soon</string>
+    <!-- HU-M1.3-02 · Consent revocation -->
+    <string name="auditoria_revocacion_notificacion_canal">Revocation upload</string>
+    <string name="auditoria_revocacion_notificacion_titulo">Sending your consent revocation</string>
 </resources>

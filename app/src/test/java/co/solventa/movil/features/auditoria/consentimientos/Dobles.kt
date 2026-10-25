@@ -118,12 +118,16 @@ class AuditoriaFalsa : AuditoriaApi {
     /** Cuanto tarda la revocacion, para probar el corte de 4 s. */
     var demoraDeRevocacion: Long = 0
     val revocaciones = mutableListOf<Triple<String, String, SolicitudDeRevocacionDto>>()
+
+    /** Se llama al recibir la revocacion, antes de responder. */
+    var alRevocar: (() -> Unit)? = null
     var comprobante: ByteArray? = "%PDF-1.3".toByteArray()
     var codigoDeComprobante: Int = 200
     var idiomaDelComprobante: String? = null
 
     override suspend fun revocar(id: String, clave: String, solicitud: SolicitudDeRevocacionDto): Response<RevocacionDto> {
         revocaciones += Triple(id, clave, solicitud)
+        alRevocar?.invoke()
         if (demoraDeRevocacion > 0) kotlinx.coroutines.delay(demoraDeRevocacion)
         if (revocacionSinRed) throw IOException("sin red")
         return if (codigoDeRevocacion in 200..299) {
@@ -159,9 +163,9 @@ fun revocacionDto(
     entidades = listOf(EntidadDeRevocacionDto("aliado-banco-1", "Banco Aliado", entidad, null, "2026-10-24T20:05:00Z")),
 )
 
-class SesionFalsa(var sub: String = "sub-a") : SesionRepositorio {
+class SesionFalsa(var sub: String = "sub-a", var biometria: Boolean = false) : SesionRepositorio {
     override suspend fun sesionGuardada(): Sesion? = Sesion("asegurado@example.com", "Carolina", sub)
-    override suspend fun biometriaHabilitada(): Boolean = false
+    override suspend fun biometriaHabilitada(): Boolean = biometria
     override suspend fun desbloquear(): Sesion? = sesionGuardada()
     override suspend fun ingresarConContrasena(correo: String, contrasena: String): ResultadoIngreso =
         ResultadoIngreso.CredencialesInvalidas
@@ -178,6 +182,14 @@ class ProgramadorFalso : ProgramadorDeSincronizacion {
     val programados = mutableListOf<Pair<String, Class<out ListenableWorker>>>()
     override fun programar(nombreUnico: String, trabajador: Class<out ListenableWorker>) {
         programados += nombreUnico to trabajador
+    }
+}
+
+/** Cuenta los envios urgentes programados (HU-M1.3-02). */
+class ProgramadorDeEnvioFalso : ProgramadorDeEnvioDeRevocaciones {
+    var programados = 0
+    override fun programar() {
+        programados++
     }
 }
 
