@@ -27,6 +27,17 @@ abstract class ConsentimientoDao {
     @Query("SELECT * FROM consentimiento WHERE propietario = :propietario AND id = :id")
     abstract fun observarUno(propietario: String, id: String): Flow<ConsentimientoEntidad?>
 
+    /** Un consentimiento del propietario, para actualizarlo tras revocarlo (HU-M1.3-02). */
+    @Query("SELECT * FROM consentimiento WHERE propietario = :propietario AND id = :id")
+    abstract suspend fun uno(propietario: String, id: String): ConsentimientoEntidad?
+
+    /**
+     * Guarda una fila de la copia: la revocacion que respondio el servicio
+     * (HU-M1.3-02) se ve en seguida, sin esperar la siguiente sincronizacion.
+     */
+    @Upsert
+    abstract suspend fun guardar(fila: ConsentimientoEntidad)
+
     @Query("SELECT sincronizadoEn FROM sincronizacion WHERE propietario = :propietario AND recurso = :recurso")
     abstract fun observarSincronizacion(propietario: String, recurso: String): Flow<Long?>
 
