@@ -39,6 +39,9 @@ object TokenDeIdentidad {
             nombre = texto("name") ?: correo?.substringBefore('@').orEmpty(),
             // `exp` viene en segundos desde época.
             venceEn = (texto("exp")?.toLongOrNull() ?: 0L) * 1_000L,
+            // El identificador estable de la cuenta (HU-M1.3-01): es la
+            // llave del propietario de la copia local de los consentimientos.
+            sub = texto("sub").orEmpty(),
         )
     }.getOrNull()
 
@@ -52,5 +55,5 @@ object TokenDeIdentidad {
         else -> carga
     }
 
-    data class Afirmaciones(val correo: String, val nombre: String, val venceEn: Long)
+    data class Afirmaciones(val correo: String, val nombre: String, val venceEn: Long, val sub: String = "")
 }

@@ -1,4 +1,4 @@
-package co.solventa.movil.features.acceso.bienvenida
+package co.solventa.movil.shared.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +36,9 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
  *
  * Cada idioma se lee en su propio idioma: quien tenga la aplicación en inglés
  * y busque español tiene que reconocer «Español».
+ *
+ * Vive en `shared/ui` desde HU-M1.3-01 porque la usan dos dominios: la
+ * bienvenida (M0) y el perfil (M19). No cambió su comportamiento.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

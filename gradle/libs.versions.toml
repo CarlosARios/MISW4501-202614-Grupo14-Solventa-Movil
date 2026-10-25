@@ -22,6 +22,10 @@ coroutines = "1.11.0"
 mockk = "1.14.11"
 turbine = "1.2.1"
 
+# Pruebas de Room y WorkManager en la JVM, sin emulador (HU-M1.3-01, D-12 b).
+# 4.17 es la primera que soporta el SDK 37 (notas de version en GitHub).
+robolectric = "4.17"
+
 # Procesamiento de anotaciones. El sufijo "-2.0.2" es la versión de KSP;
 # el prefijo debe coincidir exactamente con la versión de Kotlin de arriba.
 ksp = "2.2.10-2.0.2"
@@ -99,6 +103,8 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "workManager" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -17,8 +17,8 @@ Un `features` **no importa de otro** `features`. Si dos flujos necesitan lo mism
 | `siniestros/asistencias/` | Solicitar asistencia en sitio, ubicación desactivada, sin señal de satélite | M14, M14b, M14c | M2.3-01 |
 | `notificaciones/centro/` | Centro de notificaciones, *push* en pantalla bloqueada, adjuntar soporte pendiente y su confirmación | M15, M15b, M18, M18b, M18c | M3.1-01, M3.2-01, M3.3-01, M3.3-02 |
 | `notificaciones/preferencias/` | Qué notificaciones recibe el asegurado y por qué canal | (desde M19) | M3.3-01 |
-| `auditoria/consentimientos/` | Privacidad y consentimientos del titular, detalle y revocación | M8, M8b | RN-02 |
-| `perfil/` | Perfil del asegurado | M19 | — |
+| `auditoria/consentimientos/` | Privacidad y consentimientos del titular y su detalle, con la copia sin conexión en Room y la sincronización al volver la red (**HU-M1.3-01**: `ConsentimientosRepositorio`, trabajo de WorkManager, M8 y M8b). La revocación llega con HU-M1.3-02 | M8, M8b | HU-M1.3-01 · RN-02 |
+| `perfil/` | Perfil del asegurado (**HU-M1.3-01**): identidad, biometría, cierre automático, Privacidad y consentimientos, Idioma y Cerrar sesión; las filas sin servicio quedan en espera | M19 | HU-M1.3-01 |
 | `perfil/idioma/` | Cambio de idioma en caliente y formatos de la región | M19b | OBJ 12 |
 
 El prototipo completo está en [`docs/pantallas.md`](../../../../../../docs/pantallas.md).

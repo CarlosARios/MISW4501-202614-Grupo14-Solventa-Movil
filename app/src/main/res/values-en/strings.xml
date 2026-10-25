@@ -268,6 +268,102 @@
     <string name="radicacion_borrador_descartar">Discard draft</string>
     <string name="inicio_reportar_siniestro">Report a claim</string>
 
+    <!-- Open Finance consents (HU-M1.3-01): texts of the codes of the audit service -->
+    <string name="auditoria_consentimientos_estado_activo">Active</string>
+    <string name="auditoria_consentimientos_estado_vencido">Expired</string>
+    <string name="auditoria_consentimientos_estado_revocado">Revoked</string>
+    <string name="auditoria_consentimientos_estado_revocacion_pendiente">Revocation pending</string>
+    <string name="auditoria_consentimientos_estado_revocado_parcial">Partially revoked</string>
+    <string name="auditoria_consentimientos_historial_otorgado">Granted</string>
+    <string name="auditoria_consentimientos_historial_vencido">Expired</string>
+    <string name="auditoria_consentimientos_historial_revocacion_solicitada">Revocation requested</string>
+    <string name="auditoria_consentimientos_historial_revocado">Revoked</string>
+    <string name="auditoria_consentimientos_fuente_open_finance">Open Finance</string>
+    <string name="auditoria_consentimientos_fuente_open_data">Public records (Open Data)</string>
+    <string name="auditoria_consentimientos_fuente_kyc">Identity verification (KYC)</string>
+    <string name="auditoria_consentimientos_categoria_productos_de_credito">Credit products</string>
+    <string name="auditoria_consentimientos_categoria_saldos">Balances</string>
+    <string name="auditoria_consentimientos_categoria_comportamiento_de_pago">Payment behavior</string>
+    <string name="auditoria_consentimientos_categoria_registros_publicos">Public records</string>
+    <string name="auditoria_consentimientos_categoria_verificacion_de_identidad">Identity verification</string>
+    <string name="auditoria_consentimientos_vigencia_12_meses">12 months</string>
+    <string name="auditoria_consentimientos_vigencia_un_uso">Single use</string>
+    <string name="auditoria_consentimientos_finalidad_perfil_y_oferta">Risk profile and insurance offer calculation</string>
+    <string name="auditoria_consentimientos_canal_aliado">partner journey</string>
+    <string name="auditoria_consentimientos_canal_movil">mobile app</string>
+
+    <!-- Bottom bar (HU-M1.3-01, frame 55:3017). Policies and Claims wait for their screen -->
+    <string name="comun_proximamente">Coming soon</string>
+    <string name="navegacion_pestana_inicio">Home</string>
+    <string name="navegacion_pestana_polizas">Policies</string>
+    <string name="navegacion_pestana_siniestros">Claims</string>
+    <string name="navegacion_pestana_perfil">Profile</string>
+    <string name="navegacion_pestana_polizas_en_espera">Policies, coming soon</string>
+    <string name="navegacion_pestana_siniestros_en_espera">Claims, coming soon</string>
+
+    <!-- M8 · Privacy and consents and M8b · Details (HU-M1.3-01, frames 37:1233, 37:1418 and 38:1503) -->
+    <string name="auditoria_consentimientos_titulo">Privacy and consents</string>
+    <string name="auditoria_consentimientos_intro">Authorizations to access your financial data (Open Finance).</string>
+    <string name="auditoria_consentimientos_seccion_activos">Active (%1$d)</string>
+    <string name="auditoria_consentimientos_seccion_historial">Revoked and expired (%1$d)</string>
+    <string name="auditoria_consentimientos_otorgado_vence">Granted %1$s · expires %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_revocado">Granted %1$s · revoked %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_vencio">Granted %1$s · expired %2$s</string>
+    <string name="auditoria_consentimientos_otorgado">Granted %1$s</string>
+    <string name="auditoria_consentimientos_comprobante">Receipt %1$s</string>
+    <string name="auditoria_consentimientos_ver_detalle">See the details</string>
+    <string name="auditoria_consentimientos_sin_conexion">Offline: you are viewing the information synced on %1$s at %2$s.</string>
+    <string name="auditoria_consentimientos_sin_conexion_sin_copia">Offline: there is no synced information on this device yet.</string>
+    <string name="auditoria_consentimientos_sin_conexion_icono">Offline</string>
+    <string name="auditoria_consentimientos_vacio">You have no registered consents yet.</string>
+    <string name="auditoria_consentimientos_error">We could not update your consents. Please try again.</string>
+    <string name="auditoria_consentimientos_sin_vincular">Your account is not linked to your consents yet.</string>
+    <string name="auditoria_consentimientos_reintentar">Try again</string>
+    <string name="auditoria_consentimientos_cargando">Loading your consents</string>
+    <string name="auditoria_detalle_titulo">Consent</string>
+    <string name="auditoria_detalle_otorgado">Granted</string>
+    <string name="auditoria_detalle_vence">Expires</string>
+    <string name="auditoria_detalle_vencio_el">Expired on</string>
+    <string name="auditoria_detalle_revocado_el">Revoked on</string>
+    <string name="auditoria_detalle_comprobante">Revocation receipt</string>
+    <string name="auditoria_detalle_alcance">Scope</string>
+    <string name="auditoria_detalle_finalidad">Purpose</string>
+    <string name="auditoria_detalle_historial">Status history</string>
+    <string name="auditoria_detalle_fecha_hora_canal">%1$s · %2$s · %3$s</string>
+    <string name="auditoria_detalle_fecha_hora">%1$s · %2$s</string>
+    <string name="auditoria_detalle_fuente">%1$s: %2$s (%3$s)</string>
+    <string name="auditoria_detalle_revocar">Revoke consent</string>
+    <string name="auditoria_detalle_no_disponible">This consent is no longer available.</string>
+    <!-- Last step of the M8b history while the consent is still active (frame 37:1418) -->
+    <string name="auditoria_detalle_paso_vigente_sincronizado">In force · synced with Solventa</string>
+    <string name="auditoria_detalle_paso_vigente">In force</string>
+
+    <!-- M19 · Profile (HU-M1.3-01). Rows without a service say «Coming soon» -->
+    <string name="perfil_titulo">Profile</string>
+    <string name="perfil_seccion_cuenta">Account</string>
+    <string name="perfil_seccion_seguridad">Security</string>
+    <string name="perfil_seccion_privacidad">Privacy</string>
+    <string name="perfil_seccion_preferencias">Preferences</string>
+    <string name="perfil_datos_personales">Personal data</string>
+    <string name="perfil_medios_de_pago">Payment methods</string>
+    <string name="perfil_biometria">Sign in with fingerprint or face</string>
+    <string name="perfil_biometria_no_disponible">Not available on this device</string>
+    <string name="perfil_cambiar_contrasena">Change password</string>
+    <string name="perfil_cierre_automatico">Automatic sign-out</string>
+    <string name="perfil_cierre_minutos">%1$d min</string>
+    <string name="perfil_privacidad_consentimientos">Privacy and consents</string>
+    <plurals name="perfil_consentimientos_activos">
+        <item quantity="one">%1$d active</item>
+        <item quantity="other">%1$d active</item>
+    </plurals>
+    <string name="perfil_descargar_datos">Download my data</string>
+    <string name="perfil_idioma">Language</string>
+    <string name="perfil_notificaciones">Notifications</string>
+    <string name="perfil_sincronizacion">Sync</string>
+    <string name="perfil_cerrar_sesion">Sign out</string>
+    <string name="perfil_version">Solventa %1$s</string>
+    <string name="perfil_en_espera_descripcion">%1$s, coming soon</string>
+
     <!-- Evidence capture (HU-M2.1-01) -->
     <string name="evidencia_cerrar">Close the capture</string>
     <string name="evidencia_contador_visor">Evidence %1$d of %2$d</string>

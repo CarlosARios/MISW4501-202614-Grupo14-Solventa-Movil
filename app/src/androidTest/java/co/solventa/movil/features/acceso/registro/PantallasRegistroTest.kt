@@ -132,6 +132,7 @@ class PantallasRegistroTest {
                 ConfirmacionDatosPantalla(
                     estado = RegistroUiState(datos = datos),
                     onDatosCambian = {},
+                    onContrasenaCambia = {},
                     onTerminos = {},
                     onVerificar = {},
                     onAtras = {},
@@ -152,6 +153,7 @@ class PantallasRegistroTest {
                 ConfirmacionDatosPantalla(
                     estado = RegistroUiState(datos = datos, terminosAceptados = false),
                     onDatosCambian = {},
+                    onContrasenaCambia = {},
                     onTerminos = {},
                     onVerificar = {},
                     onAtras = {},
@@ -170,6 +172,7 @@ class PantallasRegistroTest {
                 ConfirmacionDatosPantalla(
                     estado = RegistroUiState(datos = datos, terminosAceptados = true),
                     onDatosCambian = {},
+                    onContrasenaCambia = {},
                     onTerminos = {},
                     onVerificar = { verificado = true },
                     onAtras = {},

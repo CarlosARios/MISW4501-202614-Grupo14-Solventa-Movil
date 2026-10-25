@@ -70,6 +70,18 @@ sealed interface Ruta {
     @Serializable
     data object RadicacionRadicado : Ruta
 
+    /** M19 · Perfil, pestaña de la barra inferior (HU-M1.3-01). */
+    @Serializable
+    data object Perfil : Ruta
+
+    /** M8 · Privacidad y consentimientos (HU-M1.3-01). */
+    @Serializable
+    data object Consentimientos : Ruta
+
+    /** M8b · Detalle de un consentimiento (HU-M1.3-01). */
+    @Serializable
+    data class DetalleConsentimiento(val id: String) : Ruta
+
     /**
      * M12 · Cámara · captura de evidencia con GPS y hora (HU-M2.1-01).
      *

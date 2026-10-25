@@ -25,6 +25,22 @@ class TokenDeIdentidadTest {
      * del correo es mejor que dejar la pantalla con un saludo vacío.
      */
     @Test
+    fun `lee el sub de la cuenta`() {
+        val carga = "{\"email\":\"a@b.co\",\"sub\":\"9f4ce9cd-85c7\",\"exp\":1}"
+        val token = "e." + java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(carga.toByteArray()) + ".f"
+
+        assertEquals("9f4ce9cd-85c7", TokenDeIdentidad.afirmaciones(token)?.sub)
+    }
+
+    @Test
+    fun `sin sub queda vacio`() {
+        val carga = "{\"email\":\"a@b.co\",\"exp\":1}"
+        val token = "e." + java.util.Base64.getUrlEncoder().withoutPadding().encodeToString(carga.toByteArray()) + ".f"
+
+        assertEquals("", TokenDeIdentidad.afirmaciones(token)?.sub)
+    }
+
+    @Test
     fun `sin nombre usa la parte local del correo`() {
         val token = jwt("{\"email\":\"operaciones@example.com\",\"exp\":1760000300}")
 

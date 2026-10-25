@@ -73,7 +73,7 @@ class RenovacionContraElPoolTest {
 
     @Test
     fun ingresaYRenuevaContraElPoolReal() = runBlocking {
-        val repositorio = CognitoSesionRepositorio(api, almacen)
+        val repositorio = CognitoSesionRepositorio(api, almacen, javax.inject.Provider { emptySet() })
 
         val ingreso = repositorio.ingresarConContrasena(USUARIO, clave!!)
 

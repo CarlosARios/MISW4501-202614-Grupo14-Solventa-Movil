@@ -273,6 +273,103 @@
     <string name="radicacion_borrador_descartar">Descartar borrador</string>
     <string name="inicio_reportar_siniestro">Reportar un siniestro</string>
 
+    <!-- Consentimientos de Open Finance (HU-M1.3-01): textos de los codigos del servicio de auditoria -->
+    <string name="auditoria_consentimientos_estado_activo">Activo</string>
+    <string name="auditoria_consentimientos_estado_vencido">Vencido</string>
+    <string name="auditoria_consentimientos_estado_revocado">Revocado</string>
+    <string name="auditoria_consentimientos_estado_revocacion_pendiente">Revocación pendiente</string>
+    <string name="auditoria_consentimientos_estado_revocado_parcial">Revocado parcialmente</string>
+    <string name="auditoria_consentimientos_historial_otorgado">Otorgado</string>
+    <string name="auditoria_consentimientos_historial_vencido">Venció</string>
+    <string name="auditoria_consentimientos_historial_revocacion_solicitada">Revocación solicitada</string>
+    <string name="auditoria_consentimientos_historial_revocado">Revocado</string>
+    <string name="auditoria_consentimientos_fuente_open_finance">Open Finance</string>
+    <string name="auditoria_consentimientos_fuente_open_data">Datos públicos (Open Data)</string>
+    <string name="auditoria_consentimientos_fuente_kyc">Verificación de identidad (KYC)</string>
+    <string name="auditoria_consentimientos_categoria_productos_de_credito">Productos de crédito</string>
+    <string name="auditoria_consentimientos_categoria_saldos">Saldos</string>
+    <string name="auditoria_consentimientos_categoria_comportamiento_de_pago">Comportamiento de pago</string>
+    <string name="auditoria_consentimientos_categoria_registros_publicos">Registros públicos</string>
+    <string name="auditoria_consentimientos_categoria_verificacion_de_identidad">Verificación de identidad</string>
+    <string name="auditoria_consentimientos_vigencia_12_meses">12 meses</string>
+    <string name="auditoria_consentimientos_vigencia_un_uso">Un solo uso</string>
+    <string name="auditoria_consentimientos_finalidad_perfil_y_oferta">Cálculo del perfil de riesgo y de la oferta de seguro</string>
+    <string name="auditoria_consentimientos_canal_aliado">recorrido del aliado</string>
+    <string name="auditoria_consentimientos_canal_movil">app móvil</string>
+
+    <!-- Barra inferior (HU-M1.3-01, frame 55:3017). Pólizas y Siniestros esperan su pantalla -->
+    <string name="comun_proximamente">Próximamente</string>
+    <string name="navegacion_pestana_inicio">Inicio</string>
+    <string name="navegacion_pestana_polizas">Pólizas</string>
+    <string name="navegacion_pestana_siniestros">Siniestros</string>
+    <string name="navegacion_pestana_perfil">Perfil</string>
+    <string name="navegacion_pestana_polizas_en_espera">Pólizas, próximamente</string>
+    <string name="navegacion_pestana_siniestros_en_espera">Siniestros, próximamente</string>
+
+    <!-- M8 · Privacidad y consentimientos y M8b · Detalle (HU-M1.3-01, frames 37:1233, 37:1418 y 38:1503) -->
+    <string name="auditoria_consentimientos_titulo">Privacidad y consentimientos</string>
+    <string name="auditoria_consentimientos_intro">Autorizaciones de acceso a tus datos financieros (Open Finance).</string>
+    <string name="auditoria_consentimientos_seccion_activos">Activos (%1$d)</string>
+    <string name="auditoria_consentimientos_seccion_historial">Revocados y vencidos (%1$d)</string>
+    <string name="auditoria_consentimientos_otorgado_vence">Otorgado %1$s · vence %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_revocado">Otorgado %1$s · revocado %2$s</string>
+    <string name="auditoria_consentimientos_otorgado_vencio">Otorgado %1$s · venció %2$s</string>
+    <string name="auditoria_consentimientos_otorgado">Otorgado %1$s</string>
+    <string name="auditoria_consentimientos_comprobante">Comprobante %1$s</string>
+    <string name="auditoria_consentimientos_ver_detalle">Ver el detalle</string>
+    <string name="auditoria_consentimientos_sin_conexion">Sin conexión: estás viendo la información sincronizada el %1$s a las %2$s.</string>
+    <string name="auditoria_consentimientos_sin_conexion_sin_copia">Sin conexión: todavía no hay información sincronizada en este dispositivo.</string>
+    <string name="auditoria_consentimientos_sin_conexion_icono">Sin conexión</string>
+    <string name="auditoria_consentimientos_vacio">Aún no tienes consentimientos registrados.</string>
+    <string name="auditoria_consentimientos_error">No pudimos actualizar tus consentimientos. Inténtalo de nuevo.</string>
+    <string name="auditoria_consentimientos_sin_vincular">Tu cuenta todavía no está vinculada a tus consentimientos.</string>
+    <string name="auditoria_consentimientos_reintentar">Reintentar</string>
+    <string name="auditoria_consentimientos_cargando">Cargando tus consentimientos</string>
+    <string name="auditoria_detalle_titulo">Consentimiento</string>
+    <string name="auditoria_detalle_otorgado">Otorgado</string>
+    <string name="auditoria_detalle_vence">Vence</string>
+    <string name="auditoria_detalle_vencio_el">Venció el</string>
+    <string name="auditoria_detalle_revocado_el">Revocado el</string>
+    <string name="auditoria_detalle_comprobante">Comprobante de la revocación</string>
+    <string name="auditoria_detalle_alcance">Alcance</string>
+    <string name="auditoria_detalle_finalidad">Finalidad</string>
+    <string name="auditoria_detalle_historial">Historial de estados</string>
+    <string name="auditoria_detalle_fecha_hora_canal">%1$s · %2$s · %3$s</string>
+    <string name="auditoria_detalle_fecha_hora">%1$s · %2$s</string>
+    <string name="auditoria_detalle_fuente">%1$s: %2$s (%3$s)</string>
+    <string name="auditoria_detalle_revocar">Revocar consentimiento</string>
+    <string name="auditoria_detalle_no_disponible">Este consentimiento ya no está disponible.</string>
+    <!-- Ultimo paso del historial de M8b cuando el consentimiento sigue activo (frame 37:1418) -->
+    <string name="auditoria_detalle_paso_vigente_sincronizado">Vigente · sincronizado con Solventa</string>
+    <string name="auditoria_detalle_paso_vigente">Vigente</string>
+
+    <!-- M19 · Perfil (HU-M1.3-01). Las filas sin servicio dicen «Próximamente» -->
+    <string name="perfil_titulo">Perfil</string>
+    <string name="perfil_seccion_cuenta">Cuenta</string>
+    <string name="perfil_seccion_seguridad">Seguridad</string>
+    <string name="perfil_seccion_privacidad">Privacidad</string>
+    <string name="perfil_seccion_preferencias">Preferencias</string>
+    <string name="perfil_datos_personales">Datos personales</string>
+    <string name="perfil_medios_de_pago">Medios de pago</string>
+    <string name="perfil_biometria">Iniciar sesión con huella o rostro</string>
+    <string name="perfil_biometria_no_disponible">No disponible en este dispositivo</string>
+    <string name="perfil_cambiar_contrasena">Cambiar contraseña</string>
+    <string name="perfil_cierre_automatico">Cierre automático de sesión</string>
+    <string name="perfil_cierre_minutos">%1$d min</string>
+    <string name="perfil_privacidad_consentimientos">Privacidad y consentimientos</string>
+    <plurals name="perfil_consentimientos_activos">
+        <item quantity="one">%1$d activo</item>
+        <item quantity="many">%1$d activos</item>
+        <item quantity="other">%1$d activos</item>
+    </plurals>
+    <string name="perfil_descargar_datos">Descargar mis datos</string>
+    <string name="perfil_idioma">Idioma</string>
+    <string name="perfil_notificaciones">Notificaciones</string>
+    <string name="perfil_sincronizacion">Sincronización</string>
+    <string name="perfil_cerrar_sesion">Cerrar sesión</string>
+    <string name="perfil_version">Solventa %1$s</string>
+    <string name="perfil_en_espera_descripcion">%1$s, próximamente</string>
+
     <!-- Captura de evidencia (HU-M2.1-01) -->
     <string name="evidencia_cerrar">Cerrar la captura</string>
     <string name="evidencia_contador_visor">Evidencia %1$d de %2$d</string>

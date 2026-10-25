@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import co.solventa.movil.R
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.shared.ui.BotonSolventa
+import co.solventa.movil.shared.ui.HojaDeIdioma
 import co.solventa.movil.shared.ui.LogotipoSolventa
 import co.solventa.movil.shared.ui.TipoBoton
 import co.solventa.movil.ui.theme.Azul900
