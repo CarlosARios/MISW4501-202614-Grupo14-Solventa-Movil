@@ -29,6 +29,8 @@ import co.solventa.movil.core.i18n.ConIdioma
 import co.solventa.movil.core.i18n.IdiomaViewModel
 import co.solventa.movil.features.acceso.bienvenida.PantallaBienvenida
 import co.solventa.movil.features.acceso.registro.grafoRegistro
+import co.solventa.movil.features.siniestros.evidencia.grafoCapturaDeEvidencia
+import co.solventa.movil.features.siniestros.radicacion.grafoRadicacion
 import co.solventa.movil.features.inicio.PantallaInicio
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoBoton
@@ -92,6 +94,8 @@ fun SolventaNavHost(
             }
 
             grafoRegistro(navegacion)
+            grafoRadicacion(navegacion)
+            grafoCapturaDeEvidencia(navegacion)
             destinoIngreso(navegacion)
 
             composable<Ruta.Inicio> {
@@ -99,6 +103,7 @@ fun SolventaNavHost(
                 LaunchedEffect(Unit) { sesion.iniciarVigilancia() }
                 PantallaInicio(
                     onRegistro = { navegacion.navigate(Ruta.Registro) },
+                    onReportarSiniestro = { navegacion.navigate(Ruta.Radicacion) },
                     onVerificacionExitosa = { navegacion.navigate(Ruta.VerificacionExitosa) },
                     onVerificacionNoSuperada = { navegacion.navigate(Ruta.VerificacionNoSuperada) },
                     onVerificacionDemorada = { navegacion.navigate(Ruta.VerificacionDemorada) },

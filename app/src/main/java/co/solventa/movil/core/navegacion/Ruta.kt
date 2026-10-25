@@ -54,4 +54,29 @@ sealed interface Ruta {
     /** M3 · Inicio. Primera pantalla con sesión activa. */
     @Serializable
     data object Inicio : Ruta
+
+    /**
+     * M11 · Asistente de radicación del siniestro (HU-M2.2-01).
+     *
+     * Las cuatro etapas comparten un destino: cuál se muestra lo decide el
+     * estado del asistente, que es el mismo que se guarda en el borrador. Así
+     * el indicador de pasos, el botón de avanzar y lo que se retoma al volver
+     * a entrar salen de una sola fuente.
+     */
+    @Serializable
+    data object Radicacion : Ruta
+
+    /** M11e · Radicado generado. Cierra el flujo de la radicación. */
+    @Serializable
+    data object RadicacionRadicado : Ruta
+
+    /**
+     * M12 · Cámara · captura de evidencia con GPS y hora (HU-M2.1-01).
+     *
+     * Es un destino aparte del asistente porque ocupa la pantalla completa y
+     * porque se entra y se sale de él varias veces: una por cada evidencia.
+     * Lleva el borrador al que pertenece lo capturado.
+     */
+    @Serializable
+    data class CapturaDeEvidencia(val borradorId: String, val tipoDeSiniestro: String) : Ruta
 }

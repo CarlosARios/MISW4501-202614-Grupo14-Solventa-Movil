@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Cámara de video, equivalente a icono/video del prototipo: el modo de
+     grabación del visor de evidencia (HU-M2.1-01). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M22,8 L16,12 L22,16 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M4,6 L14,6 A2,2 0 0,1 16,8 L16,16 A2,2 0 0,1 14,18 L4,18 A2,2 0 0,1 2,16 L2,8 A2,2 0 0,1 4,6 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineJoin="round" />
+</vector>

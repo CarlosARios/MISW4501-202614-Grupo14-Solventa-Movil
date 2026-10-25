@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -45,19 +49,26 @@ fun PantallaRegistro(
     titulo: String,
     modifier: Modifier = Modifier,
     onAtras: (() -> Unit)? = null,
+    onCerrar: (() -> Unit)? = null,
     acciones: @Composable ColumnScope.() -> Unit = {},
     contenido: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { EncabezadoPantalla(titulo = titulo, onAtras = onAtras) },
+        topBar = { EncabezadoPantalla(titulo = titulo, onAtras = onAtras, onCerrar = onCerrar) },
         bottomBar = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Espacio.x8),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
+                    // La aplicacion dibuja de borde a borde, asi que el
+                    // teclado no encoge la ventana: lo hace esta barra, que
+                    // se aparta lo que ocupe el teclado o la barra de
+                    // navegacion, lo que sea mayor. Al crecer, el contenido
+                    // de arriba se encoge y el campo con el foco puede
+                    // desplazarse hasta quedar a la vista.
+                    .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
                     .padding(
                         start = Espacio.x16,
                         end = Espacio.x16,
@@ -81,7 +92,11 @@ fun PantallaRegistro(
 }
 
 @Composable
-private fun EncabezadoPantalla(titulo: String, onAtras: (() -> Unit)?) {
+private fun EncabezadoPantalla(
+    titulo: String,
+    onAtras: (() -> Unit)?,
+    onCerrar: (() -> Unit)? = null,
+) {
     // La aplicacion dibuja de borde a borde, asi que el encabezado tiene que
     // dejarle su espacio a la barra de estado: sin esto el titulo queda
     // encima del reloj y los iconos del sistema.
@@ -104,7 +119,23 @@ private fun EncabezadoPantalla(titulo: String, onAtras: (() -> Unit)?) {
                             .padding(Espacio.x8),
                     )
                 }
-                Text(text = titulo, style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    text = titulo,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                // Salir del flujo sin terminarlo, como en M11a. Lo que ya se
+                // diligencio queda guardado como borrador.
+                if (onCerrar != null) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_x),
+                        contentDescription = stringResource(R.string.comun_cerrar),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable(onClick = onCerrar)
+                            .padding(Espacio.x8),
+                    )
+                }
             }
             HorizontalDivider(color = LocalColoresSolventa.current.bordeBase)
         }

@@ -204,6 +204,20 @@ kover {
                     // su interfaz, y la verificación de la imagen reducida se
                     // hace en el teléfono.
                     "co.solventa.movil.core.imagen.PreparadorDeCapturaJpeg",
+                    // Captura de evidencia (HU-M2.1-01): CameraX con video, el
+                    // LocationManager del sistema, la subida firmada y el
+                    // trabajador de WorkManager. Nada de eso existe fuera del
+                    // dispositivo; lo que sí se prueba en la JVM es el
+                    // repositorio y el ViewModel, que los usan detrás de sus
+                    // interfaces.
+                    "co.solventa.movil.features.siniestros.evidencia.ControladorDeEvidencia",
+                    "co.solventa.movil.features.siniestros.evidencia.CamaraDeEvidenciaKt",
+                    "co.solventa.movil.features.siniestros.evidencia.MiniaturaDeEvidenciaKt",
+                    "co.solventa.movil.features.siniestros.evidencia.VistaDeEvidenciaKt",
+                    "co.solventa.movil.features.siniestros.evidencia.TrabajadorDeSubida",
+                    "co.solventa.movil.features.siniestros.evidencia.EnvioConWorkManager",
+                    "co.solventa.movil.core.ubicacion.LocalizadorDelSistema",
+                    "co.solventa.movil.core.api.siniestros.SubidorDeArchivos",
                     "co.solventa.movil.shared.ui.camara.ControladorDeCamara",
                     "co.solventa.movil.shared.ui.camara.CamaraDeDocumento",
                     "co.solventa.movil.shared.ui.camara.VistaPreviaDeCamaraKt",
@@ -264,6 +278,7 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.video)
 
     // Biometría
     implementation(libs.androidx.biometric)
