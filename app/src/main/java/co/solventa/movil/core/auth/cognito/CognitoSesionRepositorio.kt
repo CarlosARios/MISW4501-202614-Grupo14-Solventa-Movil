@@ -7,6 +7,8 @@ import co.solventa.movil.core.auth.sesion.ResultadoIngreso
 import co.solventa.movil.core.auth.sesion.Sesion
 import co.solventa.movil.core.auth.sesion.SesionRepositorio
 import co.solventa.movil.core.auth.sesion.TokensDeSesion
+import co.solventa.movil.core.auth.sesion.VerificacionDeContrasena
+import co.solventa.movil.core.auth.sesion.VerificadorDeContrasena
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import retrofit2.HttpException
@@ -41,7 +43,7 @@ class CognitoSesionRepositorio @Inject constructor(
      * a su vez de la sesion: asi se rompe el ciclo sin que `core` las conozca.
      */
     private val limpiezas: Provider<Set<@JvmSuppressWildcards AlCerrarSesion>>,
-) : SesionRepositorio {
+) : SesionRepositorio, VerificadorDeContrasena {
 
     /** Una renovación a la vez: varias peticiones en paralelo comparten la misma. */
     private val cerrojo = Mutex()
@@ -74,6 +76,26 @@ class CognitoSesionRepositorio @Inject constructor(
         if (e.code() in CODIGOS_DE_RECHAZO) ResultadoIngreso.CredencialesInvalidas else ResultadoIngreso.SinConexion
     } catch (_: IOException) {
         ResultadoIngreso.SinConexion
+    }
+
+    /**
+     * Pide a Cognito que autentique el correo de la sesion con la contraseña
+     * dada, como en el ingreso, pero **descarta los tokens que devuelve**: la
+     * sesion guardada no cambia (HU-M1.3-02, D-6 a). Sin sesion guardada la
+     * contraseña no puede ser correcta.
+     */
+    override suspend fun verificarContrasena(contrasena: String): VerificacionDeContrasena {
+        val correo = almacen.tokens()?.correo?.takeIf { it.isNotBlank() } ?: return VerificacionDeContrasena.Incorrecta
+        return try {
+            val respuesta = api.iniciarAutenticacion(
+                PeticionDeAutenticacion.conContrasena(BuildConfig.COGNITO_CLIENTE_ID, correo, contrasena),
+            )
+            if (respuesta.resultado != null) VerificacionDeContrasena.Correcta else VerificacionDeContrasena.Incorrecta
+        } catch (e: HttpException) {
+            if (e.code() in CODIGOS_DE_RECHAZO) VerificacionDeContrasena.Incorrecta else VerificacionDeContrasena.SinConexion
+        } catch (_: IOException) {
+            VerificacionDeContrasena.SinConexion
+        }
     }
 
     override suspend fun habilitarBiometria(habilitada: Boolean) {

@@ -39,6 +39,30 @@ sealed interface ResultadoIngreso {
     data object SinConexion : ResultadoIngreso
 }
 
+/**
+ * Resultado de verificar la contraseña de la sesion para confirmar una accion
+ * sensible (HU-M1.3-02, decision D-6 a).
+ */
+sealed interface VerificacionDeContrasena {
+    data object Correcta : VerificacionDeContrasena
+
+    /** Como en el ingreso, no se distingue por que fallo. */
+    data object Incorrecta : VerificacionDeContrasena
+
+    /** Verificarla exige hablar con el proveedor de identidad: sin red no se puede. */
+    data object SinConexion : VerificacionDeContrasena
+}
+
+/**
+ * Verifica la contraseña de la cuenta que tiene la sesion abierta, **sin
+ * reemplazar los tokens guardados**: es una confirmacion, no un ingreso
+ * (HU-M1.3-02, criterio 1: «la contraseña, segun HU-M1.1-02», cuando el
+ * telefono no tiene biometria habilitada para Solventa).
+ */
+interface VerificadorDeContrasena {
+    suspend fun verificarContrasena(contrasena: String): VerificacionDeContrasena
+}
+
 interface SesionRepositorio {
 
     /** La sesión que quedó guardada en el dispositivo, si la hay. */
