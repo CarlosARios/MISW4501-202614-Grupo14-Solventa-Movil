@@ -1,5 +1,6 @@
 package co.solventa.movil.features.siniestros.radicacion
 
+import co.solventa.movil.core.api.siniestros.EvidenciaRadicada
 import co.solventa.movil.core.api.siniestros.SiniestrosApi
 import co.solventa.movil.core.errores.Correlacion
 import kotlinx.coroutines.test.runTest
@@ -10,6 +11,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -176,6 +178,11 @@ class RadicacionRepositorioHttpTest {
     )
 
     private companion object {
+        const val CUERPO_EVIDENCIA_INVALIDA = """
+            {"error":"validation_failed","message":"one or more fields are missing or invalid",
+             "fields":[{"field":"evidence.0.object_key","code":"not_stored"}]}
+        """
+
         const val BORRADOR = "9d1f6b52-0b2e-4a0c-9d9b-6f1a2c3d4e5f"
 
         const val CUERPO_CREADO = """
@@ -190,4 +197,59 @@ class RadicacionRepositorioHttpTest {
                        {"field":"description","code":"out_of_range"}]}
         """
     }
+
+    // La evidencia de HU-M2.1-01 viaja con la radicación: sus llaves y lo que
+    // era cierto al capturarla.
+
+    @Test
+    fun `la evidencia viaja con sus llaves y sus metadatos`() = runTest {
+        servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
+
+        repositorio.radicar(BORRADOR, radicacion(), listOf(evidencia()))
+
+        val enviado = servidor.takeRequest().body?.utf8().orEmpty()
+        assertTrue(enviado, enviado.contains("\"object_key\":\"evidence/sub/una.jpg\""))
+        assertTrue(enviado, enviado.contains("\"kind\":\"photo\""))
+        assertTrue(enviado, enviado.contains("\"location_trusted\":true"))
+        assertTrue(enviado, enviado.contains("\"accuracy_m\":8.0"))
+    }
+
+    /** Sin evidencia el campo no viaja, y el servicio lo lee como vacío. */
+    @Test
+    fun `sin evidencia el cuerpo no lleva el campo`() = runTest {
+        servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
+
+        repositorio.radicar(BORRADOR, radicacion())
+
+        val enviado = servidor.takeRequest().body?.utf8().orEmpty()
+        assertFalse(enviado, enviado.contains("evidence"))
+    }
+
+    /**
+     * El servicio nombra cada evidencia rechazada con su posición, y todas se
+     * corrigen en el mismo sitio: volviendo a capturar.
+     */
+    @Test
+    fun `una evidencia rechazada devuelve al paso de evidencias`() = runTest {
+        servidor.enqueue(MockResponse(code = 422, body = CUERPO_EVIDENCIA_INVALIDA))
+
+        val resultado = repositorio.radicar(BORRADOR, radicacion(), listOf(evidencia()))
+
+        assertEquals(
+            ResultadoRadicacion.DatosInvalidos(setOf(CampoDeRadicacion.EVIDENCIAS)),
+            resultado,
+        )
+    }
+
+    private fun evidencia() = EvidenciaRadicada(
+        llaveDelObjeto = "evidence/sub/una.jpg",
+        tipo = "photo",
+        capturadaEn = "2026-10-20T23:32:14Z",
+        latitud = 4.7712,
+        longitud = -74.0452,
+        precisionM = 8.0,
+        ubicacionConfiable = true,
+        sha256 = "a".repeat(64),
+        tamanoBytes = 312_044,
+    )
 }

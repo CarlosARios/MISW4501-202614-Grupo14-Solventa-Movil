@@ -363,4 +363,52 @@
     <string name="perfil_cerrar_sesion">Sign out</string>
     <string name="perfil_version">Solventa %1$s</string>
     <string name="perfil_en_espera_descripcion">%1$s, coming soon</string>
+
+    <!-- Evidence capture (HU-M2.1-01) -->
+    <string name="evidencia_cerrar">Close the capture</string>
+    <string name="evidencia_contador_visor">Evidence %1$d of %2$d</string>
+    <string name="evidencia_subtitulo_visor">%1$s · claim being filed</string>
+    <string name="evidencia_sello_ubicacion">%1$s · %2$s · ±%3$d m</string>
+    <string name="evidencia_sello_sin_ubicacion">No location yet</string>
+    <string name="evidencia_sello_hora">UTC %1$s · integrity seal</string>
+    <string name="evidencia_galeria_no_disponible">The gallery is not available: evidence is captured on site</string>
+    <string name="evidencia_video">Video</string>
+    <string name="evidencia_detener">Stop</string>
+    <string name="evidencia_permisos_titulo">Allow Solventa to use the camera and your precise location?</string>
+    <string name="evidencia_permisos_detalle">They are used to capture photos and video with a verifiable place and time. The gallery is not accessed and your location is not tracked outside the capture.</string>
+    <string name="evidencia_permisos_permitir">Allow camera and location</string>
+    <string name="evidencia_permisos_no_permitir">Don\'t allow</string>
+    <string name="evidencia_permisos_negados_titulo">Without camera and location there is no verifiable evidence</string>
+    <string name="evidencia_permisos_negados_detalle">Grant both permissions in the system settings to capture on site. Attaching images from the gallery is not possible.</string>
+    <string name="evidencia_precision_titulo">The location is not reliable</string>
+    <string name="evidencia_precision_detalle">The current GPS accuracy is %1$d m (the limit is %2$d m). Move to an open area or wait a few seconds before capturing so the evidence records a reliable location.</string>
+    <string name="evidencia_precision_sin_lectura">There is no recent location reading yet. Move to an open area or wait a few seconds before capturing.</string>
+    <string name="evidencia_precision_esperar">Wait for a better signal</string>
+    <string name="evidencia_precision_capturar_igual">Capture anyway</string>
+    <string name="evidencia_estado_pendiente">Waiting to be sent</string>
+    <string name="evidencia_estado_subiendo">Sending…</string>
+    <string name="evidencia_estado_subida">Sent</string>
+    <string name="evidencia_estado_fallida">Sending failed · will retry</string>
+    <string name="evidencia_sin_ubicacion_confiable">Unreliable location</string>
+    <string name="evidencia_tomar">Capture evidence</string>
+    <string name="evidencia_descartar">Discard this evidence</string>
+    <string name="evidencia_capturada_en">%1$s · ±%2$d m</string>
+    <string name="radicacion_falta_evidencias">the evidence from the place</string>
+    <string name="radicacion_evidencias_sin_capturas">No captures yet</string>
+    <string name="radicacion_evidencias_con_video"> and one video</string>
+    <string name="radicacion_evidencias_enviando"> · %1$d being sent</string>
+    <plurals name="radicacion_evidencias_fotos">
+        <item quantity="one">%1$d photo</item>
+        <item quantity="other">%1$d photos</item>
+    </plurals>
+    <string name="evidencia_grabando">Recording</string>
+    <string name="radicacion_video_capturado">%1$d s · %2$s</string>
+    <string name="radicacion_evidencias_esperando_envio">Waiting for the evidence to be sent</string>
+    <string name="evidencia_ver">View this evidence</string>
+    <string name="evidencia_descartar_y_repetir">Discard and take another</string>
+    <string name="radicacion_video_ver">Play video</string>
+    <string name="evidencia_estado_corto_pendiente">Pending</string>
+    <string name="evidencia_estado_corto_subiendo">Sending…</string>
+    <string name="evidencia_estado_corto_subida">Sent</string>
+    <string name="evidencia_estado_corto_fallida">Failed</string>
 </resources>

@@ -93,7 +93,7 @@ fun PantallaRadicado(
             SeparadorTarjeta()
             FilaDelCaso(
                 etiqueta = stringResource(R.string.radicacion_etapa_evidencias),
-                valor = stringResource(R.string.radicacion_evidencias_pendientes),
+                valor = resumenDelCaso(caso),
             )
             SeparadorTarjeta()
             FilaDelCaso(

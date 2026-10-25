@@ -2,6 +2,15 @@ package co.solventa.movil.features.siniestros.radicacion
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import co.solventa.movil.core.api.siniestros.EvidenciaRadicada
+import co.solventa.movil.core.ubicacion.Ubicacion
+import co.solventa.movil.features.siniestros.evidencia.EstadoDeEvidencia
+import co.solventa.movil.features.siniestros.evidencia.EvidenciaDelReporte
+import co.solventa.movil.features.siniestros.evidencia.EvidenciaRepositorio
+import co.solventa.movil.features.siniestros.evidencia.LimitesDeEvidencia
+import co.solventa.movil.features.siniestros.evidencia.TipoDeEvidencia
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -27,12 +36,14 @@ class RadicacionViewModelTest {
     private val dispatcher = StandardTestDispatcher()
     private lateinit var borradores: BorradoresEnMemoria
     private lateinit var radicaciones: RadicacionFalsa
+    private lateinit var evidencias: EvidenciasFalsas
 
     @Before
     fun antes() {
         Dispatchers.setMain(dispatcher)
         borradores = BorradoresEnMemoria()
         radicaciones = RadicacionFalsa()
+        evidencias = EvidenciasFalsas().apply { conElMinimoEnviado() }
     }
 
     @After
@@ -41,7 +52,7 @@ class RadicacionViewModelTest {
     }
 
     private fun crearViewModel() =
-        RadicacionViewModel(borradores, radicaciones, PolizasFalsas())
+        RadicacionViewModel(borradores, radicaciones, PolizasFalsas(), evidencias)
 
     // Criterio 1 — el asistente recorre Identificación, Hechos, Evidencias y
     // Declaración, en ese orden.
@@ -436,9 +447,211 @@ private class RadicacionFalsa : RadicacionRepositorio {
     var recibida: Radicacion? = null
         private set
 
-    override suspend fun radicar(borrador: String, radicacion: Radicacion): ResultadoRadicacion {
+    var evidenciaRecibida: List<EvidenciaRadicada> = emptyList()
+        private set
+
+    override suspend fun radicar(
+        borrador: String,
+        radicacion: Radicacion,
+        evidencias: List<EvidenciaRadicada>,
+    ): ResultadoRadicacion {
         claveRecibida = borrador
         recibida = radicacion
+        evidenciaRecibida = evidencias
         return resultado
+    }
+}
+
+/**
+ * Doble de la evidencia capturada: la lista se fija en la prueba y el envío
+ * se da por hecho, que es lo que el asistente ve.
+ */
+private class EvidenciasFalsas : EvidenciaRepositorio {
+
+    private val capturadas = MutableStateFlow<List<EvidenciaDelReporte>>(emptyList())
+    var limpiadas: String? = null
+        private set
+
+    /** Deja el mínimo ya enviado, que es lo que deja avanzar el paso 3. */
+    fun conElMinimoEnviado(cuantas: Int = LimitesDeEvidencia.MINIMO_DE_FOTOS) {
+        capturadas.value = (1..cuantas).map { numero ->
+            EvidenciaDelReporte(
+                id = "ev-$numero",
+                tipo = TipoDeEvidencia.FOTO,
+                rutaArchivo = "/tmp/evidencia-$numero.jpg",
+                capturadaEn = 1_792_000_000_000,
+                ubicacion = Ubicacion(4.7712, -74.0452, null, 8f, 1_792_000_000_000),
+                duracionS = 0,
+                estado = EstadoDeEvidencia.SUBIDA,
+            )
+        }
+    }
+
+    override fun observar(borradorId: String): Flow<List<EvidenciaDelReporte>> = capturadas
+
+    override suspend fun capturar(
+        borradorId: String,
+        archivo: java.io.File,
+        tipo: TipoDeEvidencia,
+        ubicacion: Ubicacion?,
+        duracionS: Int,
+    ): Boolean = true
+
+    override suspend fun descartar(id: String) {
+        capturadas.value = capturadas.value.filterNot { it.id == id }
+    }
+
+    override suspend fun reintentarEnvios(borradorId: String) = Unit
+
+    override suspend fun paraRadicar(borradorId: String): List<EvidenciaRadicada> =
+        capturadas.value.map { evidencia ->
+            EvidenciaRadicada(
+                llaveDelObjeto = "evidence/sub/${evidencia.id}.jpg",
+                tipo = evidencia.tipo.delContrato,
+                capturadaEn = "2026-10-20T23:32:14Z",
+                latitud = 4.7712,
+                longitud = -74.0452,
+                precisionM = 8.0,
+                ubicacionConfiable = true,
+                sha256 = "a".repeat(64),
+                tamanoBytes = 312_044,
+            )
+        }
+
+    override suspend fun todoSubido(borradorId: String): Boolean = true
+
+    override suspend fun limpiar(borradorId: String) {
+        limpiadas = borradorId
+        // Limpiar borra las filas de ese borrador: lo que la pantalla observa
+        // se queda sin nada.
+        capturadas.value = emptyList()
+    }
+}
+
+// Criterio 3 de HU-M2.2-01 con la evidencia de HU-M2.1-01: el paso 3 no deja
+// avanzar hasta que el mínimo esté en la plataforma.
+
+class EvidenciaDelAsistenteTest {
+
+    @Test
+    fun `sin el minimo enviado no se puede avanzar del paso de evidencias`() {
+        val estado = estadoConEvidencias(enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS - 1)
+
+        assertEquals(setOf(CampoDeRadicacion.EVIDENCIAS), estado.faltantesDe(Etapa.EVIDENCIAS))
+        assertFalse(estado.puedeAvanzar)
+    }
+
+    @Test
+    fun `con el minimo enviado se avanza`() {
+        val estado = estadoConEvidencias(enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS)
+
+        assertTrue(estado.faltantesDe(Etapa.EVIDENCIAS).isEmpty())
+        assertTrue(estado.puedeAvanzar)
+    }
+
+    /**
+     * Criterio 5: el envío no bloquea a quien está en el lugar, así que el
+     * paso 3 cuenta lo capturado. Quien espera por las subidas es la
+     * radicación, que viaja con las llaves del repositorio.
+     */
+    @Test
+    fun `lo capturado deja avanzar aunque una evidencia siga viajando`() {
+        val estado = estadoConEvidencias(
+            enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS - 1,
+            enCurso = 2,
+        )
+
+        assertEquals(LimitesDeEvidencia.MINIMO_DE_FOTOS + 1, estado.fotosCapturadas)
+        assertEquals(LimitesDeEvidencia.MINIMO_DE_FOTOS - 1, estado.fotosEnviadas)
+        assertTrue(estado.hayEnviosEnCurso)
+        assertTrue(estado.faltantesDe(Etapa.EVIDENCIAS).isEmpty())
+        assertTrue(estado.puedeAvanzar)
+    }
+
+    @Test
+    fun `la radicacion espera a que la evidencia llegue a la plataforma`() {
+        val enCurso = estadoConEvidencias(
+            enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS,
+            enCurso = 1,
+        ).copy(etapa = Etapa.DECLARACION, radicacion = Radicacion(declaracionAceptada = true))
+
+        assertTrue(enCurso.faltantes.isEmpty())
+        assertFalse("la evidencia todavia viaja", enCurso.puedeAvanzar)
+
+        val todoEnviado = estadoConEvidencias(enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS)
+            .copy(etapa = Etapa.DECLARACION, radicacion = Radicacion(declaracionAceptada = true))
+
+        assertTrue(todoEnviado.puedeAvanzar)
+    }
+
+    @Test
+    fun `el video no cuenta para el minimo de fotos`() {
+        val estado = estadoConEvidencias(enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS - 1, videos = 1)
+
+        assertEquals(1, estado.videosCapturados)
+        assertFalse(estado.puedeAvanzar)
+    }
+
+    private fun estadoConEvidencias(enviadas: Int, enCurso: Int = 0, videos: Int = 0) =
+        RadicacionUiState(
+            etapa = Etapa.EVIDENCIAS,
+            cargando = false,
+            evidencias = buildList {
+                repeat(enviadas) { add(evidencia("ok-$it", EstadoDeEvidencia.SUBIDA)) }
+                repeat(enCurso) { add(evidencia("curso-$it", EstadoDeEvidencia.SUBIENDO)) }
+                repeat(videos) {
+                    add(evidencia("video-$it", EstadoDeEvidencia.SUBIDA, TipoDeEvidencia.VIDEO))
+                }
+            },
+        )
+
+    private fun evidencia(
+        id: String,
+        estado: EstadoDeEvidencia,
+        tipo: TipoDeEvidencia = TipoDeEvidencia.FOTO,
+    ) = EvidenciaDelReporte(
+        id = id,
+        tipo = tipo,
+        rutaArchivo = "/tmp/$id",
+        capturadaEn = 1_792_000_000_000,
+        ubicacion = Ubicacion(4.7712, -74.0452, null, 8f, 1_792_000_000_000),
+        duracionS = 0,
+        estado = estado,
+    )
+}
+
+// Descartar el reporte también descarta lo capturado: sin eso, el reporte
+// nuevo heredaba las fotos del anterior.
+
+class DescarteDelBorradorTest {
+
+    private val dispatcher = StandardTestDispatcher()
+    private lateinit var borradores: BorradoresEnMemoria
+    private lateinit var evidencias: EvidenciasFalsas
+
+    @Before
+    fun antes() {
+        Dispatchers.setMain(dispatcher)
+        borradores = BorradoresEnMemoria()
+        evidencias = EvidenciasFalsas().apply { conElMinimoEnviado() }
+    }
+
+    @After
+    fun despues() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `descartar el borrador borra sus evidencias y arranca uno nuevo`() = runTest(dispatcher) {
+        val viewModel = RadicacionViewModel(borradores, RadicacionFalsa(), PolizasFalsas(), evidencias)
+        advanceUntilIdle()
+        val primero = viewModel.estado.value.borradorId
+
+        viewModel.descartarBorrador()
+        advanceUntilIdle()
+
+        assertEquals("se limpió el borrador que se descartó", primero, evidencias.limpiadas)
+        assertNotEquals(primero, viewModel.estado.value.borradorId)
+        assertTrue("el reporte nuevo arranca sin evidencias", viewModel.estado.value.evidencias.isEmpty())
     }
 }

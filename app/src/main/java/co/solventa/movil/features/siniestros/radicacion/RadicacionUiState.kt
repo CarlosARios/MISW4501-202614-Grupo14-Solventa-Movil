@@ -1,5 +1,10 @@
 package co.solventa.movil.features.siniestros.radicacion
 
+import co.solventa.movil.features.siniestros.evidencia.EstadoDeEvidencia
+import co.solventa.movil.features.siniestros.evidencia.EvidenciaDelReporte
+import co.solventa.movil.features.siniestros.evidencia.LimitesDeEvidencia
+import co.solventa.movil.features.siniestros.evidencia.TipoDeEvidencia
+
 /** Estado del envío de la radicación. */
 sealed interface EstadoDelEnvio {
     data object NoIniciado : EstadoDelEnvio
@@ -20,6 +25,8 @@ data class RadicacionUiState(
     val radicacion: Radicacion = Radicacion(),
     /** Las polizas vigentes entre las que se elige en el paso 1. */
     val polizas: List<PolizaElegible> = emptyList(),
+    /** Lo capturado en el lugar, con el estado de su envío (HU-M2.1-01). */
+    val evidencias: List<EvidenciaDelReporte> = emptyList(),
     /** Campos que el servicio rechazó con un `422`. */
     val camposRechazados: Set<CampoDeRadicacion> = emptySet(),
     val envio: EstadoDelEnvio = EstadoDelEnvio.NoIniciado,
@@ -35,9 +42,15 @@ data class RadicacionUiState(
     val faltantes: Set<CampoDeRadicacion>
         get() = faltantesDe(etapa)
 
-    /** Criterio 3: el botón de avanzar depende de lo que falte. */
+    /**
+     * Criterio 3: el botón de avanzar depende de lo que falte. En la última
+     * etapa espera además a que la evidencia haya llegado a la plataforma:
+     * el servicio comprueba cada llave al radicar.
+     */
     val puedeAvanzar: Boolean
-        get() = faltantes.isEmpty() && envio != EstadoDelEnvio.Enviando
+        get() = faltantes.isEmpty() &&
+            envio != EstadoDelEnvio.Enviando &&
+            !(esUltimaEtapa && hayEnviosEnCurso)
 
     /** Criterio 5: cuánto se lleva recorrido, de 0 a 1. */
     val avance: Float
@@ -53,10 +66,29 @@ data class RadicacionUiState(
     val esUltimaEtapa: Boolean
         get() = etapa == Etapa.DECLARACION
 
+    /** Fotografías que ya están en la plataforma y pueden viajar al radicar. */
+    val fotosEnviadas: Int
+        get() = evidencias.count {
+            it.tipo == TipoDeEvidencia.FOTO && it.estado == EstadoDeEvidencia.SUBIDA
+        }
+
+    val fotosCapturadas: Int
+        get() = evidencias.count { it.tipo == TipoDeEvidencia.FOTO }
+
+    val videosCapturados: Int
+        get() = evidencias.count { it.tipo == TipoDeEvidencia.VIDEO }
+
+    /** Si queda alguna evidencia viajando o esperando a la red. */
+    val hayEnviosEnCurso: Boolean
+        get() = evidencias.any { it.estado != EstadoDeEvidencia.SUBIDA }
+
     /**
-     * Lo que falta en una etapa cualquiera. La de evidencias no exige nada
-     * todavía: el mínimo por tipo de siniestro llega con la captura de
-     * HU-M2.1-01.
+     * Lo que falta en una etapa cualquiera.
+     *
+     * **La etapa de evidencias exige el mínimo capturado, no el enviado.** El
+     * criterio 5 pide que el envío no bloquee a quien está en el lugar; lo
+     * que sí espera por las subidas es la radicación, que viaja con las
+     * llaves del repositorio.
      */
     fun faltantesDe(etapa: Etapa): Set<CampoDeRadicacion> = when (etapa) {
         Etapa.IDENTIFICACION -> buildSet {
@@ -73,7 +105,11 @@ data class RadicacionUiState(
             if (preguntasSinResponder().isNotEmpty()) add(CampoDeRadicacion.RESPUESTAS)
         }
 
-        Etapa.EVIDENCIAS -> emptySet()
+        Etapa.EVIDENCIAS -> buildSet {
+            if (fotosCapturadas < LimitesDeEvidencia.MINIMO_DE_FOTOS) {
+                add(CampoDeRadicacion.EVIDENCIAS)
+            }
+        }
 
         Etapa.DECLARACION -> buildSet {
             if (!radicacion.declaracionAceptada) add(CampoDeRadicacion.DECLARACION)

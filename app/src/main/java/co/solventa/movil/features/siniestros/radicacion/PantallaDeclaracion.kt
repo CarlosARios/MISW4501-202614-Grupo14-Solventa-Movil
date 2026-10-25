@@ -114,7 +114,7 @@ fun PantallaDeclaracion(
             SeparadorTarjeta()
             FilaDeResumen(
                 etiqueta = stringResource(R.string.radicacion_etapa_evidencias),
-                valor = stringResource(R.string.radicacion_evidencias_pendientes),
+                valor = resumenDeEvidencias(estado),
             )
         }
 

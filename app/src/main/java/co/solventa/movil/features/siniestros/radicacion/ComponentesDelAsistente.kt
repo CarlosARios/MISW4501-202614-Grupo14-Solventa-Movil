@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -29,6 +30,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import co.solventa.movil.R
+import co.solventa.movil.features.siniestros.evidencia.EstadoDeEvidencia
 import co.solventa.movil.shared.ui.BarraProgreso
 import co.solventa.movil.ui.theme.Espacio
 import co.solventa.movil.ui.theme.LocalColoresSolventa
@@ -344,9 +346,22 @@ fun PreguntaDeLista(
 @Composable
 fun TextoDeFaltantes(estado: RadicacionUiState, modifier: Modifier = Modifier) {
     val faltantes = estado.faltantes
+    val colores = LocalColoresSolventa.current
+
+    // En la declaración puede no faltar ningún dato y aun así no poder
+    // radicar: la evidencia todavía está viajando y el servicio comprueba
+    // cada llave al crear el caso.
+    if (faltantes.isEmpty() && estado.esUltimaEtapa && estado.hayEnviosEnCurso) {
+        Text(
+            text = stringResource(R.string.radicacion_evidencias_esperando_envio),
+            style = MaterialTheme.typography.bodySmall,
+            color = colores.textoSecundario,
+            modifier = modifier,
+        )
+        return
+    }
     if (faltantes.isEmpty()) return
 
-    val colores = LocalColoresSolventa.current
     Text(
         text = if (estado.etapa == Etapa.EVIDENCIAS) {
             // La etapa de evidencias tiene su propio texto en el prototipo.
@@ -378,5 +393,44 @@ private fun nombreDe(campo: CampoDeRadicacion) = when (campo) {
     CampoDeRadicacion.LUGAR -> R.string.radicacion_falta_lugar
     CampoDeRadicacion.DESCRIPCION -> R.string.radicacion_falta_descripcion
     CampoDeRadicacion.RESPUESTAS -> R.string.radicacion_falta_respuestas
+    CampoDeRadicacion.EVIDENCIAS -> R.string.radicacion_falta_evidencias
     CampoDeRadicacion.DECLARACION -> R.string.radicacion_falta_declaracion
+}
+
+/**
+ * Lo que el resumen dice de la evidencia: cuántas fotografías y si hay video,
+ * y cuántas quedan viajando. Antes decía siempre «pendientes», que con las
+ * capturas ya enviadas era falso.
+ */
+@Composable
+fun resumenDeEvidencias(estado: RadicacionUiState): String {
+    if (estado.evidencias.isEmpty()) return stringResource(R.string.radicacion_evidencias_sin_capturas)
+
+    val fotos = pluralStringResource(
+        R.plurals.radicacion_evidencias_fotos,
+        estado.fotosCapturadas,
+        estado.fotosCapturadas,
+    )
+    val video = if (estado.videosCapturados > 0) {
+        stringResource(R.string.radicacion_evidencias_con_video)
+    } else {
+        ""
+    }
+    val enCurso = estado.evidencias.count { it.estado != EstadoDeEvidencia.SUBIDA }
+    val envio = if (enCurso > 0) stringResource(R.string.radicacion_evidencias_enviando, enCurso) else ""
+    return (fotos + video + envio)
+}
+
+/**
+ * Lo que el servicio asoció al caso. En el radicado no sirve mirar el
+ * teléfono: las evidencias se borran de ahí en cuanto el caso existe.
+ */
+@Composable
+fun resumenDelCaso(caso: CasoRadicado): String {
+    if (caso.fotos == 0 && caso.videos == 0) {
+        return stringResource(R.string.radicacion_evidencias_sin_capturas)
+    }
+    val fotos = pluralStringResource(R.plurals.radicacion_evidencias_fotos, caso.fotos, caso.fotos)
+    val video = if (caso.videos > 0) stringResource(R.string.radicacion_evidencias_con_video) else ""
+    return fotos + video
 }

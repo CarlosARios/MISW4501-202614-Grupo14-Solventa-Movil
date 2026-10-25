@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
@@ -37,6 +38,9 @@ fun NavGraphBuilder.grafoRadicacion(navegacion: NavController) {
 
         BackHandler(enabled = !estado.esPrimeraEtapa) { viewModel.volver() }
 
+        // El encabezado del visor nombra el tipo de siniestro en curso.
+        val tipoDeSiniestro = estado.radicacion.tipo?.let { stringResource(tituloDe(it)) }.orEmpty()
+
         val salir = {
             // Guardar y salir: el borrador ya está escrito, así que basta con
             // dejar el flujo.
@@ -67,6 +71,15 @@ fun NavGraphBuilder.grafoRadicacion(navegacion: NavController) {
 
             Etapa.EVIDENCIAS -> PantallaEvidencias(
                 estado = estado,
+                onDescartar = viewModel::descartarEvidencia,
+                onCapturar = {
+                    navegacion.navigate(
+                        Ruta.CapturaDeEvidencia(
+                            borradorId = estado.borradorId,
+                            tipoDeSiniestro = tipoDeSiniestro,
+                        ),
+                    )
+                },
                 onContinuar = viewModel::continuar,
                 onGuardarYSalir = salir,
                 onAtras = viewModel::volver,

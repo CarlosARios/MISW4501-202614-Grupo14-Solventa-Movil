@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "26b3db677bb7f25388ed30e610a8884e",
+    "identityHash": "fd37d874c175483fbb764de27db6cb85",
     "entities": [
       {
         "tableName": "borrador_de_radicacion",
@@ -64,6 +64,112 @@
             "fieldPath": "actualizadoEn",
             "columnName": "actualizadoEn",
             "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "evidencia_capturada",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `borradorId` TEXT NOT NULL, `posicion` INTEGER NOT NULL, `tipo` TEXT NOT NULL, `rutaArchivo` TEXT NOT NULL, `capturadaEn` INTEGER NOT NULL, `latitud` REAL NOT NULL, `longitud` REAL NOT NULL, `altitud` REAL, `precisionM` REAL NOT NULL, `ubicacionConfiable` INTEGER NOT NULL, `sha256` TEXT NOT NULL, `tamanoBytes` INTEGER NOT NULL, `duracionS` INTEGER NOT NULL, `llaveDelObjeto` TEXT, `estado` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "borradorId",
+            "columnName": "borradorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posicion",
+            "columnName": "posicion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rutaArchivo",
+            "columnName": "rutaArchivo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturadaEn",
+            "columnName": "capturadaEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitud",
+            "columnName": "latitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitud",
+            "columnName": "longitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitud",
+            "columnName": "altitud",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "precisionM",
+            "columnName": "precisionM",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ubicacionConfiable",
+            "columnName": "ubicacionConfiable",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tamanoBytes",
+            "columnName": "tamanoBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duracionS",
+            "columnName": "duracionS",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "llaveDelObjeto",
+            "columnName": "llaveDelObjeto",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
             "notNull": true
           }
         ],
@@ -203,7 +309,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '26b3db677bb7f25388ed30e610a8884e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fd37d874c175483fbb764de27db6cb85')"
     ]
   }
 }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "03c55fb8e83ba4f56cd9c83e01a9be80",
+    "identityHash": "7a8efe6c768c1475e464ab93347e1347",
     "entities": [
       {
         "tableName": "borrador_de_radicacion",
@@ -73,11 +73,117 @@
             "id"
           ]
         }
+      },
+      {
+        "tableName": "evidencia_capturada",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `borradorId` TEXT NOT NULL, `posicion` INTEGER NOT NULL, `tipo` TEXT NOT NULL, `rutaArchivo` TEXT NOT NULL, `capturadaEn` INTEGER NOT NULL, `latitud` REAL NOT NULL, `longitud` REAL NOT NULL, `altitud` REAL, `precisionM` REAL NOT NULL, `ubicacionConfiable` INTEGER NOT NULL, `sha256` TEXT NOT NULL, `tamanoBytes` INTEGER NOT NULL, `duracionS` INTEGER NOT NULL, `llaveDelObjeto` TEXT, `estado` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "borradorId",
+            "columnName": "borradorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posicion",
+            "columnName": "posicion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rutaArchivo",
+            "columnName": "rutaArchivo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturadaEn",
+            "columnName": "capturadaEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitud",
+            "columnName": "latitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitud",
+            "columnName": "longitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitud",
+            "columnName": "altitud",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "precisionM",
+            "columnName": "precisionM",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ubicacionConfiable",
+            "columnName": "ubicacionConfiable",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tamanoBytes",
+            "columnName": "tamanoBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duracionS",
+            "columnName": "duracionS",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "llaveDelObjeto",
+            "columnName": "llaveDelObjeto",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '03c55fb8e83ba4f56cd9c83e01a9be80')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7a8efe6c768c1475e464ab93347e1347')"
     ]
   }
 }
