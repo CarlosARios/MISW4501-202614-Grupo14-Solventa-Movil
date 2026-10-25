@@ -9,16 +9,32 @@ data class DetalleConsentimientoUiState(
     val noDisponible: Boolean = false,
     /** No hay red: lo que se ve es la copia local, sin confirmar con el servicio. */
     val sinConexion: Boolean = false,
+    /** Su revocacion pendiente de envio, si la hay (HU-M1.3-02, `1379:3583`). */
+    val pendiente: RevocacionPendiente? = null,
 ) {
     /**
-     * El boton «Revocar consentimiento» solo aparece en un activo y siempre
-     * deshabilitado: revocar es de HU-M1.3-02 (D-8 b). En revocados y
-     * vencidos no aparece.
+     * «Revocar consentimiento» solo en un activo que el servicio deja revocar
+     * y sin revocacion en cola; en revocados, vencidos y pendientes no aparece
+     * (HU-M1.3-02, criterio 6). HU-M1.3-01 lo dejaba deshabilitado (D-8 b).
      */
-    val revocarVisible: Boolean get() = consentimiento?.estado == EstadosDeConsentimiento.ACTIVO
+    val revocarVisible: Boolean
+        get() = consentimiento?.let { it.estado == EstadosDeConsentimiento.ACTIVO && it.revocable } == true && pendiente == null
+
+    /** Revocado, pero alguna entidad no confirmo (HU-M1.3-02, `1379:3687`). */
+    val parcial: Boolean get() = consentimiento?.estado == EstadosDeConsentimiento.REVOCADO_PARCIAL
+
+    /**
+     * Los hechos que dibuja la linea de tiempo: los del consentimiento entero
+     * (los avisos a cada entidad se resumen en el aviso de revocacion parcial).
+     * En un parcial, la revocacion pasa a ser el paso final, «sin confirmar».
+     */
+    val historialVisible: List<CambioDeEstado>
+        get() = consentimiento?.historial.orEmpty()
+            .filter { it.estado !in CambiosDeEstado.DE_ENTIDAD }
+            .filterNot { parcial && it.estado == CambiosDeEstado.REVOCADO && it.entidad == null }
 
     /** El paso con que termina el historial, si el estado actual no es ya su ultimo hecho. */
-    val pasoFinal: PasoFinalDelHistorial? get() = consentimiento?.let { pasoFinalDelHistorial(it, sinConexion) }
+    val pasoFinal: PasoFinalDelHistorial? get() = consentimiento?.let { pasoFinalDelHistorial(it, sinConexion, pendiente) }
 }
 
 /**
@@ -36,6 +52,16 @@ sealed interface PasoFinalDelHistorial {
 
     /** Vencido, con la fecha en que vencio. */
     data class Vencido(val vencioEn: Long) : PasoFinalDelHistorial
+
+    /** Revocacion solicitada en el telefono y pendiente de envio (HU-M1.3-02, `1379:3583`). */
+    data class RevocacionPendiente(val solicitadaEn: Long) : PasoFinalDelHistorial
+
+    /**
+     * Revocado, con entidades sin confirmar (HU-M1.3-02, `1379:3687`): la
+     * revocacion con su hora y su comprobante, que todavia no termina.
+     */
+    data class RevocadoSinConfirmar(val efectivaEn: Long, val comprobante: String?, val entidades: List<String>) :
+        PasoFinalDelHistorial
 }
 
 /**
@@ -46,9 +72,27 @@ sealed interface PasoFinalDelHistorial {
  * una revocacion registrada despues de vencer, que no cambia el estado) lo
  * dejaria duplicado y fuera de orden; un revocado termina en su revocacion y
  * no lleva paso.
+ *
+ * HU-M1.3-02: un activo con su revocacion en cola termina en «Revocacion
+ * solicitada · pendiente de envio»; un revocado parcial, en su revocacion
+ * «sin confirmar» con las entidades que faltan.
  */
-fun pasoFinalDelHistorial(c: Consentimiento, sinConexion: Boolean): PasoFinalDelHistorial? = when (c.estado) {
-    EstadosDeConsentimiento.ACTIVO -> PasoFinalDelHistorial.Activo(sincronizado = !sinConexion)
+fun pasoFinalDelHistorial(
+    c: Consentimiento,
+    sinConexion: Boolean,
+    pendiente: co.solventa.movil.features.auditoria.consentimientos.RevocacionPendiente? = null,
+): PasoFinalDelHistorial? = when (c.estado) {
+    EstadosDeConsentimiento.ACTIVO ->
+        if (pendiente != null) {
+            PasoFinalDelHistorial.RevocacionPendiente(pendiente.solicitadaEn)
+        } else {
+            PasoFinalDelHistorial.Activo(sincronizado = !sinConexion)
+        }
+    EstadosDeConsentimiento.REVOCADO_PARCIAL -> PasoFinalDelHistorial.RevocadoSinConfirmar(
+        efectivaEn = c.revocacion?.efectivaEn ?: c.finalizadoEn ?: c.otorgadoEn,
+        comprobante = c.revocacion?.comprobante ?: c.comprobante,
+        entidades = c.revocacion?.sinConfirmar?.map { it.nombre }.orEmpty().ifEmpty { listOf(c.nombreDeEntidad) },
+    )
     EstadosDeConsentimiento.VENCIDO ->
         if (c.historial.any { it.estado == CambiosDeEstado.VENCIDO }) {
             null

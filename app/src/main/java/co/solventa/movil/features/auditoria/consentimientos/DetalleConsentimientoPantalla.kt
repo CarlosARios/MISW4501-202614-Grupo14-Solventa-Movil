@@ -240,6 +240,19 @@ private fun PasoFinal(paso: PasoFinalDelHistorial, numero: Int, idioma: Idioma) 
             )
         is PasoFinalDelHistorial.Vencido -> stringResource(R.string.auditoria_consentimientos_estado_vencido) to
             FormatoDeFecha.fecha(paso.vencioEn, idioma)
+        is PasoFinalDelHistorial.RevocacionPendiente -> stringResource(R.string.auditoria_revocacion_paso_pendiente) to
+            stringResource(
+                R.string.auditoria_detalle_fecha_hora,
+                FormatoDeFecha.fecha(paso.solicitadaEn, idioma),
+                FormatoDeFecha.hora(paso.solicitadaEn, idioma),
+            )
+        is PasoFinalDelHistorial.RevocadoSinConfirmar ->
+            stringResource(R.string.auditoria_revocacion_paso_sin_confirmar, paso.entidades.joinToString(", ")) to
+                listOfNotNull(
+                    FormatoDeFecha.fecha(paso.efectivaEn, idioma),
+                    FormatoDeFecha.horaConSegundos(paso.efectivaEn, idioma),
+                    paso.comprobante,
+                ).joinToString(" · ")
     }
     PasoDeLaLinea(titulo = titulo, detalle = detalle, conLinea = false) {
         Box(

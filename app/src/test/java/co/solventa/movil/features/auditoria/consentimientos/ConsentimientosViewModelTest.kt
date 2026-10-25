@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -34,7 +35,9 @@ class ConsentimientosViewModelTest {
     private fun copiaCon(vararg lista: Consentimiento, sinConexion: Boolean = false, sincronizadoEn: Long? = AHORA) =
         CopiaDeConsentimientos(lista.toList(), sincronizadoEn, sinConexion)
 
-    private fun vm(repositorio: RepositorioFalso) = ConsentimientosViewModel(repositorio) { AHORA }
+    private val revocaciones = RevocacionesFalsas()
+
+    private fun vm(repositorio: RepositorioFalso) = ConsentimientosViewModel(repositorio, revocaciones) { AHORA }
 
     @Test
     fun `empieza cargando y luego agrupa activos e historial en orden`() = runTest(despachador) {
@@ -156,4 +159,69 @@ class ConsentimientosViewModelTest {
     }
 
     private fun assertEquals(esperado: Int, real: Int, mensaje: String) = org.junit.Assert.assertEquals(mensaje, esperado.toLong(), real.toLong())
+
+    // --- HU-M1.3-02: la cola de revocaciones en la lista (38:1503) ---
+
+    @Test
+    fun `un consentimiento con revocacion en cola sale de los activos y va a pendientes`() = runTest(despachador) {
+        val repositorio = RepositorioFalso(copiaCon(consentimiento("cns-1"), consentimiento("cns-2"), sinConexion = true))
+        repositorio.red.value = false
+        revocaciones.red.value = false
+        revocaciones.cola.value = listOf(RevocacionPendiente("cns-1", "Banco Aliado", AHORA - 60_000L, 0))
+        val vm = vm(repositorio)
+        advanceUntilIdle()
+
+        val estado = vm.estado.value
+        assertEquals(listOf("cns-2"), estado.activos.map { it.id })
+        assertEquals(listOf("cns-1"), estado.pendientes.map { it.consentimiento.id })
+        assertEquals("cns-1", estado.ultimaPendiente?.consentimiento?.id)
+        assertTrue(estado.hayContenido)
+        assertFalse("sin señal no se puede reintentar", estado.reintentarHabilitado)
+    }
+
+    @Test
+    fun `con señal se reintenta el envio y mientras tanto el boton se apaga`() = runTest(despachador) {
+        val repositorio = RepositorioFalso(copiaCon(consentimiento("cns-1")))
+        revocaciones.cola.value = listOf(RevocacionPendiente("cns-1", "Banco Aliado", AHORA, 0))
+        val vm = vm(repositorio)
+        advanceUntilIdle()
+        assertTrue(vm.estado.value.reintentarHabilitado)
+
+        vm.reintentarEnvio()
+        assertTrue(vm.estado.value.reenviando)
+        assertFalse(vm.estado.value.reintentarHabilitado)
+        advanceUntilIdle()
+
+        assertEquals(1, revocaciones.envios)
+        assertFalse(vm.estado.value.reenviando)
+        vm.reintentarEnvio()
+        advanceUntilIdle()
+        assertEquals(2, revocaciones.envios)
+    }
+
+    @Test
+    fun `sin pendientes reintentar no hace nada`() = runTest(despachador) {
+        val vm = vm(RepositorioFalso(copiaCon(consentimiento("cns-1"))))
+        advanceUntilIdle()
+
+        vm.reintentarEnvio()
+        advanceUntilIdle()
+
+        assertEquals(0, revocaciones.envios)
+        assertNull(vm.estado.value.ultimaPendiente)
+    }
+
+    @Test
+    fun `las revocaciones que el servicio ya no acepto se avisan y se descartan`() = runTest(despachador) {
+        revocaciones.descartes.value = listOf(AvisoDeRevocacion("cns-1", "Banco Aliado", MotivoDeDescarte.VENCIO))
+        val vm = vm(RepositorioFalso(copiaCon(consentimiento("cns-1"))))
+        advanceUntilIdle()
+        assertEquals(1, vm.estado.value.descartes.size)
+
+        vm.descartarAviso("cns-1")
+        advanceUntilIdle()
+
+        assertEquals(listOf("cns-1"), revocaciones.avisosDescartados)
+        assertTrue(vm.estado.value.descartes.isEmpty())
+    }
 }

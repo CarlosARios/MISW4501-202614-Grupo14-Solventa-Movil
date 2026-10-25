@@ -193,6 +193,49 @@ class ProgramadorDeEnvioFalso : ProgramadorDeEnvioDeRevocaciones {
     }
 }
 
+/** La revocacion: cola, avisos y resultados fijados por la prueba (HU-M1.3-02). */
+class RevocacionesFalsas : RevocacionRepositorio {
+    val red = MutableStateFlow(true)
+    val cola = MutableStateFlow<List<RevocacionPendiente>>(emptyList())
+    val descartes = MutableStateFlow<List<AvisoDeRevocacion>>(emptyList())
+    var resultado: ResultadoDeRevocacion = ResultadoDeRevocacion.PendienteDeEnvio
+    var envio: ResultadoDeEnvio = ResultadoDeEnvio.Enviadas(0)
+    var comprobante: ResultadoDeComprobante = ResultadoDeComprobante.Descargado("%PDF".toByteArray(), "REV-2026-0088.pdf")
+    val revocados = mutableListOf<Pair<String, MetodoDeConfirmacion>>()
+    var envios = 0
+    var idiomaDelComprobante: String? = null
+    val avisosDescartados = mutableListOf<String>()
+
+    /** Se llama dentro de [revocar], para ver el estado mientras se envia. */
+    var alRevocar: (() -> Unit)? = null
+
+    override val conectado: StateFlow<Boolean> = red
+    override val avisos: StateFlow<List<AvisoDeRevocacion>> = descartes
+    override fun pendientes(): Flow<List<RevocacionPendiente>> = cola
+    override fun descartarAviso(consentimientoId: String) {
+        avisosDescartados += consentimientoId
+        descartes.value = descartes.value.filterNot { it.consentimientoId == consentimientoId }
+    }
+
+    override suspend fun revocar(consentimiento: Consentimiento, metodo: MetodoDeConfirmacion): ResultadoDeRevocacion {
+        revocados += consentimiento.id to metodo
+        alRevocar?.invoke()
+        return resultado
+    }
+
+    override suspend fun comprobante(consentimientoId: String, idioma: String): ResultadoDeComprobante {
+        idiomaDelComprobante = idioma
+        return comprobante
+    }
+
+    override suspend fun cuantasPendientes(): Int = cola.value.size
+
+    override suspend fun enviarPendientes(): ResultadoDeEnvio {
+        envios++
+        return envio
+    }
+}
+
 /** El repositorio de la pantalla: copia y resultado fijados por la prueba. */
 class RepositorioFalso(inicial: CopiaDeConsentimientos = CopiaDeConsentimientos(emptyList(), null, false)) :
     ConsentimientosRepositorio {

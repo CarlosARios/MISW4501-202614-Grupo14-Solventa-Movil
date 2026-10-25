@@ -34,6 +34,9 @@ abstract class ConsentimientosModule {
 
     @Binds
     abstract fun enlazarProgramadorDeEnvio(impl: ProgramadorDeEnvioDeRevocacionesWorkManager): ProgramadorDeEnvioDeRevocaciones
+
+    @Binds
+    abstract fun enlazarGuardadorDeComprobante(impl: GuardadorDeComprobanteAndroid): GuardadorDeComprobante
 }
 
 /** El repositorio para el trabajo que crea WorkManager fuera de Hilt. */
