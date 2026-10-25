@@ -221,6 +221,8 @@ kover {
                     // su interfaz, y la verificación de la imagen reducida se
                     // hace en el teléfono.
                     "co.solventa.movil.core.imagen.PreparadorDeCapturaJpeg",
+                    "co.solventa.movil.core.imagen.ReductorDeFotoJpeg",
+                    "co.solventa.movil.core.imagen.ReduccionJpegKt",
                     // Captura de evidencia (HU-M2.1-01): CameraX con video, el
                     // LocationManager del sistema, la subida firmada y el
                     // trabajador de WorkManager. Nada de eso existe fuera del

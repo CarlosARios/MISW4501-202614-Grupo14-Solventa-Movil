@@ -38,8 +38,11 @@ import co.solventa.movil.R
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoBoton
 import co.solventa.movil.ui.theme.Espacio
+import co.solventa.movil.ui.theme.LocalColoresSolventa
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import kotlin.math.roundToInt
 
 /**
  * Lo que se capturó, a pantalla completa (HU-M2.1-01).
@@ -62,6 +65,7 @@ fun VistaDeEvidencia(
             .background(Color.Black.copy(alpha = 0.92f))
             .clickable(role = Role.Button, onClick = onCerrar),
     ) {
+        val colores = LocalColoresSolventa.current
         if (evidencia.tipo == TipoDeEvidencia.VIDEO) {
             ReproductorDeVideo(
                 rutaArchivo = evidencia.rutaArchivo,
@@ -107,6 +111,26 @@ fun VistaDeEvidencia(
                 .navigationBarsPadding()
                 .padding(Espacio.x16),
         ) {
+            // Criterio 5: cada evidencia se consulta con su hora y su
+            // ubicación. En la casilla de la matriz no caben, así que viven
+            // aquí, donde se mira lo capturado.
+            Text(
+                text = stringResource(R.string.evidencia_sello_hora_corto, horaUtc(Instant.ofEpochMilli(evidencia.capturadaEn))),
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.White,
+            )
+            Text(
+                text = evidencia.ubicacion?.let {
+                    stringResource(
+                        R.string.evidencia_sello_ubicacion,
+                        enGrados(it.latitud, "N", "S"),
+                        enGrados(it.longitud, "E", "O"),
+                        it.precisionM.roundToInt(),
+                    )
+                } ?: stringResource(R.string.evidencia_sello_sin_ubicacion),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (evidencia.ubicacionConfiable) Color.White else colores.advertenciaSuave,
+            )
             Text(
                 text = stringResource(estadoDeEnvioDe(evidencia)),
                 style = MaterialTheme.typography.bodySmall,

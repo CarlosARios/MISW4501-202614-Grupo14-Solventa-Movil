@@ -81,7 +81,8 @@ evidencia se captura para cuatro tipos de siniestro y una silueta de carro estor
 Dos añadidos al frame del paso 3: **tocar una casilla con foto abre lo capturado** —la fotografía a pantalla
 completa, el video con su reproductor— y cada casilla lleva una **caneca** para descartarlo y volver a tomarlo.
 El frame no los dibuja, pero sin ellos no hay manera de revisar una toma ni de corregir una que salió mal, y
-una casilla ocupada por algo inservible deja el reporte trabado.
+una casilla ocupada por algo inservible deja el reporte trabado. La vista a pantalla completa lleva además **la hora UTC y la
+ubicación de esa captura**, que es lo que pide el criterio 5 y en una casilla de ese tamaño no se lee.
 
 La evidencia se sube **en segundo plano**: la cámara vuelve al paso 3 apenas la captura queda registrada, y cada
 casilla muestra en qué va su envío. El archivo no pasa por el API Gateway sino que va directo al repositorio de

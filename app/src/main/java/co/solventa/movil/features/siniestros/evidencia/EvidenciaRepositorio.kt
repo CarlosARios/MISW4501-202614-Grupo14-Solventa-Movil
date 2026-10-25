@@ -1,6 +1,7 @@
 package co.solventa.movil.features.siniestros.evidencia
 
 import co.solventa.movil.core.api.siniestros.EvidenciaRadicada
+import co.solventa.movil.core.imagen.ReductorDeFoto
 import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
 import co.solventa.movil.core.ubicacion.Ubicacion
@@ -63,6 +64,7 @@ interface EvidenciaRepositorio {
 class EvidenciaRepositorioLocal @Inject constructor(
     private val dao: EvidenciaCapturadaDao,
     private val huellas: HuellaDeArchivo,
+    private val reductor: ReductorDeFoto,
     private val envios: EnvioDeEvidencia,
 ) : EvidenciaRepositorio {
 
@@ -76,6 +78,10 @@ class EvidenciaRepositorioLocal @Inject constructor(
         ubicacion: Ubicacion?,
         duracionS: Int,
     ): Boolean {
+        // Criterio 5: la fotografía se acota antes de medirla, porque la
+        // firma de la subida fija el tamaño y el resumen del archivo que de
+        // verdad se va a enviar. El video sale ya acotado de la cámara.
+        if (tipo == TipoDeEvidencia.FOTO) reductor.reducir(archivo)
         val huella = huellas.de(archivo) ?: return false
         val posicion = dao.listarDeBorrador(borradorId).size
         dao.guardar(

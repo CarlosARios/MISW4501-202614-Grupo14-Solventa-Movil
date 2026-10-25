@@ -397,11 +397,11 @@ private const val INERTE = 0.4f
  * El punto como lo escribe el frame: cuatro decimales y la letra del
  * hemisferio, con el separador decimal del idioma en curso.
  */
-private fun enGrados(valor: Double, positivo: String, negativo: String): String =
+internal fun enGrados(valor: Double, positivo: String, negativo: String): String =
     String.format(Locale.getDefault(), "%.4f %s", abs(valor), if (valor >= 0) positivo else negativo)
 
 /** La hora de la captura en UTC, como la sella la evidencia. */
-private fun horaUtc(): String =
+internal fun horaUtc(instante: Instant = Instant.now()): String =
     DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")
         .withZone(ZoneOffset.UTC)
-        .format(Instant.now())
+        .format(instante)
