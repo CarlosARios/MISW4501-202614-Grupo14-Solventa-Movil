@@ -272,4 +272,52 @@
     <string name="radicacion_borrador_continuar">Continuar el borrador</string>
     <string name="radicacion_borrador_descartar">Descartar borrador</string>
     <string name="inicio_reportar_siniestro">Reportar un siniestro</string>
+
+    <!-- Captura de evidencia (HU-M2.1-01) -->
+    <string name="evidencia_cerrar">Cerrar la captura</string>
+    <string name="evidencia_contador_visor">Evidencia %1$d de %2$d</string>
+    <string name="evidencia_subtitulo_visor">%1$s · SIN en radicación</string>
+    <string name="evidencia_sello_ubicacion">%1$s · %2$s · ±%3$d m</string>
+    <string name="evidencia_sello_sin_ubicacion">Sin ubicación todavía</string>
+    <string name="evidencia_sello_hora">UTC %1$s · sello de integridad</string>
+    <string name="evidencia_galeria_no_disponible">La galería no está disponible: la evidencia se toma en el lugar</string>
+    <string name="evidencia_video">Video</string>
+    <string name="evidencia_detener">Detener</string>
+    <string name="evidencia_permisos_titulo">¿Permitir que Solventa use la cámara y tu ubicación precisa?</string>
+    <string name="evidencia_permisos_detalle">Se usan para capturar fotos y video con lugar y hora verificables. No se accede a la galería ni se rastrea tu ubicación fuera de la captura.</string>
+    <string name="evidencia_permisos_permitir">Permitir cámara y ubicación</string>
+    <string name="evidencia_permisos_no_permitir">No permitir</string>
+    <string name="evidencia_permisos_negados_titulo">Sin cámara y ubicación no hay evidencia verificable</string>
+    <string name="evidencia_permisos_negados_detalle">Concede los dos permisos desde los ajustes del sistema para capturar en el lugar. No es posible adjuntar imágenes de la galería.</string>
+    <string name="evidencia_precision_titulo">La ubicación no es confiable</string>
+    <string name="evidencia_precision_detalle">La precisión actual del GPS es de %1$d m (el límite es %2$d m). Muévete a un lugar despejado o espera unos segundos antes de capturar para que la evidencia registre una ubicación confiable.</string>
+    <string name="evidencia_precision_sin_lectura">Todavía no hay una lectura de ubicación reciente. Muévete a un lugar despejado o espera unos segundos antes de capturar.</string>
+    <string name="evidencia_precision_esperar">Esperar mejor señal</string>
+    <string name="evidencia_precision_capturar_igual">Capturar de todas formas</string>
+    <string name="evidencia_estado_pendiente">Pendiente de envío</string>
+    <string name="evidencia_estado_subiendo">Enviando…</string>
+    <string name="evidencia_estado_subida">Enviada</string>
+    <string name="evidencia_estado_fallida">Envío fallido · se reintenta</string>
+    <string name="evidencia_sin_ubicacion_confiable">Ubicación no confiable</string>
+    <string name="evidencia_tomar">Tomar evidencia</string>
+    <string name="evidencia_descartar">Descartar esta evidencia</string>
+    <string name="evidencia_capturada_en">%1$s · ±%2$d m</string>
+    <string name="radicacion_falta_evidencias">las evidencias del lugar</string>
+    <string name="radicacion_evidencias_sin_capturas">Sin capturas todavía</string>
+    <string name="radicacion_evidencias_con_video"> y un video</string>
+    <string name="radicacion_evidencias_enviando"> · %1$d enviándose</string>
+    <plurals name="radicacion_evidencias_fotos">
+        <item quantity="one">%1$d foto</item>
+        <item quantity="other">%1$d fotos</item>
+    </plurals>
+    <string name="evidencia_grabando">Grabando</string>
+    <string name="radicacion_video_capturado">%1$d s · %2$s</string>
+    <string name="radicacion_evidencias_esperando_envio">Esperando el envío de las evidencias</string>
+    <string name="evidencia_ver">Ver esta evidencia</string>
+    <string name="evidencia_descartar_y_repetir">Descartar y tomar otra</string>
+    <string name="radicacion_video_ver">Ver video</string>
+    <string name="evidencia_estado_corto_pendiente">Pendiente</string>
+    <string name="evidencia_estado_corto_subiendo">Enviando…</string>
+    <string name="evidencia_estado_corto_subida">Enviada</string>
+    <string name="evidencia_estado_corto_fallida">Falló</string>
 </resources>

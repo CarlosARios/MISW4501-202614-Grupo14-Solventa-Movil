@@ -8,6 +8,17 @@
          funciona sin ella. -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- La evidencia del siniestro lleva el lugar donde se tomó, que es lo
+         que la hace verificable (HU-M2.1-01, criterios 1 y 4). Se pide en
+         caliente, junto con la cámara, al entrar a la captura. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <!-- Desde Android 12 el usuario puede conceder solo la ubicación
+         aproximada, y el sistema exige declarar las dos. Con la aproximada la
+         captura sigue funcionando: la evidencia queda marcada como de
+         ubicación no confiable (criterio 3). -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+
     <!-- Ingreso y renovación de la sesión contra el user pool de Cognito, y
          las llamadas al API Gateway. Es un permiso normal: se concede al
          instalar y no se pide en caliente. -->
@@ -18,6 +29,12 @@
          siempre la tiene. -->
     <uses-feature
         android:name="android.hardware.camera.any"
+        android:required="false" />
+
+    <!-- Tampoco se exige GPS: sin él la evidencia se captura igual y queda
+         marcada como de ubicación no confiable. -->
+    <uses-feature
+        android:name="android.hardware.location.gps"
         android:required="false" />
 
     <application
@@ -42,6 +59,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- WorkManager se inicializa bajo demanda con la configuración de
+             SolventaApp: su inicializador por omisión crearía una instancia
+             sin la fábrica de Hilt. -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
     </application>
 
 </manifest>

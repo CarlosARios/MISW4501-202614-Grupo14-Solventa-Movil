@@ -1,5 +1,7 @@
 package co.solventa.movil.features.siniestros.radicacion
 
+import co.solventa.movil.features.siniestros.evidencia.EvidenciaRepositorio
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -28,12 +30,14 @@ class RadicacionViewModel @Inject constructor(
     private val borradores: BorradorRepositorio,
     private val radicaciones: RadicacionRepositorio,
     private val polizas: PolizasRepositorio,
+    private val evidencias: EvidenciaRepositorio,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(RadicacionUiState())
     val estado: StateFlow<RadicacionUiState> = _estado.asStateFlow()
 
     private var guardado: Job? = null
+    private var evidenciasObservadas: Job? = null
 
     init {
         viewModelScope.launch {
@@ -54,6 +58,24 @@ class RadicacionViewModel @Inject constructor(
                     cargando = false,
                     retomandoBorrador = true,
                 )
+            }
+            observarEvidencias(_estado.value.borradorId)
+        }
+    }
+
+    /**
+     * Lo capturado para este borrador, con el estado de su envío. Viene de la
+     * base del dispositivo, así que la pantalla ve avanzar cada subida sin
+     * preguntar nada (HU-M2.1-01, criterio 5).
+     */
+    private fun observarEvidencias(borradorId: String) {
+        evidenciasObservadas?.cancel()
+        // Al retomar el reporte se vuelve a intentar lo que quedó pendiente:
+        // puede llevar horas de espera acumulada entre reintentos.
+        viewModelScope.launch { evidencias.reintentarEnvios(borradorId) }
+        evidenciasObservadas = viewModelScope.launch {
+            evidencias.observar(borradorId).collect { capturadas ->
+                _estado.update { it.copy(evidencias = capturadas) }
             }
         }
     }
@@ -97,6 +119,11 @@ class RadicacionViewModel @Inject constructor(
         irA(Etapa.entries[actual.etapa.ordinal - 1])
     }
 
+    /** Quitar una evidencia de la cuadrícula para volver a tomarla. */
+    fun descartarEvidencia(id: String) {
+        viewModelScope.launch { evidencias.descartar(id) }
+    }
+
     /**
      * Envía la radicación con el identificador del borrador como clave, de
      * modo que un reintento no crea un segundo caso.
@@ -109,10 +136,15 @@ class RadicacionViewModel @Inject constructor(
             _estado.update {
                 it.copy(envio = EstadoDelEnvio.Enviando, camposRechazados = emptySet())
             }
-            when (val resultado = radicaciones.radicar(actual.borradorId, actual.radicacion)) {
+            // Solo viaja lo que ya está en el repositorio de evidencia: el
+            // servicio comprueba cada llave antes de crear el caso.
+            val capturado = evidencias.paraRadicar(actual.borradorId)
+            when (val resultado = radicaciones.radicar(actual.borradorId, actual.radicacion, capturado)) {
                 is ResultadoRadicacion.Exitoso -> {
-                    // El borrador deja de serlo en cuanto el caso existe.
+                    // El borrador deja de serlo en cuanto el caso existe, y
+                    // las evidencias ya no tienen que ocupar el teléfono.
                     borradores.descartar(actual.borradorId)
+                    evidencias.limpiar(actual.borradorId)
                     _estado.update { it.copy(envio = EstadoDelEnvio.Radicado(resultado.caso)) }
                 }
 
@@ -145,17 +177,24 @@ class RadicacionViewModel @Inject constructor(
         }
     }
 
-    /** El usuario abandona el reporte: el borrador se descarta. */
+    /**
+     * El usuario abandona el reporte: el borrador se descarta, y con él las
+     * evidencias que había capturado. Sin borrarlas, el reporte nuevo las
+     * heredaba: se descartaba el borrador y las fotos viejas reaparecían.
+     */
     fun descartarBorrador() {
         val id = _estado.value.borradorId
         guardado?.cancel()
         viewModelScope.launch {
             borradores.descartar(id)
+            evidencias.limpiar(id)
+            val nuevo = borradores.nuevoIdentificador()
             _estado.value = RadicacionUiState(
-                borradorId = borradores.nuevoIdentificador(),
+                borradorId = nuevo,
                 polizas = _estado.value.polizas,
                 cargando = false,
             )
+            observarEvidencias(nuevo)
         }
     }
 

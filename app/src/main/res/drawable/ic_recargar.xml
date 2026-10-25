@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Recargar, equivalente a icono/refresh-cw del prototipo: esperar una
+     mejor señal antes de capturar (HU-M2.1-01, criterio 3). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M21,12 A9,9 0 0,0 12,3 A9.75,9.75 0 0,0 5.26,5.74 L3,8"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M3,3 L3,8 L8,8"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M3,12 A9,9 0 0,0 12,21 A9.75,9.75 0 0,0 18.74,18.26 L21,16"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M16,16 L21,16 L21,21"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

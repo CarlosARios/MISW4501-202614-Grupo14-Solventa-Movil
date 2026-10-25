@@ -1,5 +1,7 @@
 package co.solventa.movil.features.siniestros.radicacion
 
+import co.solventa.movil.core.api.siniestros.EvidenciaRadicada
+
 /**
  * Las cuatro etapas del asistente (HU-M2.2-01). El orden es el del proceso y
  * no una decisión de interfaz: la declaración bajo gravedad de juramento solo
@@ -44,6 +46,7 @@ enum class CampoDeRadicacion(val etapa: Etapa) {
     LUGAR(Etapa.HECHOS),
     DESCRIPCION(Etapa.HECHOS),
     RESPUESTAS(Etapa.HECHOS),
+    EVIDENCIAS(Etapa.EVIDENCIAS),
     DECLARACION(Etapa.DECLARACION),
 }
 
@@ -52,6 +55,9 @@ data class CasoRadicado(
     val casoId: String,
     val radicado: String,
     val radicadoEn: String,
+    /** Lo que el servicio asoció al caso. */
+    val fotos: Int = 0,
+    val videos: Int = 0,
 )
 
 sealed interface ResultadoRadicacion {
@@ -72,5 +78,13 @@ interface RadicacionRepositorio {
      * Radica el siniestro. `borrador` es la clave de idempotencia: reintentar
      * con la misma devuelve el caso que ya se creó.
      */
-    suspend fun radicar(borrador: String, radicacion: Radicacion): ResultadoRadicacion
+    /**
+     * Radica el siniestro. Las evidencias ya están en el repositorio: aquí
+     * viajan sus llaves y sus metadatos (HU-M2.1-01).
+     */
+    suspend fun radicar(
+        borrador: String,
+        radicacion: Radicacion,
+        evidencias: List<EvidenciaRadicada> = emptyList(),
+    ): ResultadoRadicacion
 }
