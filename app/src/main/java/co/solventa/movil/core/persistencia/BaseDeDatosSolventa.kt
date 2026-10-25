@@ -6,9 +6,11 @@ import androidx.room.RoomDatabase
 import co.solventa.movil.core.persistencia.dao.BorradorDeRadicacionDao
 import co.solventa.movil.core.persistencia.dao.ConsentimientoDao
 import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
+import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
 import co.solventa.movil.core.persistencia.entidades.BorradorDeRadicacion
 import co.solventa.movil.core.persistencia.entidades.ConsentimientoEntidad
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
+import co.solventa.movil.core.persistencia.entidades.RevocacionPendienteEntidad
 import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
 
 /**
@@ -24,6 +26,10 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * migracion 1 → 2 es automatica porque solo agrega tablas: los borradores y
  * las evidencias de la radicacion se conservan.
  *
+ * La version 3 (HU-M1.3-02) agrega la cola de revocaciones pendientes de envio
+ * y, en la copia de cada consentimiento, su revocacion (columna nueva que
+ * admite nulos). La migracion 2 → 3 tambien es automatica y conserva todo.
+ *
  * El esquema se exporta a `app/schemas`, que es lo que permite revisar en un
  * *pull request* qué cambió una migración.
  */
@@ -33,9 +39,10 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         EvidenciaCapturada::class,
         ConsentimientoEntidad::class,
         SincronizacionEntidad::class,
+        RevocacionPendienteEntidad::class,
     ],
-    version = 2,
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    version = 3,
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
     exportSchema = true,
 )
 abstract class BaseDeDatosSolventa : RoomDatabase() {
@@ -45,6 +52,8 @@ abstract class BaseDeDatosSolventa : RoomDatabase() {
     abstract fun evidenciasCapturadas(): EvidenciaCapturadaDao
 
     abstract fun consentimientos(): ConsentimientoDao
+
+    abstract fun revocacionesPendientes(): RevocacionPendienteDao
 
     companion object {
         const val NOMBRE = "solventa.db"

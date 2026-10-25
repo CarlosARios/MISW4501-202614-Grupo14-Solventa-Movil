@@ -34,4 +34,9 @@ data class ConsentimientoEntidad(
     val entidades: String,
     val alcance: String,
     val historial: String,
+    /**
+     * La revocacion que lo termino, como JSON en texto (HU-M1.3-02); nula si
+     * no fue revocado. La escribe y la lee el mapeador del dominio.
+     */
+    val revocacion: String? = null,
 )

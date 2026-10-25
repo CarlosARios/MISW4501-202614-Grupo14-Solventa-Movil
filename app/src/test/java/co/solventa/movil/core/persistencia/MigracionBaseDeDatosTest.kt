@@ -16,7 +16,9 @@ import org.junit.runner.RunWith
 /**
  * La migracion 1 → 2 de la base (HU-M1.3-01) contra los esquemas versionados
  * de `app/schemas`: agrega las tablas de la copia de consentimientos y
- * conserva el borrador de la radicacion que hubiera en el telefono.
+ * conserva el borrador de la radicacion que hubiera en el telefono. La 2 → 3
+ * (HU-M1.3-02) agrega la cola de revocaciones pendientes y la revocacion de
+ * cada consentimiento, y conserva la copia.
  *
  * Usa el ayudante con controlador explicito: el constructor por nombre de
  * archivo falla en Windows al comparar la ruta completa con el nombre.
@@ -52,6 +54,43 @@ class MigracionBaseDeDatosTest {
             assertEquals(listOf("borrador-1"), textos(migrada, "SELECT id FROM borrador_de_radicacion"))
             assertEquals(listOf("0"), textos(migrada, "SELECT COUNT(*) FROM consentimiento"))
             assertEquals(listOf("0"), textos(migrada, "SELECT COUNT(*) FROM sincronizacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    @Test
+    fun `la migracion 2 a 3 conserva la copia y agrega la cola de revocaciones`() {
+        ayudante.createDatabase(2).apply {
+            execSQL(
+                "INSERT INTO consentimiento (propietario, id, estado, vigente, finalidad, canal, versionDeTerminos, " +
+                    "otorgadoEn, venceEn, finalizadoEn, comprobante, entidades, alcance, historial) " +
+                    "VALUES ('sub-a', 'cns-1', 'active', 1, 'risk_profiling_mortgage_life_offer', 'embedded', 'v1', " +
+                    "1789573920000, 1821109920000, NULL, NULL, '[]', '[]', '[]')",
+            )
+            execSQL("INSERT INTO sincronizacion (propietario, recurso, sincronizadoEn) VALUES ('sub-a', 'consentimientos', 1)")
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 3 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(3)
+        try {
+            assertEquals(listOf("cns-1"), textos(migrada, "SELECT id FROM consentimiento WHERE propietario = 'sub-a'"))
+            assertEquals(listOf("1"), textos(migrada, "SELECT COUNT(*) FROM consentimiento WHERE revocacion IS NULL"))
+            assertEquals(listOf("0"), textos(migrada, "SELECT COUNT(*) FROM revocacion_pendiente"))
+            assertEquals(listOf("1"), textos(migrada, "SELECT COUNT(*) FROM sincronizacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    @Test
+    fun `de la version 1 a la 3 en un solo paso`() {
+        ayudante.createDatabase(1).close()
+
+        val migrada = ayudante.runMigrationsAndValidate(3)
+        try {
+            assertEquals(listOf("0"), textos(migrada, "SELECT COUNT(*) FROM revocacion_pendiente"))
         } finally {
             migrada.close()
         }

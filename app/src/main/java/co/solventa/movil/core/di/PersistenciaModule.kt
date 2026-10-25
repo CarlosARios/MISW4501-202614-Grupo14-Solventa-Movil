@@ -5,6 +5,7 @@ import androidx.room.Room
 import co.solventa.movil.core.persistencia.BaseDeDatosSolventa
 import co.solventa.movil.core.persistencia.dao.BorradorDeRadicacionDao
 import co.solventa.movil.core.persistencia.dao.ConsentimientoDao
+import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,4 +35,7 @@ object PersistenciaModule {
 
     @Provides
     fun proveerConsentimientos(base: BaseDeDatosSolventa): ConsentimientoDao = base.consentimientos()
+
+    @Provides
+    fun proveerRevocacionesPendientes(base: BaseDeDatosSolventa): RevocacionPendienteDao = base.revocacionesPendientes()
 }

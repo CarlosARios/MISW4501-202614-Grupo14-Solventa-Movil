@@ -5,6 +5,9 @@ package co.solventa.movil.features.auditoria.consentimientos
  * prototipo —cargando, contenido, vacio, error, sin conexion y cuenta sin
  * vincular— viven en la misma pantalla.
  */
+/** Un consentimiento cuya revocacion espera en la cola del telefono. */
+data class ConsentimientoPendiente(val consentimiento: Consentimiento, val revocacion: RevocacionPendiente)
+
 data class ConsentimientosUiState(
     val cargando: Boolean = true,
     /** Vigentes, del otorgado mas reciente al mas antiguo. */
@@ -19,8 +22,23 @@ data class ConsentimientosUiState(
     val error: Boolean = false,
     /** 403 `holder_not_linked`: la cuenta todavia no esta vinculada. */
     val cuentaSinVincular: Boolean = false,
+    /**
+     * Consentimientos con una revocacion pendiente de envio (HU-M1.3-02,
+     * `38:1503`), con su solicitud: se listan aparte y no entre los activos.
+     */
+    val pendientes: List<ConsentimientoPendiente> = emptyList(),
+    /** Se esta reenviando la cola a pedido del titular. */
+    val reenviando: Boolean = false,
+    /** Revocaciones de la cola que el servicio ya no acepto, para avisarlas. */
+    val descartes: List<AvisoDeRevocacion> = emptyList(),
 ) {
-    val hayContenido: Boolean get() = activos.isNotEmpty() || historial.isNotEmpty()
+    val hayContenido: Boolean get() = activos.isNotEmpty() || historial.isNotEmpty() || pendientes.isNotEmpty()
+
+    /** La ultima revocacion en cola, para el aviso «Sin conexion: revocacion en cola». */
+    val ultimaPendiente: ConsentimientoPendiente? get() = pendientes.maxByOrNull { it.revocacion.solicitadaEn }
+
+    /** «Reintentar envio ahora» solo con señal y si hay algo en la cola. */
+    val reintentarHabilitado: Boolean get() = pendientes.isNotEmpty() && !sinConexion && !reenviando
 
     /** Sin consentimientos y sin nada que explicar: el estado vacio. */
     val vacio: Boolean get() = !cargando && !hayContenido && !error && !cuentaSinVincular && !sinConexion

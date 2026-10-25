@@ -82,6 +82,10 @@ sealed interface Ruta {
     @Serializable
     data class DetalleConsentimiento(val id: String) : Ruta
 
+    /** Consentimiento revocado y comprobante (HU-M1.3-02, frame 38:1414). */
+    @Serializable
+    data class ConsentimientoRevocado(val id: String) : Ruta
+
     /**
      * M12 · Cámara · captura de evidencia con GPS y hora (HU-M2.1-01).
      *

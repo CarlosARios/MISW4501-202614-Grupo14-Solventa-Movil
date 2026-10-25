@@ -80,10 +80,50 @@ class PasoFinalDelHistorialTest {
     }
 
     @Test
-    fun `los estados de la revocacion en curso no agregan paso`() {
-        listOf(EstadosDeConsentimiento.REVOCACION_PENDIENTE, EstadosDeConsentimiento.REVOCADO_PARCIAL).forEach { estado ->
-            assertNull(estado, pasoFinalDelHistorial(consentimiento("cns-1", estado), sinConexion = false))
-        }
+    fun `el estado reservado revocation_pending no agrega paso`() {
+        assertNull(pasoFinalDelHistorial(consentimiento("cns-1", EstadosDeConsentimiento.REVOCACION_PENDIENTE), sinConexion = false))
+    }
+
+    // HU-M1.3-02: la revocacion en cola y la revocacion parcial.
+
+    @Test
+    fun `un activo con su revocacion en cola termina en pendiente de envio`() {
+        val pendiente = RevocacionPendiente("cns-1", "Banco Aliado", AHORA, 0)
+
+        assertEquals(
+            PasoFinalDelHistorial.RevocacionPendiente(AHORA),
+            pasoFinalDelHistorial(consentimiento("cns-1"), sinConexion = true, pendiente = pendiente),
+        )
+    }
+
+    @Test
+    fun `un revocado parcial termina en su revocacion sin confirmar con las entidades que faltan`() {
+        val revocacion = MapeadorDeConsentimientos.revocacionDesdeDto(
+            revocacionDto("cns-1", estado = "partially_revoked", aviso = "partial", entidad = "not_confirmed"),
+        )
+        val parcial = MapeadorDeConsentimientos.conRevocacion(consentimiento("cns-1"), revocacion)
+
+        assertEquals(
+            PasoFinalDelHistorial.RevocadoSinConfirmar(revocacion.efectivaEn, "REV-2026-0088", listOf("Banco Aliado")),
+            pasoFinalDelHistorial(parcial, sinConexion = false),
+        )
+    }
+
+    @Test
+    fun `un parcial sin la revocacion en la copia usa su fin, su comprobante y su entidad`() {
+        val parcial = consentimiento("cns-1", EstadosDeConsentimiento.REVOCADO_PARCIAL, finalizadoEn = AHORA, comprobante = "REV-7")
+
+        assertEquals(
+            PasoFinalDelHistorial.RevocadoSinConfirmar(AHORA, "REV-7", listOf("Banco Aliado")),
+            pasoFinalDelHistorial(parcial, sinConexion = false),
+        )
+    }
+
+    @Test
+    fun `un revocado completo no agrega paso aunque traiga su revocacion`() {
+        val revocacion = MapeadorDeConsentimientos.revocacionDesdeDto(revocacionDto("cns-1", aviso = "completed", entidad = "confirmed"))
+
+        assertNull(pasoFinalDelHistorial(MapeadorDeConsentimientos.conRevocacion(consentimiento("cns-1"), revocacion), sinConexion = false))
     }
 
     @Test

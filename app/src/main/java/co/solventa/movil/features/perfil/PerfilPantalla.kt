@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +56,8 @@ fun PerfilPantalla(
         onConsentimientos = onConsentimientos,
         onCerrarSesion = { vm.cerrarSesion(onSesionCerrada) },
         modifier = modifier,
+        onConfirmarCierre = { vm.confirmarCierre(onSesionCerrada) },
+        onCancelarCierre = vm::cancelarCierre,
     )
 }
 
@@ -66,6 +70,8 @@ fun ContenidoPerfil(
     onConsentimientos: () -> Unit,
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier,
+    onConfirmarCierre: () -> Unit = {},
+    onCancelarCierre: () -> Unit = {},
 ) {
     var hojaDeIdioma by rememberSaveable { mutableStateOf(false) }
 
@@ -148,6 +154,10 @@ fun ContenidoPerfil(
         )
     }
 
+    if (estado.revocacionesPendientesAlCerrar > 0) {
+        AvisoDeRevocacionesSinEnviar(estado.revocacionesPendientesAlCerrar, onConfirmarCierre, onCancelarCierre)
+    }
+
     if (hojaDeIdioma) {
         HojaDeIdioma(
             actual = estado.idioma,
@@ -158,6 +168,35 @@ fun ContenidoPerfil(
             onCerrar = { hojaDeIdioma = false },
         )
     }
+}
+
+/**
+ * Antes de cerrar la sesion con revocaciones en cola (HU-M1.3-02, D-7 a): no
+ * se pierden, se envian cuando el titular vuelva a entrar con su cuenta.
+ */
+@Composable
+private fun AvisoDeRevocacionesSinEnviar(cuantas: Int, onConfirmar: () -> Unit, onCancelar: () -> Unit) {
+    // Los textos se resuelven aqui, en el idioma de la aplicacion: el dialogo
+    // se dibuja en su propia ventana, que vuelve al idioma del telefono.
+    val titulo = stringResource(R.string.perfil_cerrar_sesion_pendientes_titulo)
+    val texto = pluralStringResource(R.plurals.perfil_cerrar_sesion_pendientes, cuantas, cuantas)
+    val confirmar = stringResource(R.string.perfil_cerrar_sesion_pendientes_confirmar)
+    val cancelar = stringResource(R.string.perfil_cerrar_sesion_pendientes_cancelar)
+    AlertDialog(
+        onDismissRequest = onCancelar,
+        title = { Text(text = titulo) },
+        text = { Text(text = texto) },
+        confirmButton = {
+            TextButton(onClick = onConfirmar) {
+                Text(text = confirmar, color = MaterialTheme.colorScheme.error)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onCancelar) {
+                Text(text = cancelar)
+            }
+        },
+    )
 }
 
 @Composable

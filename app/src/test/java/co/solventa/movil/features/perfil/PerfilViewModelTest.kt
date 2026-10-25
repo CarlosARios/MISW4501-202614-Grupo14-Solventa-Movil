@@ -14,6 +14,7 @@ import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.core.i18n.IdiomaRepositorio
 import co.solventa.movil.core.persistencia.BaseDeDatosSolventa
 import co.solventa.movil.core.persistencia.entidades.ConsentimientoEntidad
+import co.solventa.movil.core.persistencia.entidades.RevocacionPendienteEntidad
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,7 +59,8 @@ class PerfilViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun vm() = PerfilViewModel(sesion, autenticador, idiomas, base.consentimientos(), "1.0", { AHORA })
+    private fun vm() =
+        PerfilViewModel(sesion, autenticador, idiomas, base.consentimientos(), base.revocacionesPendientes(), "1.0", { AHORA })
 
     /** Espera a que Room entregue lo que observa el ViewModel. */
     private fun esperar(condicion: () -> Boolean) {
@@ -162,6 +164,48 @@ class PerfilViewModelTest {
 
         assertTrue(sesion.cerrada)
         assertTrue(avisado)
+    }
+
+    // --- HU-M1.3-02: aviso al cerrar sesion con revocaciones en cola (D-7 a) ---
+
+    @Test
+    fun `con revocaciones pendientes avisa antes de cerrar y no cierra`() {
+        runBlocking {
+            base.revocacionesPendientes().encolar(
+                RevocacionPendienteEntidad("sub-a", "cns-1", "k1", "Banco Aliado", AHORA, "America/Bogota", "Pixel", "biometric"),
+            )
+        }
+        val vm = vm()
+        var avisado = false
+
+        vm.cerrarSesion { avisado = true }
+        esperar { vm.estado.value.revocacionesPendientesAlCerrar > 0 }
+
+        assertEquals(1, vm.estado.value.revocacionesPendientesAlCerrar)
+        assertFalse(sesion.cerrada)
+        assertFalse(avisado)
+
+        vm.cancelarCierre()
+        assertEquals(0, vm.estado.value.revocacionesPendientesAlCerrar)
+        assertFalse(sesion.cerrada)
+    }
+
+    @Test
+    fun `confirmar el cierre cierra igual y la cola queda en el telefono`() {
+        runBlocking {
+            base.revocacionesPendientes().encolar(
+                RevocacionPendienteEntidad("sub-a", "cns-1", "k1", "Banco Aliado", AHORA, "America/Bogota", "Pixel", "biometric"),
+            )
+        }
+        val vm = vm()
+        var avisado = false
+
+        vm.confirmarCierre { avisado = true }
+        esperar { avisado }
+
+        assertTrue(sesion.cerrada)
+        assertEquals(0, vm.estado.value.revocacionesPendientesAlCerrar)
+        assertEquals(1, runBlocking { base.revocacionesPendientes().contar("sub-a") })
     }
 
     private class SesionDePrueba : SesionRepositorio {

@@ -1,7 +1,9 @@
 package co.solventa.movil.features.auditoria.consentimientos
 
 import co.solventa.movil.core.api.auditoria.ConsentimientoDto
+import co.solventa.movil.core.api.auditoria.RevocacionDto
 import co.solventa.movil.core.persistencia.entidades.ConsentimientoEntidad
+import co.solventa.movil.core.persistencia.entidades.RevocacionPendienteEntidad
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.builtins.ListSerializer
@@ -33,7 +35,49 @@ object MapeadorDeConsentimientos {
         historial = dto.historial.map {
             CambioDeEstado(it.estado, instante(it.ocurrioEn), it.comprobante, it.canal, it.entidad)
         },
+        revocable = dto.revocable,
+        revocacion = dto.revocacion?.let(::revocacionDesdeDto),
     )
+
+    /** La revocacion que entrego el servicio (HU-M1.3-02). */
+    fun revocacionDesdeDto(dto: RevocacionDto): Revocacion = Revocacion(
+        comprobante = dto.comprobante,
+        estado = dto.estado,
+        solicitadaEn = instante(dto.solicitadaEn),
+        efectivaEn = instante(dto.efectivaEn),
+        canal = dto.canal,
+        dispositivo = dto.dispositivo,
+        estadoDelAviso = dto.estadoDelAviso,
+        entidades = dto.entidades.map {
+            EntidadDeRevocacion(it.codigo, it.nombre, it.estado, it.confirmadaEn?.let(::instante), it.plazo?.let(::instante))
+        },
+    )
+
+    /**
+     * El consentimiento tal como queda al registrarse su revocacion: deja de
+     * estar vigente desde la hora efectiva y su historial suma la solicitud y
+     * la revocacion (sin repetirlas si la copia ya las traia). Asi el titular
+     * lo ve revocado en seguida, sin esperar la siguiente sincronizacion.
+     */
+    fun conRevocacion(c: Consentimiento, revocacion: Revocacion): Consentimiento {
+        val nuevos = listOf(
+            CambioDeEstado(CambiosDeEstado.REVOCACION_SOLICITADA, revocacion.solicitadaEn, null, revocacion.canal, null),
+            CambioDeEstado(CambiosDeEstado.REVOCADO, revocacion.efectivaEn, revocacion.comprobante, revocacion.canal, null),
+        ).filterNot { nuevo -> c.historial.any { it.estado == nuevo.estado && it.entidad == null } }
+        return c.copy(
+            estado = revocacion.estado,
+            vigente = false,
+            revocable = false,
+            finalizadoEn = revocacion.efectivaEn,
+            comprobante = revocacion.comprobante,
+            revocacion = revocacion,
+            historial = (c.historial + nuevos).sortedBy { it.ocurrioEn },
+        )
+    }
+
+    /** Una fila de la cola local como la ve el dominio. */
+    fun pendienteDesdeEntidad(e: RevocacionPendienteEntidad): RevocacionPendiente =
+        RevocacionPendiente(e.consentimientoId, e.entidad, e.solicitadaEn, e.intentos)
 
     fun aEntidad(c: Consentimiento, propietario: String): ConsentimientoEntidad = ConsentimientoEntidad(
         propietario = propietario,
@@ -50,6 +94,7 @@ object MapeadorDeConsentimientos {
         entidades = json.encodeToString(ListSerializer(EntidadGuardada.serializer()), c.entidades.map(::EntidadGuardada)),
         alcance = json.encodeToString(ListSerializer(FuenteGuardada.serializer()), c.alcance.map(::FuenteGuardada)),
         historial = json.encodeToString(ListSerializer(CambioGuardado.serializer()), c.historial.map(::CambioGuardado)),
+        revocacion = c.revocacion?.let { json.encodeToString(RevocacionGuardada.serializer(), RevocacionGuardada(it)) },
     )
 
     fun desdeEntidad(e: ConsentimientoEntidad): Consentimiento = Consentimiento(
@@ -67,6 +112,11 @@ object MapeadorDeConsentimientos {
         comprobante = e.comprobante,
         historial = lista(e.historial, CambioGuardado.serializer()).map {
             CambioDeEstado(it.estado, it.ocurrioEn, it.comprobante, it.canal, it.entidad)
+        },
+        // La copia no guarda el indicador: el servidor solo deja revocar un activo.
+        revocable = e.estado == EstadosDeConsentimiento.ACTIVO,
+        revocacion = e.revocacion?.let { texto ->
+            runCatching { json.decodeFromString(RevocacionGuardada.serializer(), texto).aDominio() }.getOrNull()
         },
     )
 
@@ -91,6 +141,37 @@ object MapeadorDeConsentimientos {
         @SerialName("vigencia") val vigencia: String,
     ) {
         constructor(f: Fuente) : this(f.codigo, f.categorias, f.vigencia)
+    }
+
+    @Serializable
+    private data class EntidadDeRevocacionGuardada(
+        @SerialName("codigo") val codigo: String,
+        @SerialName("nombre") val nombre: String,
+        @SerialName("estado") val estado: String,
+        @SerialName("confirmada_en") val confirmadaEn: Long? = null,
+        @SerialName("plazo") val plazo: Long? = null,
+    )
+
+    @Serializable
+    private data class RevocacionGuardada(
+        @SerialName("comprobante") val comprobante: String,
+        @SerialName("estado") val estado: String,
+        @SerialName("solicitada_en") val solicitadaEn: Long,
+        @SerialName("efectiva_en") val efectivaEn: Long,
+        @SerialName("canal") val canal: String,
+        @SerialName("dispositivo") val dispositivo: String? = null,
+        @SerialName("estado_del_aviso") val estadoDelAviso: String,
+        @SerialName("entidades") val entidades: List<EntidadDeRevocacionGuardada> = emptyList(),
+    ) {
+        constructor(r: Revocacion) : this(
+            r.comprobante, r.estado, r.solicitadaEn, r.efectivaEn, r.canal, r.dispositivo, r.estadoDelAviso,
+            r.entidades.map { EntidadDeRevocacionGuardada(it.codigo, it.nombre, it.estado, it.confirmadaEn, it.plazo) },
+        )
+
+        fun aDominio() = Revocacion(
+            comprobante, estado, solicitadaEn, efectivaEn, canal, dispositivo, estadoDelAviso,
+            entidades.map { EntidadDeRevocacion(it.codigo, it.nombre, it.estado, it.confirmadaEn, it.plazo) },
+        )
     }
 
     @Serializable

@@ -1,6 +1,8 @@
 package co.solventa.movil.features.auditoria.consentimientos
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
@@ -25,6 +27,9 @@ import org.junit.Test
  * M8 · Privacidad y consentimientos (HU-M1.3-01) con datos de prueba: las
  * secciones y sus conteos, los campos del criterio 1, el comprobante, el
  * aviso sin conexion, la cuenta sin vincular y que no hay nada que editar.
+ *
+ * HU-M1.3-02 (38:1503, criterio 5): la seccion «Pendientes de envio» con su
+ * insignia, el aviso de la cola y «Reintentar envio ahora».
  */
 class ConsentimientosPantallaTest {
 
@@ -37,6 +42,8 @@ class ConsentimientosPantallaTest {
 
     private var abierto: String? = null
     private var reintentos = 0
+    private var reenvios = 0
+    private val avisosCerrados = mutableListOf<String>()
 
     private fun montar(estado: ConsentimientosUiState) {
         composicion.setContent {
@@ -47,6 +54,8 @@ class ConsentimientosPantallaTest {
                     onAtras = {},
                     onAbrir = { abierto = it },
                     onReintentar = { reintentos++ },
+                    onReintentarEnvio = { reenvios++ },
+                    onCerrarAviso = { avisosCerrados += it },
                 )
             }
         }
@@ -189,5 +198,100 @@ class ConsentimientosPantallaTest {
         val tocables = composicion.onAllNodes(hasClickAction()).fetchSemanticsNodes().size
         assertEquals(4, tocables)
         assertEquals(0, composicion.onAllNodes(hasText(texto(R.string.auditoria_detalle_revocar))).fetchSemanticsNodes().size)
+    }
+
+    // --- HU-M1.3-02 ---
+
+    private fun conCola(sinConexion: Boolean = true) = ConsentimientosUiState(
+        cargando = false,
+        historial = listOf(DatosDePantalla.vencido),
+        sinConexion = sinConexion,
+        sincronizadoEn = DatosDePantalla.SINCRONIZADO,
+        pendientes = listOf(ConsentimientoPendiente(DatosDePantalla.activo, DatosDePantalla.enCola)),
+    )
+
+    @Test
+    fun la_revocacion_en_cola_va_en_pendientes_de_envio_con_su_insignia() {
+        montar(conCola())
+        val solicitada = texto(
+            R.string.auditoria_revocacion_solicitada_el,
+            FormatoDeFecha.fecha(DatosDePantalla.SOLICITADA, Idioma.ESPANOL),
+            FormatoDeFecha.hora(DatosDePantalla.SOLICITADA, Idioma.ESPANOL),
+        )
+
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_seccion_pendientes, 1).uppercase())
+            .performScrollTo().assertIsDisplayed()
+        composicion.onNodeWithText(solicitada).performScrollTo().assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_pendiente_de_envio)).performScrollTo().assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_se_reintenta)).performScrollTo().assertIsDisplayed()
+        // Ya no esta entre los activos.
+        composicion.onNodeWithText(texto(R.string.auditoria_consentimientos_seccion_activos, 0).uppercase())
+            .performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun sin_senal_el_aviso_de_la_cola_reemplaza_al_de_sin_conexion() {
+        montar(conCola())
+        val enCola = texto(R.string.auditoria_revocacion_en_cola_titulo) + ". " + texto(
+            R.string.auditoria_revocacion_en_cola,
+            "Banco Aliado",
+            FormatoDeFecha.fecha(DatosDePantalla.SOLICITADA, Idioma.ESPANOL),
+            FormatoDeFecha.hora(DatosDePantalla.SOLICITADA, Idioma.ESPANOL),
+        )
+        val sinConexion = texto(
+            R.string.auditoria_consentimientos_sin_conexion,
+            FormatoDeFecha.fecha(DatosDePantalla.SINCRONIZADO, Idioma.ESPANOL),
+            FormatoDeFecha.hora(DatosDePantalla.SINCRONIZADO, Idioma.ESPANOL),
+        )
+
+        composicion.onNodeWithContentDescription(enCola).assertIsDisplayed()
+        assertEquals(0, composicion.onAllNodes(hasContentDescription(sinConexion)).fetchSemanticsNodes().size)
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_consentimientos_sin_conexion_icono)).assertIsDisplayed()
+    }
+
+    @Test
+    fun sin_senal_reintentar_envio_esta_deshabilitado() {
+        montar(conCola(sinConexion = true))
+
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_reintentar)).assertIsDisplayed().assertIsNotEnabled()
+    }
+
+    @Test
+    fun con_senal_reintentar_envio_responde() {
+        montar(conCola(sinConexion = false))
+
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_reintentar)).assertIsEnabled().performClick()
+
+        assertEquals(1, reenvios)
+    }
+
+    @Test
+    fun sin_revocaciones_en_cola_no_hay_reintento() {
+        montar(conContenido())
+
+        assertEquals(0, composicion.onAllNodes(hasText(texto(R.string.auditoria_revocacion_reintentar))).fetchSemanticsNodes().size)
+        assertEquals(0, composicion.onAllNodes(hasText(texto(R.string.auditoria_revocacion_pendiente_de_envio))).fetchSemanticsNodes().size)
+    }
+
+    @Test
+    fun la_tarjeta_pendiente_abre_su_detalle() {
+        montar(conCola())
+
+        composicion.onNodeWithText("Banco Aliado").performScrollTo().performClick()
+
+        assertEquals("cns-activo", abierto)
+    }
+
+    @Test
+    fun una_revocacion_que_el_servicio_ya_no_acepto_se_avisa_y_se_cierra() {
+        montar(
+            conContenido().copy(descartes = listOf(AvisoDeRevocacion("cns-vencido", "Banco Central", MotivoDeDescarte.VENCIO))),
+        )
+
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_revocacion_descarte_vencio, "Banco Central"))
+            .assertIsDisplayed()
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_revocacion_cerrar_aviso)).performClick()
+
+        assertEquals(listOf("cns-vencido"), avisosCerrados)
     }
 }

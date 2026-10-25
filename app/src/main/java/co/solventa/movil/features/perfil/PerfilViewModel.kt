@@ -10,6 +10,7 @@ import co.solventa.movil.core.auth.sesion.SesionRepositorio
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.core.i18n.IdiomaRepositorio
 import co.solventa.movil.core.persistencia.dao.ConsentimientoDao
+import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,6 +30,7 @@ class PerfilViewModel internal constructor(
     private val autenticador: AutenticadorBiometrico,
     private val idiomas: IdiomaRepositorio,
     private val consentimientos: ConsentimientoDao,
+    private val revocacionesPendientes: RevocacionPendienteDao,
     version: String,
     private val reloj: () -> Long,
 ) : ViewModel() {
@@ -39,7 +41,11 @@ class PerfilViewModel internal constructor(
         autenticador: AutenticadorBiometrico,
         idiomas: IdiomaRepositorio,
         consentimientos: ConsentimientoDao,
-    ) : this(sesion, autenticador, idiomas, consentimientos, BuildConfig.VERSION_NAME, System::currentTimeMillis)
+        revocacionesPendientes: RevocacionPendienteDao,
+    ) : this(
+        sesion, autenticador, idiomas, consentimientos, revocacionesPendientes, BuildConfig.VERSION_NAME,
+        System::currentTimeMillis,
+    )
 
     private val _estado = MutableStateFlow(
         PerfilUiState(
@@ -87,12 +93,35 @@ class PerfilViewModel internal constructor(
     /**
      * Cierra la sesion como desde Inicio. El repositorio de la sesion borra
      * ademas la copia local de los consentimientos (criterio 6 de HU-M1.3-01).
+     *
+     * Si quedan revocaciones pendientes de envio (HU-M1.3-02), primero avisa:
+     * no se pierden, se envian cuando el titular vuelva a entrar (D-7 a), y el
+     * titular decide si cierra igual ([confirmarCierre]) o no ([cancelarCierre]).
      */
     fun cerrarSesion(alTerminar: () -> Unit) {
         viewModelScope.launch {
+            val sub = sesion.sesionGuardada()?.sub.orEmpty()
+            val pendientes = if (sub.isEmpty()) 0 else revocacionesPendientes.contar(sub)
+            if (pendientes > 0) {
+                _estado.update { it.copy(revocacionesPendientesAlCerrar = pendientes) }
+            } else {
+                sesion.cerrar()
+                alTerminar()
+            }
+        }
+    }
+
+    /** Cierra la sesion aunque haya revocaciones pendientes: quedan en el telefono. */
+    fun confirmarCierre(alTerminar: () -> Unit) {
+        viewModelScope.launch {
+            _estado.update { it.copy(revocacionesPendientesAlCerrar = 0) }
             sesion.cerrar()
             alTerminar()
         }
+    }
+
+    fun cancelarCierre() {
+        _estado.update { it.copy(revocacionesPendientesAlCerrar = 0) }
     }
 
     companion object {

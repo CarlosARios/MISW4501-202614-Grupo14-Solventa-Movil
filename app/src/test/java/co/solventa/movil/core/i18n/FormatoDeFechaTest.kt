@@ -24,6 +24,14 @@ class FormatoDeFechaTest {
     }
 
     @Test
+    fun `la hora con segundos de una revocacion`() {
+        val instante = Instant.parse("2026-09-16T21:10:06Z").toEpochMilli()
+
+        assertEquals("16:10:06", FormatoDeFecha.horaConSegundos(instante, Idioma.ESPANOL, bogota))
+        assertEquals("4:10:06 PM", FormatoDeFecha.horaConSegundos(instante, Idioma.INGLES, bogota))
+    }
+
+    @Test
     fun `usa la zona del dispositivo y no la UTC`() {
         val casiMedianocheUtc = Instant.parse("2026-09-17T02:30:00Z").toEpochMilli()
 

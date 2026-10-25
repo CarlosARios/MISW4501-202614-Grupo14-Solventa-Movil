@@ -19,4 +19,9 @@ data class PerfilUiState(
     val version: String = "",
     /** Minutos de inactividad tras los que se cierra la sesion. */
     val minutosDeCierre: Int = 0,
+    /**
+     * Revocaciones pendientes de envio al pedir cerrar la sesion (HU-M1.3-02,
+     * D-7 a): si es mayor que cero se muestra el aviso antes de cerrar.
+     */
+    val revocacionesPendientesAlCerrar: Int = 0,
 )

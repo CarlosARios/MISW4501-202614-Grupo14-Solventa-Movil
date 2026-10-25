@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -31,9 +32,12 @@ class DetalleConsentimientoViewModelTest {
         Dispatchers.resetMain()
     }
 
+    private val revocaciones = RevocacionesFalsas()
+
     private fun vm(id: String, repositorio: RepositorioFalso) = DetalleConsentimientoViewModel(
         SavedStateHandle(mapOf(DetalleConsentimientoViewModel.ARGUMENTO_ID to id)),
         repositorio,
+        revocaciones,
     ) { AHORA }
 
     @Test
@@ -117,5 +121,46 @@ class DetalleConsentimientoViewModelTest {
         assertNull(vm.estado.value.consentimiento)
         assertFalse(vm.estado.value.revocarVisible)
         assertNull(vm.estado.value.pasoFinal)
+    }
+
+    // --- HU-M1.3-02 ---
+
+    @Test
+    fun `con su revocacion en cola no ofrece revocar y termina en pendiente de envio`() = runTest(despachador) {
+        val repositorio = RepositorioFalso(CopiaDeConsentimientos(listOf(consentimiento("cns-1")), AHORA, false))
+        revocaciones.cola.value = listOf(RevocacionPendiente("cns-1", "Banco Aliado", AHORA - 1_000L, 0))
+        val vm = vm("cns-1", repositorio)
+        advanceUntilIdle()
+
+        val estado = vm.estado.value
+        assertEquals("cns-1", estado.pendiente?.consentimientoId)
+        assertFalse("criterio 6", estado.revocarVisible)
+        assertEquals(PasoFinalDelHistorial.RevocacionPendiente(AHORA - 1_000L), estado.pasoFinal)
+    }
+
+    @Test
+    fun `un revocado parcial muestra la revocacion como paso final sin confirmar`() = runTest(despachador) {
+        val revocacion = MapeadorDeConsentimientos.revocacionDesdeDto(
+            revocacionDto("cns-1", estado = "partially_revoked", aviso = "partial", entidad = "not_confirmed"),
+        )
+        val parcial = MapeadorDeConsentimientos.conRevocacion(consentimiento("cns-1"), revocacion).copy(
+            historial = MapeadorDeConsentimientos.conRevocacion(consentimiento("cns-1"), revocacion).historial +
+                CambioDeEstado(CambiosDeEstado.REVOCACION_NO_CONFIRMADA, revocacion.efectivaEn + 300_000L, null, null, "aliado-banco-1"),
+        )
+        val vm = vm("cns-1", RepositorioFalso(CopiaDeConsentimientos(listOf(parcial), AHORA, false)))
+        advanceUntilIdle()
+
+        val estado = vm.estado.value
+        assertTrue(estado.parcial)
+        assertFalse(estado.revocarVisible)
+        assertEquals(
+            "el revocado y los avisos de cada entidad no son pasos con visto",
+            listOf(CambiosDeEstado.OTORGADO, CambiosDeEstado.REVOCACION_SOLICITADA),
+            estado.historialVisible.map { it.estado },
+        )
+        assertEquals(
+            PasoFinalDelHistorial.RevocadoSinConfirmar(revocacion.efectivaEn, "REV-2026-0088", listOf("Banco Aliado")),
+            estado.pasoFinal,
+        )
     }
 }

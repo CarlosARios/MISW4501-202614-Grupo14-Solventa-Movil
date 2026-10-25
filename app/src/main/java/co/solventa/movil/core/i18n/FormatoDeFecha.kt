@@ -17,6 +17,13 @@ object FormatoDeFecha {
     fun hora(instante: Long, idioma: Idioma, zona: ZoneId = ZoneId.systemDefault()): String =
         formatear(instante, if (idioma == Idioma.ESPANOL) "HH:mm" else "h:mm a", idioma, zona)
 
+    /**
+     * La hora con segundos, para las horas exactas de una revocacion
+     * (HU-M1.3-02, frame `38:1414` y la revocacion parcial del detalle: «16:10:06»).
+     */
+    fun horaConSegundos(instante: Long, idioma: Idioma, zona: ZoneId = ZoneId.systemDefault()): String =
+        formatear(instante, if (idioma == Idioma.ESPANOL) "HH:mm:ss" else "h:mm:ss a", idioma, zona)
+
     private fun formatear(instante: Long, patron: String, idioma: Idioma, zona: ZoneId): String =
         DateTimeFormatter.ofPattern(patron, idioma.aLocale()).withZone(zona).format(Instant.ofEpochMilli(instante))
 }

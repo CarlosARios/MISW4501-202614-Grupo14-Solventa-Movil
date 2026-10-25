@@ -89,4 +89,64 @@ class MapeadorDeConsentimientosTest {
         assertEquals(listOf("vencido-hace-poco", "revocado", "vencido-antes"), grupos.historial.map { it.id })
         assertNull(grupos.activos.first().finalizadoEn)
     }
+
+    // --- HU-M1.3-02 ---
+
+    @Test
+    fun `la revocacion del servicio llega al dominio y sobrevive a la copia local`() {
+        val dto = dto("cns-1", "revoked", finalizado = "2026-10-24T20:00:00Z", comprobante = "REV-2026-0088")
+            .copy(revocable = false, revocacion = revocacionDto("cns-1", entidad = "confirmed", aviso = "completed"))
+
+        val c = MapeadorDeConsentimientos.desdeDto(dto)
+        val leido = MapeadorDeConsentimientos.desdeEntidad(MapeadorDeConsentimientos.aEntidad(c, "sub-a"))
+
+        val r = c.revocacion!!
+        assertEquals("REV-2026-0088", r.comprobante)
+        assertEquals(1_792_871_998_000L, r.solicitadaEn)
+        assertEquals(1_792_872_000_000L, r.efectivaEn)
+        assertEquals(2_000L, r.demora)
+        assertEquals(EstadosDelAviso.COMPLETADO, r.estadoDelAviso)
+        assertTrue(r.sinConfirmar.isEmpty())
+        assertEquals(c.revocacion, leido.revocacion)
+        assertFalse(leido.revocable)
+    }
+
+    @Test
+    fun `una revocacion guardada mal formada se lee como ninguna`() {
+        val fila = MapeadorDeConsentimientos.aEntidad(consentimiento("cns-1"), "sub-a").copy(revocacion = "{roto")
+
+        val leido = MapeadorDeConsentimientos.desdeEntidad(fila)
+
+        assertNull(leido.revocacion)
+        assertTrue("un activo de la copia se puede revocar", leido.revocable)
+    }
+
+    @Test
+    fun `al revocarse la copia queda revocada con la solicitud y la revocacion en el historial`() {
+        val revocacion = MapeadorDeConsentimientos.revocacionDesdeDto(revocacionDto("cns-1"))
+
+        val revocado = MapeadorDeConsentimientos.conRevocacion(consentimiento("cns-1"), revocacion)
+        val otraVez = MapeadorDeConsentimientos.conRevocacion(revocado, revocacion)
+
+        assertEquals(EstadosDeConsentimiento.REVOCADO, revocado.estado)
+        assertFalse(revocado.vigente)
+        assertFalse(revocado.revocable)
+        assertEquals(revocacion.efectivaEn, revocado.finalizadoEn)
+        assertEquals("REV-2026-0088", revocado.comprobante)
+        assertEquals(
+            listOf(CambiosDeEstado.OTORGADO, CambiosDeEstado.REVOCACION_SOLICITADA, CambiosDeEstado.REVOCADO),
+            revocado.historial.map { it.estado },
+        )
+        assertEquals("no repite los hechos", revocado.historial, otraVez.historial)
+    }
+
+    @Test
+    fun `con el reloj del telefono adelantado la demora no es negativa`() {
+        val revocacion = MapeadorDeConsentimientos.revocacionDesdeDto(
+            revocacionDto("cns-1", solicitada = "2026-10-24T20:00:05Z", efectiva = "2026-10-24T20:00:00Z", entidad = "not_confirmed"),
+        )
+
+        assertNull(revocacion.demora)
+        assertEquals(1, revocacion.sinConfirmar.size)
+    }
 }

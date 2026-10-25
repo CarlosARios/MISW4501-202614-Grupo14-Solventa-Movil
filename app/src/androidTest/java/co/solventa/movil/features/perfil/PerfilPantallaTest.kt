@@ -8,6 +8,7 @@ import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.ConIdioma
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.ui.theme.SolventaTheme
 import org.junit.Assert.assertEquals
@@ -26,6 +28,7 @@ import org.junit.Test
 /**
  * M19 · Perfil (HU-M1.3-01): las filas en espera dicen
  * «Próximamente» y no responden; las activas si; Idioma abre la hoja.
+ * HU-M1.3-02 (D-7 a): con revocaciones en cola avisa antes de cerrar sesion.
  */
 class PerfilPantallaTest {
 
@@ -38,6 +41,8 @@ class PerfilPantallaTest {
 
     private var consentimientos = 0
     private var cierres = 0
+    private var cierresConfirmados = 0
+    private var cierresCancelados = 0
     private val biometria = mutableListOf<Boolean>()
 
     private fun montar(estado: PerfilUiState = estadoBase()) {
@@ -49,9 +54,50 @@ class PerfilPantallaTest {
                     onElegirIdioma = {},
                     onConsentimientos = { consentimientos++ },
                     onCerrarSesion = { cierres++ },
+                    onConfirmarCierre = { cierresConfirmados++ },
+                    onCancelarCierre = { cierresCancelados++ },
                 )
             }
         }
+    }
+
+    /** El perfil dentro de la aplicacion con el idioma elegido, sin importar el del telefono. */
+    private fun montarEn(idioma: Idioma, estado: PerfilUiState) {
+        composicion.setContent {
+            SolventaTheme {
+                ConIdioma(idioma) {
+                    ContenidoPerfil(
+                        estado = estado.copy(idioma = idioma),
+                        onAlternarBiometria = {},
+                        onElegirIdioma = {},
+                        onConsentimientos = {},
+                        onCerrarSesion = {},
+                        onConfirmarCierre = {},
+                        onCancelarCierre = {},
+                    )
+                }
+            }
+        }
+    }
+
+    private fun textoEn(idioma: Idioma, id: Int) =
+        contexto.createConfigurationContext(Configuration(contexto.resources.configuration).apply { setLocale(idioma.aLocale()) })
+            .getString(id)
+
+    // El aviso se dibuja en su propia ventana: uno de los dos idiomas es
+    // distinto del telefono y prueba que no vuelve al del dispositivo.
+    @Test
+    fun el_aviso_de_revocaciones_sin_enviar_sale_en_espanol_si_la_aplicacion_esta_en_espanol() {
+        montarEn(Idioma.ESPANOL, estadoBase().copy(revocacionesPendientesAlCerrar = 1))
+
+        composicion.onNodeWithText(textoEn(Idioma.ESPANOL, R.string.perfil_cerrar_sesion_pendientes_titulo)).assertIsDisplayed()
+    }
+
+    @Test
+    fun el_aviso_de_revocaciones_sin_enviar_sale_en_ingles_si_la_aplicacion_esta_en_ingles() {
+        montarEn(Idioma.INGLES, estadoBase().copy(revocacionesPendientesAlCerrar = 1))
+
+        composicion.onNodeWithText(textoEn(Idioma.INGLES, R.string.perfil_cerrar_sesion_pendientes_titulo)).assertIsDisplayed()
     }
 
     private fun estadoBase() = PerfilUiState(
@@ -178,5 +224,26 @@ class PerfilPantallaTest {
         flechasDe(R.string.perfil_cerrar_sesion).assertCountEquals(0)
         flechasDe(R.string.perfil_idioma).assertCountEquals(1)
         flechasDe(R.string.perfil_privacidad_consentimientos).assertCountEquals(1)
+    }
+
+    @Test
+    fun con_revocaciones_en_cola_avisa_antes_de_cerrar_sesion() {
+        montar(estadoBase().copy(revocacionesPendientesAlCerrar = 2))
+
+        composicion.onNodeWithText(texto(R.string.perfil_cerrar_sesion_pendientes_titulo)).assertIsDisplayed()
+        composicion.onNodeWithText(contexto.resources.getQuantityString(R.plurals.perfil_cerrar_sesion_pendientes, 2, 2))
+            .assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.perfil_cerrar_sesion_pendientes_cancelar)).performClick()
+        composicion.onNodeWithText(texto(R.string.perfil_cerrar_sesion_pendientes_confirmar)).performClick()
+
+        assertEquals(1, cierresCancelados)
+        assertEquals(1, cierresConfirmados)
+    }
+
+    @Test
+    fun sin_revocaciones_en_cola_no_hay_aviso_al_cerrar_sesion() {
+        montar()
+
+        composicion.onAllNodesWithText(texto(R.string.perfil_cerrar_sesion_pendientes_titulo)).assertCountEquals(0)
     }
 }

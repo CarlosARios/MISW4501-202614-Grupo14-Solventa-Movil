@@ -5,7 +5,10 @@ import co.solventa.movil.core.api.auditoria.CambioDeEstadoDto
 import co.solventa.movil.core.api.auditoria.ConsentimientoDto
 import co.solventa.movil.core.api.auditoria.EntidadDto
 import co.solventa.movil.core.api.auditoria.FuenteDto
+import co.solventa.movil.core.api.auditoria.EntidadDeRevocacionDto
 import co.solventa.movil.core.api.auditoria.ListaDeConsentimientosDto
+import co.solventa.movil.core.api.auditoria.RevocacionDto
+import co.solventa.movil.core.api.auditoria.SolicitudDeRevocacionDto
 import co.solventa.movil.core.auth.sesion.ResultadoIngreso
 import co.solventa.movil.core.auth.sesion.Sesion
 import co.solventa.movil.core.auth.sesion.SesionRepositorio
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 import java.io.IOException
@@ -93,13 +97,75 @@ class AuditoriaFalsa : AuditoriaApi {
         }
     }
 
-    override suspend fun consentimiento(id: String): Response<ConsentimientoDto> =
-        Response.success(lista.first { it.id == id })
+    override suspend fun consentimiento(id: String): Response<ConsentimientoDto> {
+        llamadas++
+        if (sinRed) throw IOException("sin red")
+        return if (codigo in 200..299) {
+            Response.success(lista.first { it.id == id })
+        } else {
+            Response.error(codigo, cuerpoDeError.toResponseBody("application/json".toMediaType()))
+        }
+    }
+
+    // --- HU-M1.3-02 ---
+
+    /** Lo que responde la revocacion: codigo, cuerpo o falla, fijados por la prueba. */
+    var codigoDeRevocacion: Int = 201
+    var revocacion: RevocacionDto? = null
+    var errorDeRevocacion: String = ""
+    var revocacionSinRed = false
+
+    /** Cuanto tarda la revocacion, para probar el corte de 4 s. */
+    var demoraDeRevocacion: Long = 0
+    val revocaciones = mutableListOf<Triple<String, String, SolicitudDeRevocacionDto>>()
+
+    /** Se llama al recibir la revocacion, antes de responder. */
+    var alRevocar: (() -> Unit)? = null
+    var comprobante: ByteArray? = "%PDF-1.3".toByteArray()
+    var codigoDeComprobante: Int = 200
+    var idiomaDelComprobante: String? = null
+
+    override suspend fun revocar(id: String, clave: String, solicitud: SolicitudDeRevocacionDto): Response<RevocacionDto> {
+        revocaciones += Triple(id, clave, solicitud)
+        alRevocar?.invoke()
+        if (demoraDeRevocacion > 0) kotlinx.coroutines.delay(demoraDeRevocacion)
+        if (revocacionSinRed) throw IOException("sin red")
+        return if (codigoDeRevocacion in 200..299) {
+            Response.success(codigoDeRevocacion, revocacion ?: revocacionDto(id))
+        } else {
+            Response.error(codigoDeRevocacion, errorDeRevocacion.toResponseBody("application/json".toMediaType()))
+        }
+    }
+
+    override suspend fun comprobanteDeRevocacion(id: String, idioma: String): Response<ResponseBody> {
+        idiomaDelComprobante = idioma
+        if (sinRed) throw IOException("sin red")
+        val bytes = comprobante
+        return if (codigoDeComprobante in 200..299 && bytes != null) {
+            Response.success(bytes.toResponseBody("application/pdf".toMediaType()))
+        } else {
+            Response.error(codigoDeComprobante, "{}".toResponseBody("application/json".toMediaType()))
+        }
+    }
 }
 
-class SesionFalsa(var sub: String = "sub-a") : SesionRepositorio {
+/** La revocacion que responde el servicio por omision. */
+fun revocacionDto(
+    id: String,
+    solicitada: String = "2026-10-24T19:59:58Z",
+    efectiva: String = "2026-10-24T20:00:00Z",
+    estado: String = "revoked",
+    aviso: String = "in_progress",
+    entidad: String = "pending",
+) = RevocacionDto(
+    consentimientoId = id, comprobante = "REV-2026-0088", estado = estado, solicitadaEn = solicitada, efectivaEn = efectiva,
+    canal = "mobile_app", dispositivo = "Google Pixel 8", estadoDelAviso = aviso,
+    entidades = listOf(EntidadDeRevocacionDto("aliado-banco-1", "Banco Aliado", entidad, null, "2026-10-24T20:05:00Z")),
+)
+
+class SesionFalsa(var sub: String = "sub-a", var biometria: Boolean = false) : SesionRepositorio {
     override suspend fun sesionGuardada(): Sesion? = Sesion("asegurado@example.com", "Carolina", sub)
-    override suspend fun biometriaHabilitada(): Boolean = false
+    override suspend fun biometriaHabilitada(): Boolean = biometria
     override suspend fun desbloquear(): Sesion? = sesionGuardada()
     override suspend fun ingresarConContrasena(correo: String, contrasena: String): ResultadoIngreso =
         ResultadoIngreso.CredencialesInvalidas
@@ -116,6 +182,57 @@ class ProgramadorFalso : ProgramadorDeSincronizacion {
     val programados = mutableListOf<Pair<String, Class<out ListenableWorker>>>()
     override fun programar(nombreUnico: String, trabajador: Class<out ListenableWorker>) {
         programados += nombreUnico to trabajador
+    }
+}
+
+/** Cuenta los envios urgentes programados (HU-M1.3-02). */
+class ProgramadorDeEnvioFalso : ProgramadorDeEnvioDeRevocaciones {
+    var programados = 0
+    override fun programar() {
+        programados++
+    }
+}
+
+/** La revocacion: cola, avisos y resultados fijados por la prueba (HU-M1.3-02). */
+class RevocacionesFalsas : RevocacionRepositorio {
+    val red = MutableStateFlow(true)
+    val cola = MutableStateFlow<List<RevocacionPendiente>>(emptyList())
+    val descartes = MutableStateFlow<List<AvisoDeRevocacion>>(emptyList())
+    var resultado: ResultadoDeRevocacion = ResultadoDeRevocacion.PendienteDeEnvio
+    var envio: ResultadoDeEnvio = ResultadoDeEnvio.Enviadas(0)
+    var comprobante: ResultadoDeComprobante = ResultadoDeComprobante.Descargado("%PDF".toByteArray(), "REV-2026-0088.pdf")
+    val revocados = mutableListOf<Pair<String, MetodoDeConfirmacion>>()
+    var envios = 0
+    var idiomaDelComprobante: String? = null
+    val avisosDescartados = mutableListOf<String>()
+
+    /** Se llama dentro de [revocar], para ver el estado mientras se envia. */
+    var alRevocar: (() -> Unit)? = null
+
+    override val conectado: StateFlow<Boolean> = red
+    override val avisos: StateFlow<List<AvisoDeRevocacion>> = descartes
+    override fun pendientes(): Flow<List<RevocacionPendiente>> = cola
+    override fun descartarAviso(consentimientoId: String) {
+        avisosDescartados += consentimientoId
+        descartes.value = descartes.value.filterNot { it.consentimientoId == consentimientoId }
+    }
+
+    override suspend fun revocar(consentimiento: Consentimiento, metodo: MetodoDeConfirmacion): ResultadoDeRevocacion {
+        revocados += consentimiento.id to metodo
+        alRevocar?.invoke()
+        return resultado
+    }
+
+    override suspend fun comprobante(consentimientoId: String, idioma: String): ResultadoDeComprobante {
+        idiomaDelComprobante = idioma
+        return comprobante
+    }
+
+    override suspend fun cuantasPendientes(): Int = cola.value.size
+
+    override suspend fun enviarPendientes(): ResultadoDeEnvio {
+        envios++
+        return envio
     }
 }
 

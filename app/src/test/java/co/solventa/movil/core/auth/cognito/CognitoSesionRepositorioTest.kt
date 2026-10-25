@@ -3,6 +3,7 @@ package co.solventa.movil.core.auth.cognito
 import co.solventa.movil.core.auth.sesion.AlCerrarSesion
 import co.solventa.movil.core.auth.sesion.ResultadoIngreso
 import co.solventa.movil.core.auth.sesion.TokensDeSesion
+import co.solventa.movil.core.auth.sesion.VerificacionDeContrasena
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
@@ -108,6 +109,57 @@ class CognitoSesionRepositorioTest {
 
         assertEquals(ResultadoIngreso.CredencialesInvalidas, resultado)
         assertNull(almacen.tokens())
+    }
+
+    // --- HU-M1.3-02: verificar la contraseña para confirmar la revocacion ---
+
+    @Test
+    fun `la contraseña correcta se verifica con el correo de la sesion sin tocar los tokens`() = runTest {
+        val guardados = tokensGuardados(venceEn = AHORA + 60_000L)
+        almacen.guardarTokens(guardados)
+        servidor.enqueue(respuestaConTokens(idTokenDe("asegurado@example.com", "Carolina", VENCE_EN_S)))
+
+        val resultado = repositorio().verificarContrasena("unaClave")
+
+        assertEquals(VerificacionDeContrasena.Correcta, resultado)
+        val enviado = servidor.takeRequest().body?.utf8().orEmpty()
+        assertTrue(enviado.contains("USER_PASSWORD_AUTH"))
+        assertTrue(enviado.contains(guardados.correo))
+        assertEquals(guardados, almacen.tokens())
+    }
+
+    @Test
+    fun `la contraseña incorrecta no cambia la sesion`() = runTest {
+        val guardados = tokensGuardados(venceEn = AHORA + 60_000L)
+        almacen.guardarTokens(guardados)
+        servidor.enqueue(MockResponse(code = 400, body = CUERPO_NO_AUTORIZADO))
+
+        assertEquals(VerificacionDeContrasena.Incorrecta, repositorio().verificarContrasena("mala"))
+        assertEquals(guardados, almacen.tokens())
+    }
+
+    @Test
+    fun `un desafio o un error del pool no confirman`() = runTest {
+        almacen.guardarTokens(tokensGuardados(venceEn = AHORA + 60_000L))
+        servidor.enqueue(MockResponse(code = 200, body = CUERPO_DESAFIO))
+        servidor.enqueue(MockResponse(code = 500, body = "{}"))
+
+        assertEquals(VerificacionDeContrasena.Incorrecta, repositorio().verificarContrasena("temporal"))
+        assertEquals(VerificacionDeContrasena.SinConexion, repositorio().verificarContrasena("unaClave"))
+    }
+
+    @Test
+    fun `sin red la contraseña no se puede verificar`() = runTest {
+        almacen.guardarTokens(tokensGuardados(venceEn = AHORA + 60_000L))
+        servidor.close()
+
+        assertEquals(VerificacionDeContrasena.SinConexion, repositorio().verificarContrasena("unaClave"))
+    }
+
+    @Test
+    fun `sin sesion guardada la contraseña no es correcta y no se llama a Cognito`() = runTest {
+        assertEquals(VerificacionDeContrasena.Incorrecta, repositorio().verificarContrasena("unaClave"))
+        assertEquals(0, servidor.requestCount)
     }
 
     @Test
