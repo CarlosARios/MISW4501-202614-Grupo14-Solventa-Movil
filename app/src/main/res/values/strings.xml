@@ -440,6 +440,7 @@
     <string name="evidencia_sello_ubicacion">%1$s · %2$s · ±%3$d m</string>
     <string name="evidencia_sello_sin_ubicacion">Sin ubicación todavía</string>
     <string name="evidencia_sello_hora">UTC %1$s · sello de integridad</string>
+    <string name="evidencia_sello_hora_corto">Capturada el %1$s UTC</string>
     <string name="evidencia_galeria_no_disponible">La galería no está disponible: la evidencia se toma en el lugar</string>
     <string name="evidencia_video">Video</string>
     <string name="evidencia_detener">Detener</string>

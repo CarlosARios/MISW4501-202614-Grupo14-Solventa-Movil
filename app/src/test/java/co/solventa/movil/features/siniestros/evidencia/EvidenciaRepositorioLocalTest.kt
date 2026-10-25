@@ -1,5 +1,6 @@
 package co.solventa.movil.features.siniestros.evidencia
 
+import co.solventa.movil.core.imagen.ReductorDeFoto
 import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
 import co.solventa.movil.core.ubicacion.Ubicacion
@@ -21,7 +22,8 @@ class EvidenciaRepositorioLocalTest {
 
     private val dao = DaoEnMemoria()
     private val envios = EnvioFalso()
-    private val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(), envios)
+    private val reductor = ReductorFalso()
+    private val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(), reductor, envios)
 
     private val ubicacionBuena = Ubicacion(4.7712, -74.0452, 2601.0, 8f, 1_792_000_000_000)
 
@@ -35,6 +37,25 @@ class EvidenciaRepositorioLocalTest {
         assertEquals("photo", fila.tipo)
         assertEquals(0, fila.posicion)
         assertEquals(1, envios.pedidos)
+    }
+
+    // Criterio 5: la fotografía se acota antes de medirla. Si se midiera
+    // primero, el tamaño y el resumen firmados no serían los del archivo que
+    // se sube y el almacenamiento lo rechazaría.
+    @Test
+    fun `la fotografia se acota antes de calcular su huella`() = runTest {
+        repositorio.capturar(BORRADOR, archivo("frente.jpg"), TipoDeEvidencia.FOTO, ubicacionBuena)
+
+        assertEquals(1, reductor.reducidos.size)
+        assertTrue(reductor.reducidos.single().endsWith("frente.jpg"))
+    }
+
+    /** El video sale de la cámara en 720p y 30 s: no hay nada que acotar. */
+    @Test
+    fun `el video no se reduce`() = runTest {
+        repositorio.capturar(BORRADOR, archivo("choque.mp4"), TipoDeEvidencia.VIDEO, ubicacionBuena, duracionS = 12)
+
+        assertTrue(reductor.reducidos.isEmpty())
     }
 
     @Test
@@ -79,7 +100,7 @@ class EvidenciaRepositorioLocalTest {
 
     @Test
     fun `un archivo ilegible no se registra`() = runTest {
-        val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(ilegible = true), envios)
+        val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(ilegible = true), reductor, envios)
 
         val guardada = repositorio.capturar(BORRADOR, archivo("rota.jpg"), TipoDeEvidencia.FOTO, ubicacionBuena)
 
@@ -229,5 +250,15 @@ class EvidenciaRepositorioLocalTest {
             /** 2026-10-14T17:46:40Z, para que la fecha enviada sea estable. */
             const val INSTANTE = 1_792_000_000_000L
         }
+    }
+}
+
+/** ReductorFalso anota cada archivo que se le pidió acotar. */
+private class ReductorFalso : ReductorDeFoto {
+    val reducidos = mutableListOf<String>()
+
+    override suspend fun reducir(archivo: File): Boolean {
+        reducidos += archivo.absolutePath
+        return true
     }
 }

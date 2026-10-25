@@ -433,6 +433,7 @@
     <string name="evidencia_sello_ubicacion">%1$s · %2$s · ±%3$d m</string>
     <string name="evidencia_sello_sin_ubicacion">No location yet</string>
     <string name="evidencia_sello_hora">UTC %1$s · integrity seal</string>
+    <string name="evidencia_sello_hora_corto">Captured on %1$s UTC</string>
     <string name="evidencia_galeria_no_disponible">The gallery is not available: evidence is captured on site</string>
     <string name="evidencia_video">Video</string>
     <string name="evidencia_detener">Stop</string>
