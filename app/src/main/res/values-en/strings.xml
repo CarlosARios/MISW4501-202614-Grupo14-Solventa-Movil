@@ -400,7 +400,7 @@
     <string name="auditoria_revocacion_en_cola_titulo">Offline: revocation queued</string>
     <string name="auditoria_revocacion_en_cola">We saved your request to revoke %1$s (%2$s %3$s). It will be sent automatically with high priority as soon as you are back online. On your device it already shows as revoked.</string>
     <string name="auditoria_revocacion_parcial_titulo">%1$s has not confirmed the revocation yet</string>
-    <string name="auditoria_revocacion_parcial">Solventa no longer queries your data since %1$s %2$s. The entity did not answer within 5 minutes; we keep trying and will let you know.</string>
+    <string name="auditoria_revocacion_parcial">Solventa no longer queries your data since %1$s %2$s. The entity did not answer the notice within 5 minutes.</string>
     <string name="auditoria_revocacion_paso_pendiente">Revocation requested · pending upload</string>
     <string name="auditoria_revocacion_paso_sin_confirmar">Revoked · %1$s not confirmed</string>
     <string name="auditoria_revocacion_solicitada_el">Revocation requested %1$s %2$s</string>

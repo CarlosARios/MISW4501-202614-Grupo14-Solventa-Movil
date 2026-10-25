@@ -101,3 +101,11 @@ fun pasoFinalDelHistorial(
         }
     else -> null
 }
+
+/**
+ * La entidad va resaltada (caja azul) en un activo y en una revocacion
+ * parcial, que todavia espera su confirmacion; en los demas estados va
+ * atenuada.
+ */
+internal fun entidadResaltada(estado: String): Boolean =
+    estado == EstadosDeConsentimiento.ACTIVO || estado == EstadosDeConsentimiento.REVOCADO_PARCIAL

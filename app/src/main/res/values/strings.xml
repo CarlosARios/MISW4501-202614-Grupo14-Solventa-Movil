@@ -406,7 +406,7 @@
     <string name="auditoria_revocacion_en_cola_titulo">Sin conexión: revocación en cola</string>
     <string name="auditoria_revocacion_en_cola">Guardamos tu solicitud de revocación de %1$s (%2$s %3$s). Se enviará automáticamente con prioridad alta en cuanto recuperes la conexión. En tu dispositivo ya figura como revocado.</string>
     <string name="auditoria_revocacion_parcial_titulo">%1$s aún no confirma la revocación</string>
-    <string name="auditoria_revocacion_parcial">Solventa ya no consulta tus datos desde el %1$s %2$s. La entidad no respondió en 5 minutos; seguimos intentando y te avisaremos.</string>
+    <string name="auditoria_revocacion_parcial">Solventa ya no consulta tus datos desde el %1$s %2$s. La entidad no respondió al aviso dentro de los 5 minutos.</string>
     <string name="auditoria_revocacion_paso_pendiente">Revocación solicitada · pendiente de envío</string>
     <string name="auditoria_revocacion_paso_sin_confirmar">Revocado · %1$s sin confirmar</string>
     <string name="auditoria_revocacion_solicitada_el">Revocación solicitada %1$s %2$s</string>

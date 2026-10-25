@@ -259,7 +259,7 @@ private fun Cabecera(c: Consentimiento, pendiente: Boolean) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(vertical = Espacio.x16),
         ) {
-            IconoDeEntidad(atenuado = c.estado != EstadosDeConsentimiento.ACTIVO)
+            IconoDeEntidad(atenuado = !entidadResaltada(c.estado))
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(text = c.nombreDeEntidad, style = MaterialTheme.typography.titleMedium)
                 Text(
