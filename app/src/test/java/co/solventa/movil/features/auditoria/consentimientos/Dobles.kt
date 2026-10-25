@@ -5,7 +5,10 @@ import co.solventa.movil.core.api.auditoria.CambioDeEstadoDto
 import co.solventa.movil.core.api.auditoria.ConsentimientoDto
 import co.solventa.movil.core.api.auditoria.EntidadDto
 import co.solventa.movil.core.api.auditoria.FuenteDto
+import co.solventa.movil.core.api.auditoria.EntidadDeRevocacionDto
 import co.solventa.movil.core.api.auditoria.ListaDeConsentimientosDto
+import co.solventa.movil.core.api.auditoria.RevocacionDto
+import co.solventa.movil.core.api.auditoria.SolicitudDeRevocacionDto
 import co.solventa.movil.core.auth.sesion.ResultadoIngreso
 import co.solventa.movil.core.auth.sesion.Sesion
 import co.solventa.movil.core.auth.sesion.SesionRepositorio
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import retrofit2.Response
 import java.io.IOException
@@ -93,9 +97,67 @@ class AuditoriaFalsa : AuditoriaApi {
         }
     }
 
-    override suspend fun consentimiento(id: String): Response<ConsentimientoDto> =
-        Response.success(lista.first { it.id == id })
+    override suspend fun consentimiento(id: String): Response<ConsentimientoDto> {
+        llamadas++
+        if (sinRed) throw IOException("sin red")
+        return if (codigo in 200..299) {
+            Response.success(lista.first { it.id == id })
+        } else {
+            Response.error(codigo, cuerpoDeError.toResponseBody("application/json".toMediaType()))
+        }
+    }
+
+    // --- HU-M1.3-02 ---
+
+    /** Lo que responde la revocacion: codigo, cuerpo o falla, fijados por la prueba. */
+    var codigoDeRevocacion: Int = 201
+    var revocacion: RevocacionDto? = null
+    var errorDeRevocacion: String = ""
+    var revocacionSinRed = false
+
+    /** Cuanto tarda la revocacion, para probar el corte de 4 s. */
+    var demoraDeRevocacion: Long = 0
+    val revocaciones = mutableListOf<Triple<String, String, SolicitudDeRevocacionDto>>()
+    var comprobante: ByteArray? = "%PDF-1.3".toByteArray()
+    var codigoDeComprobante: Int = 200
+    var idiomaDelComprobante: String? = null
+
+    override suspend fun revocar(id: String, clave: String, solicitud: SolicitudDeRevocacionDto): Response<RevocacionDto> {
+        revocaciones += Triple(id, clave, solicitud)
+        if (demoraDeRevocacion > 0) kotlinx.coroutines.delay(demoraDeRevocacion)
+        if (revocacionSinRed) throw IOException("sin red")
+        return if (codigoDeRevocacion in 200..299) {
+            Response.success(codigoDeRevocacion, revocacion ?: revocacionDto(id))
+        } else {
+            Response.error(codigoDeRevocacion, errorDeRevocacion.toResponseBody("application/json".toMediaType()))
+        }
+    }
+
+    override suspend fun comprobanteDeRevocacion(id: String, idioma: String): Response<ResponseBody> {
+        idiomaDelComprobante = idioma
+        if (sinRed) throw IOException("sin red")
+        val bytes = comprobante
+        return if (codigoDeComprobante in 200..299 && bytes != null) {
+            Response.success(bytes.toResponseBody("application/pdf".toMediaType()))
+        } else {
+            Response.error(codigoDeComprobante, "{}".toResponseBody("application/json".toMediaType()))
+        }
+    }
 }
+
+/** La revocacion que responde el servicio por omision. */
+fun revocacionDto(
+    id: String,
+    solicitada: String = "2026-10-24T19:59:58Z",
+    efectiva: String = "2026-10-24T20:00:00Z",
+    estado: String = "revoked",
+    aviso: String = "in_progress",
+    entidad: String = "pending",
+) = RevocacionDto(
+    consentimientoId = id, comprobante = "REV-2026-0088", estado = estado, solicitadaEn = solicitada, efectivaEn = efectiva,
+    canal = "mobile_app", dispositivo = "Google Pixel 8", estadoDelAviso = aviso,
+    entidades = listOf(EntidadDeRevocacionDto("aliado-banco-1", "Banco Aliado", entidad, null, "2026-10-24T20:05:00Z")),
+)
 
 class SesionFalsa(var sub: String = "sub-a") : SesionRepositorio {
     override suspend fun sesionGuardada(): Sesion? = Sesion("asegurado@example.com", "Carolina", sub)

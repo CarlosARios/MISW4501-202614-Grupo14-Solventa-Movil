@@ -122,7 +122,94 @@ class AuditoriaApiTest {
         assertNull(minimo.finalizadoEn)
     }
 
+    // --- HU-M1.3-02: la revocacion y su comprobante ---
+
+    @Test
+    fun `la revocacion viaja con la clave de idempotencia y la hora del telefono`() = runTest {
+        servidor.enqueue(MockResponse(code = 201, body = REVOCACION))
+
+        val respuesta = api.revocar(
+            "cns-1",
+            "0b7e3f5a-2c1d-4e8f-9a6b-1c2d3e4f5a6b",
+            SolicitudDeRevocacionDto("2026-10-24T14:59:58-05:00", "Google Pixel 8", "biometric"),
+        )
+
+        val peticion = servidor.takeRequest()
+        assertEquals("POST", peticion.method)
+        assertEquals("/v1/consents/cns-1/revocations", peticion.url.encodedPath)
+        assertEquals("0b7e3f5a-2c1d-4e8f-9a6b-1c2d3e4f5a6b", peticion.headers["Idempotency-Key"])
+        assertEquals("Bearer token-del-titular", peticion.headers["Authorization"])
+        assertEquals(
+            json.parseToJsonElement(
+                """{"requested_at":"2026-10-24T14:59:58-05:00","device":"Google Pixel 8","confirmation_method":"biometric"}""",
+            ),
+            json.parseToJsonElement(peticion.body!!.utf8()),
+        )
+        assertEquals(201, respuesta.code())
+        val revocacion = respuesta.body()!!
+        assertEquals("REV-2026-0088", revocacion.comprobante)
+        assertEquals("revoked", revocacion.estado)
+        assertEquals("2026-10-24T19:59:58Z", revocacion.solicitadaEn)
+        assertEquals("2026-10-24T20:00:00.123456Z", revocacion.efectivaEn)
+        assertEquals("in_progress", revocacion.estadoDelAviso)
+        assertEquals(
+            EntidadDeRevocacionDto("aliado-banco-1", "Banco Aliado", "pending", null, "2026-10-24T20:05:00.123456Z"),
+            revocacion.entidades.single(),
+        )
+    }
+
+    @Test
+    fun `la misma clave responde 200 y otra revocacion 409`() = runTest {
+        servidor.enqueue(MockResponse(code = 200, body = REVOCACION))
+        servidor.enqueue(MockResponse(code = 409, body = """{"error":"consent_already_revoked","message":"x"}"""))
+        val solicitud = SolicitudDeRevocacionDto("2026-10-24T14:59:58-05:00", "Pixel", "password")
+
+        assertEquals(200, api.revocar("cns-1", "k1", solicitud).code())
+        val conflicto = api.revocar("cns-1", "k2", solicitud)
+
+        assertEquals(409, conflicto.code())
+        val error = json.decodeFromString<ErrorDeAuditoriaDto>(conflicto.errorBody()!!.string())
+        assertEquals(AuditoriaApi.ERROR_YA_REVOCADO, error.error)
+    }
+
+    @Test
+    fun `el comprobante llega en PDF en el idioma pedido`() = runTest {
+        servidor.enqueue(
+            MockResponse.Builder().code(200).addHeader("Content-Type", "application/pdf").body("%PDF-1.3 comprobante").build(),
+        )
+
+        val respuesta = api.comprobanteDeRevocacion("cns-2", "en")
+
+        val peticion = servidor.takeRequest()
+        assertEquals("/v1/consents/cns-2/revocation-receipt", peticion.url.encodedPath)
+        assertEquals("en", peticion.headers["Accept-Language"])
+        assertEquals("%PDF-1.3 comprobante", respuesta.body()!!.string())
+    }
+
+    @Test
+    fun `un consentimiento trae si es revocable y su revocacion`() = runTest {
+        servidor.enqueue(MockResponse(code = 200, body = """{"items":[$CON_REVOCACION]}"""))
+
+        val revocado = api.consentimientos().body()!!.elementos.single()
+
+        assertFalse(revocado.revocable)
+        assertEquals("REV-2026-0088", revocado.revocacion?.comprobante)
+        assertEquals("pending", revocado.revocacion?.entidades?.single()?.estado)
+    }
+
     private companion object {
+        val REVOCACION = """
+            {"consent_id":"cns-1","receipt_number":"REV-2026-0088","status":"revoked",
+             "requested_at":"2026-10-24T19:59:58Z","effective_at":"2026-10-24T20:00:00.123456Z","channel":"mobile_app",
+             "device":"Google Pixel 8","notice_status":"in_progress",
+             "entities":[{"code":"aliado-banco-1","name":"Banco Aliado","status":"pending","confirmed_at":null,
+                            "deadline_at":"2026-10-24T20:05:00.123456Z"}]}
+        """.trimIndent()
+        val CON_REVOCACION = """
+            {"consent_id":"cns-1","status":"revoked","current":false,"purpose":"p","channel":"embedded",
+             "terms_version":"v1","granted_at":"2026-09-16T15:52:00Z","expires_at":"2027-09-16T15:52:00Z",
+             "revocable":false,"revocation":$REVOCACION}
+        """.trimIndent()
         val ACTIVO = """
             {"consent_id":"cns-1","status":"active","current":true,
              "entities":[{"code":"aliado-banco-1","name":"Banco Aliado"}],

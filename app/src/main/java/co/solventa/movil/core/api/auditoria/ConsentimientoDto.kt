@@ -30,6 +30,10 @@ data class ConsentimientoDto(
     @SerialName("ended_at") val finalizadoEn: String? = null,
     @SerialName("revocation_receipt_id") val comprobanteDeRevocacion: String? = null,
     @SerialName("history") val historial: List<CambioDeEstadoDto> = emptyList(),
+    /** Solo un activo se puede revocar (HU-M1.3-02, criterio 6). */
+    @SerialName("revocable") val revocable: Boolean = false,
+    /** La revocacion que lo termino, con el aviso a cada entidad; null si no fue revocado. */
+    @SerialName("revocation") val revocacion: RevocacionDto? = null,
 )
 
 /** Entidad financiera autorizada: el aliado y su nombre visible. */
