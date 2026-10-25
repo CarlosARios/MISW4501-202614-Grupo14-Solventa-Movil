@@ -1,6 +1,7 @@
 package co.solventa.movil.features.auditoria.consentimientos
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasContentDescription
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import co.solventa.movil.R
@@ -24,9 +26,13 @@ import org.junit.Test
 
 /**
  * M8b · Detalle del consentimiento (HU-M1.3-01): los campos del criterio 2,
- * el historial como linea de tiempo (frame 37:1418) con su paso final, la
- * revocacion con su comprobante y el boton Revocar presente y deshabilitado
- * solo en un activo (D-8 b).
+ * el historial como linea de tiempo (frame 37:1418) con su paso final y la
+ * revocacion con su comprobante.
+ *
+ * HU-M1.3-02 (criterio 6): «Revocar consentimiento» activo solo en un activo
+ * revocable; ausente en revocados, vencidos y con la revocacion en cola, que
+ * ofrece «Reintentar envio ahora»; la revocacion parcial con su aviso y su
+ * comprobante.
  */
 class DetalleConsentimientoPantallaTest {
 
@@ -37,7 +43,18 @@ class DetalleConsentimientoPantallaTest {
 
     private fun texto(id: Int, vararg args: Any) = contexto.getString(id, *args)
 
-    private fun montar(consentimiento: Consentimiento?, cargando: Boolean = false, sinConexion: Boolean = false) {
+    private var revocaciones = 0
+    private var reintentos = 0
+    private var descargas = 0
+    private var avisosCerrados = 0
+
+    private fun montar(
+        consentimiento: Consentimiento?,
+        cargando: Boolean = false,
+        sinConexion: Boolean = false,
+        pendiente: RevocacionPendiente? = null,
+        revocacion: RevocacionUiState = RevocacionUiState(consentimiento = consentimiento, pendiente = pendiente),
+    ) {
         composicion.setContent {
             SolventaTheme {
                 ContenidoDetalleConsentimiento(
@@ -46,13 +63,21 @@ class DetalleConsentimientoPantallaTest {
                         consentimiento = consentimiento,
                         noDisponible = consentimiento == null && !cargando,
                         sinConexion = sinConexion,
+                        pendiente = pendiente,
                     ),
                     idioma = Idioma.ESPANOL,
                     onAtras = {},
+                    revocacion = revocacion,
+                    onRevocar = { revocaciones++ },
+                    onReintentar = { reintentos++ },
+                    onDescargarComprobante = { descargas++ },
+                    onCerrarAviso = { avisosCerrados++ },
                 )
             }
         }
     }
+
+    private fun cuantos(id: Int) = composicion.onAllNodes(hasText(texto(id))).fetchSemanticsNodes().size
 
     private fun fecha(instante: Long) = FormatoDeFecha.fecha(instante, Idioma.ESPANOL)
     private fun hora(instante: Long) = FormatoDeFecha.hora(instante, Idioma.ESPANOL)
@@ -111,10 +136,105 @@ class DetalleConsentimientoPantallaTest {
     }
 
     @Test
-    fun revocar_esta_presente_y_deshabilitado_en_un_activo() {
+    fun revocar_esta_activo_en_un_activo_y_abre_la_confirmacion() {
         montar(DatosDePantalla.activo)
 
-        composicion.onNodeWithText(texto(R.string.auditoria_detalle_revocar)).assertIsDisplayed().assertIsNotEnabled()
+        composicion.onNodeWithText(texto(R.string.auditoria_detalle_revocar)).assertIsDisplayed().assertIsEnabled().performClick()
+
+        assertEquals(1, revocaciones)
+        assertEquals("sin cola no hay reintento", 0, cuantos(R.string.auditoria_revocacion_reintentar))
+    }
+
+    @Test
+    fun revocar_no_aparece_en_un_activo_que_el_servicio_no_deja_revocar() {
+        montar(DatosDePantalla.activo.copy(revocable = false))
+
+        assertEquals(0, cuantos(R.string.auditoria_detalle_revocar))
+    }
+
+    @Test
+    fun mientras_se_envia_revocar_se_apaga_y_lo_dice() {
+        montar(
+            DatosDePantalla.activo,
+            revocacion = RevocacionUiState(consentimiento = DatosDePantalla.activo, paso = PasoDeRevocacion.Enviando),
+        )
+
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_revocacion_enviando)).assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.auditoria_detalle_revocar)).assertIsNotEnabled()
+    }
+
+    @Test
+    fun con_la_revocacion_en_cola_no_hay_revocar_y_se_ofrece_reintentar_sin_senal_deshabilitado() {
+        montar(
+            DatosDePantalla.activo,
+            sinConexion = true,
+            pendiente = DatosDePantalla.enCola,
+            revocacion = RevocacionUiState(
+                consentimiento = DatosDePantalla.activo,
+                pendiente = DatosDePantalla.enCola,
+                conectado = false,
+            ),
+        )
+        val aviso = texto(R.string.auditoria_revocacion_en_cola_titulo) + ". " + texto(
+            R.string.auditoria_revocacion_en_cola,
+            "Banco Aliado",
+            fecha(DatosDePantalla.SOLICITADA),
+            hora(DatosDePantalla.SOLICITADA),
+        )
+
+        assertEquals("criterio 6", 0, cuantos(R.string.auditoria_detalle_revocar))
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_reintentar)).assertIsDisplayed().assertIsNotEnabled()
+        composicion.onNodeWithContentDescription(aviso).assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_pendiente_de_envio)).performScrollTo().assertIsDisplayed()
+        composicion.onNode(hasContentDescription(texto(R.string.auditoria_revocacion_paso_pendiente) + ". ", substring = true))
+            .performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun con_senal_reintentar_envio_responde() {
+        montar(
+            DatosDePantalla.activo,
+            pendiente = DatosDePantalla.enCola,
+            revocacion = RevocacionUiState(consentimiento = DatosDePantalla.activo, pendiente = DatosDePantalla.enCola, conectado = true),
+        )
+
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_reintentar)).assertIsEnabled().performClick()
+
+        assertEquals(1, reintentos)
+    }
+
+    @Test
+    fun la_revocacion_parcial_avisa_la_entidad_que_falta_y_ofrece_el_comprobante() {
+        montar(DatosDePantalla.parcial)
+        val aviso = texto(R.string.auditoria_revocacion_parcial_titulo, "Banco Aliado") + ". " + texto(
+            R.string.auditoria_revocacion_parcial,
+            fecha(DatosDePantalla.EFECTIVA),
+            FormatoDeFecha.horaConSegundos(DatosDePantalla.EFECTIVA, Idioma.ESPANOL),
+        )
+
+        composicion.onNodeWithContentDescription(aviso).assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.auditoria_consentimientos_estado_revocado_parcial)).performScrollTo().assertIsDisplayed()
+        composicion.onNode(
+            hasContentDescription(texto(R.string.auditoria_revocacion_paso_sin_confirmar, "Banco Aliado") + ". ", substring = true),
+        ).performScrollTo().assertIsDisplayed()
+        assertEquals("sin boton de accion", 0, cuantos(R.string.auditoria_detalle_revocar))
+        assertEquals(0, cuantos(R.string.auditoria_revocacion_reintentar))
+
+        composicion.onNodeWithText(texto(R.string.auditoria_revocacion_descargar_detalle)).performScrollTo().performClick()
+        assertEquals(1, descargas)
+    }
+
+    @Test
+    fun un_aviso_de_la_revocacion_se_muestra_y_se_cierra() {
+        montar(
+            DatosDePantalla.activo,
+            revocacion = RevocacionUiState(consentimiento = DatosDePantalla.activo, aviso = AvisoDeLaRevocacion.NO_SE_PUDO),
+        )
+
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_revocacion_aviso_no_se_pudo)).assertIsDisplayed()
+        composicion.onNodeWithContentDescription(texto(R.string.auditoria_revocacion_cerrar_aviso)).performClick()
+
+        assertEquals(1, avisosCerrados)
     }
 
     @Test

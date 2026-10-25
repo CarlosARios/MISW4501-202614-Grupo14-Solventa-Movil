@@ -8,6 +8,7 @@ import androidx.compose.ui.test.filter
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onChildren
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -26,6 +27,7 @@ import org.junit.Test
 /**
  * M19 · Perfil (HU-M1.3-01): las filas en espera dicen
  * «Próximamente» y no responden; las activas si; Idioma abre la hoja.
+ * HU-M1.3-02 (D-7 a): con revocaciones en cola avisa antes de cerrar sesion.
  */
 class PerfilPantallaTest {
 
@@ -38,6 +40,8 @@ class PerfilPantallaTest {
 
     private var consentimientos = 0
     private var cierres = 0
+    private var cierresConfirmados = 0
+    private var cierresCancelados = 0
     private val biometria = mutableListOf<Boolean>()
 
     private fun montar(estado: PerfilUiState = estadoBase()) {
@@ -49,6 +53,8 @@ class PerfilPantallaTest {
                     onElegirIdioma = {},
                     onConsentimientos = { consentimientos++ },
                     onCerrarSesion = { cierres++ },
+                    onConfirmarCierre = { cierresConfirmados++ },
+                    onCancelarCierre = { cierresCancelados++ },
                 )
             }
         }
@@ -178,5 +184,26 @@ class PerfilPantallaTest {
         flechasDe(R.string.perfil_cerrar_sesion).assertCountEquals(0)
         flechasDe(R.string.perfil_idioma).assertCountEquals(1)
         flechasDe(R.string.perfil_privacidad_consentimientos).assertCountEquals(1)
+    }
+
+    @Test
+    fun con_revocaciones_en_cola_avisa_antes_de_cerrar_sesion() {
+        montar(estadoBase().copy(revocacionesPendientesAlCerrar = 2))
+
+        composicion.onNodeWithText(texto(R.string.perfil_cerrar_sesion_pendientes_titulo)).assertIsDisplayed()
+        composicion.onNodeWithText(contexto.resources.getQuantityString(R.plurals.perfil_cerrar_sesion_pendientes, 2, 2))
+            .assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.perfil_cerrar_sesion_pendientes_cancelar)).performClick()
+        composicion.onNodeWithText(texto(R.string.perfil_cerrar_sesion_pendientes_confirmar)).performClick()
+
+        assertEquals(1, cierresCancelados)
+        assertEquals(1, cierresConfirmados)
+    }
+
+    @Test
+    fun sin_revocaciones_en_cola_no_hay_aviso_al_cerrar_sesion() {
+        montar()
+
+        composicion.onAllNodesWithText(texto(R.string.perfil_cerrar_sesion_pendientes_titulo)).assertCountEquals(0)
     }
 }
