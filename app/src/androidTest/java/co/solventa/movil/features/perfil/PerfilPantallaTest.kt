@@ -17,6 +17,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.platform.app.InstrumentationRegistry
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.ConIdioma
 import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.ui.theme.SolventaTheme
 import org.junit.Assert.assertEquals
@@ -58,6 +59,45 @@ class PerfilPantallaTest {
                 )
             }
         }
+    }
+
+    /** El perfil dentro de la aplicacion con el idioma elegido, sin importar el del telefono. */
+    private fun montarEn(idioma: Idioma, estado: PerfilUiState) {
+        composicion.setContent {
+            SolventaTheme {
+                ConIdioma(idioma) {
+                    ContenidoPerfil(
+                        estado = estado.copy(idioma = idioma),
+                        onAlternarBiometria = {},
+                        onElegirIdioma = {},
+                        onConsentimientos = {},
+                        onCerrarSesion = {},
+                        onConfirmarCierre = {},
+                        onCancelarCierre = {},
+                    )
+                }
+            }
+        }
+    }
+
+    private fun textoEn(idioma: Idioma, id: Int) =
+        contexto.createConfigurationContext(Configuration(contexto.resources.configuration).apply { setLocale(idioma.aLocale()) })
+            .getString(id)
+
+    // El aviso se dibuja en su propia ventana: uno de los dos idiomas es
+    // distinto del telefono y prueba que no vuelve al del dispositivo.
+    @Test
+    fun el_aviso_de_revocaciones_sin_enviar_sale_en_espanol_si_la_aplicacion_esta_en_espanol() {
+        montarEn(Idioma.ESPANOL, estadoBase().copy(revocacionesPendientesAlCerrar = 1))
+
+        composicion.onNodeWithText(textoEn(Idioma.ESPANOL, R.string.perfil_cerrar_sesion_pendientes_titulo)).assertIsDisplayed()
+    }
+
+    @Test
+    fun el_aviso_de_revocaciones_sin_enviar_sale_en_ingles_si_la_aplicacion_esta_en_ingles() {
+        montarEn(Idioma.INGLES, estadoBase().copy(revocacionesPendientesAlCerrar = 1))
+
+        composicion.onNodeWithText(textoEn(Idioma.INGLES, R.string.perfil_cerrar_sesion_pendientes_titulo)).assertIsDisplayed()
     }
 
     private fun estadoBase() = PerfilUiState(

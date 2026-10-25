@@ -1,5 +1,6 @@
 package co.solventa.movil.features.auditoria.consentimientos
 
+import android.content.res.Configuration
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
@@ -11,6 +12,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.platform.app.InstrumentationRegistry
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.ConIdioma
+import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.ui.theme.SolventaTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -47,6 +50,45 @@ class HojaDeRevocacionTest {
                 )
             }
         }
+    }
+
+    /** El texto en el idioma dado, sin importar el del telefono. */
+    private fun textoEn(idioma: Idioma, id: Int, vararg args: Any) =
+        contexto.createConfigurationContext(Configuration(contexto.resources.configuration).apply { setLocale(idioma.aLocale()) })
+            .getString(id, *args)
+
+    /** La hoja completa, en su propia ventana, dentro de la aplicacion con el idioma elegido. */
+    private fun montarHoja(idioma: Idioma) {
+        composicion.setContent {
+            SolventaTheme {
+                ConIdioma(idioma) {
+                    HojaDeRevocacion(
+                        entidad = "Banco Aliado",
+                        hoja = PasoDeRevocacion.Hoja(MetodoDeConfirmacion.BIOMETRIA),
+                        idioma = idioma,
+                        onConfirmarConBiometria = { biometrias++ },
+                        onConfirmarConContrasena = { contrasenas += it },
+                        onCancelar = { cancelaciones++ },
+                    )
+                }
+            }
+        }
+    }
+
+    // Uno de los dos idiomas es distinto del telefono: ese es el que prueba que
+    // la ventana de la hoja no vuelve al idioma del dispositivo.
+    @Test
+    fun la_hoja_sale_en_espanol_si_la_aplicacion_esta_en_espanol() {
+        montarHoja(Idioma.ESPANOL)
+
+        composicion.onNodeWithText(textoEn(Idioma.ESPANOL, R.string.auditoria_revocacion_hoja_titulo, "Banco Aliado")).assertIsDisplayed()
+    }
+
+    @Test
+    fun la_hoja_sale_en_ingles_si_la_aplicacion_esta_en_ingles() {
+        montarHoja(Idioma.INGLES)
+
+        composicion.onNodeWithText(textoEn(Idioma.INGLES, R.string.auditoria_revocacion_hoja_titulo, "Banco Aliado")).assertIsDisplayed()
     }
 
     @Test

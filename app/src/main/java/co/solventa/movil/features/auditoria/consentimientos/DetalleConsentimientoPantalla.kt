@@ -99,6 +99,7 @@ fun DetalleConsentimientoPantalla(
         HojaDeRevocacion(
             entidad = consentimiento.nombreDeEntidad,
             hoja = hoja,
+            idioma = idioma,
             onConfirmarConBiometria = revocacionVm::confirmarConBiometria,
             onConfirmarConContrasena = revocacionVm::confirmarConContrasena,
             onCancelar = revocacionVm::cancelar,

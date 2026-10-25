@@ -31,6 +31,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.ConIdioma
+import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.shared.ui.AvisoSolventa
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoAviso
@@ -52,19 +54,25 @@ internal const val MINIMO_DE_CONTRASENA = 10
 fun HojaDeRevocacion(
     entidad: String,
     hoja: PasoDeRevocacion.Hoja,
+    idioma: Idioma,
     onConfirmarConBiometria: () -> Unit,
     onConfirmarConContrasena: (String) -> Unit,
     onCancelar: () -> Unit,
 ) {
     val estado = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onCancelar, sheetState = estado) {
-        ContenidoHojaDeRevocacion(
-            entidad = entidad,
-            hoja = hoja,
-            onConfirmarConBiometria = onConfirmarConBiometria,
-            onConfirmarConContrasena = onConfirmarConContrasena,
-            onCancelar = onCancelar,
-        )
+        // La hoja se dibuja en su propia ventana, que vuelve a proveer el
+        // contexto y la configuracion del dispositivo: sin esto saldria en el
+        // idioma del telefono y no en el de la aplicacion (como HojaDeIdioma).
+        ConIdioma(idioma) {
+            ContenidoHojaDeRevocacion(
+                entidad = entidad,
+                hoja = hoja,
+                onConfirmarConBiometria = onConfirmarConBiometria,
+                onConfirmarConContrasena = onConfirmarConContrasena,
+                onCancelar = onCancelar,
+            )
+        }
     }
 }
 

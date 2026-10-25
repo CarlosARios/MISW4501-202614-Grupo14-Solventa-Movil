@@ -176,21 +176,24 @@ fun ContenidoPerfil(
  */
 @Composable
 private fun AvisoDeRevocacionesSinEnviar(cuantas: Int, onConfirmar: () -> Unit, onCancelar: () -> Unit) {
+    // Los textos se resuelven aqui, en el idioma de la aplicacion: el dialogo
+    // se dibuja en su propia ventana, que vuelve al idioma del telefono.
+    val titulo = stringResource(R.string.perfil_cerrar_sesion_pendientes_titulo)
+    val texto = pluralStringResource(R.plurals.perfil_cerrar_sesion_pendientes, cuantas, cuantas)
+    val confirmar = stringResource(R.string.perfil_cerrar_sesion_pendientes_confirmar)
+    val cancelar = stringResource(R.string.perfil_cerrar_sesion_pendientes_cancelar)
     AlertDialog(
         onDismissRequest = onCancelar,
-        title = { Text(text = stringResource(R.string.perfil_cerrar_sesion_pendientes_titulo)) },
-        text = { Text(text = pluralStringResource(R.plurals.perfil_cerrar_sesion_pendientes, cuantas, cuantas)) },
+        title = { Text(text = titulo) },
+        text = { Text(text = texto) },
         confirmButton = {
             TextButton(onClick = onConfirmar) {
-                Text(
-                    text = stringResource(R.string.perfil_cerrar_sesion_pendientes_confirmar),
-                    color = MaterialTheme.colorScheme.error,
-                )
+                Text(text = confirmar, color = MaterialTheme.colorScheme.error)
             }
         },
         dismissButton = {
             TextButton(onClick = onCancelar) {
-                Text(text = stringResource(R.string.perfil_cerrar_sesion_pendientes_cancelar))
+                Text(text = cancelar)
             }
         },
     )
