@@ -5,9 +5,11 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import co.solventa.movil.core.persistencia.dao.BorradorDeRadicacionDao
 import co.solventa.movil.core.persistencia.dao.ConsentimientoDao
+import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
 import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
 import co.solventa.movil.core.persistencia.entidades.BorradorDeRadicacion
 import co.solventa.movil.core.persistencia.entidades.ConsentimientoEntidad
+import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
 import co.solventa.movil.core.persistencia.entidades.RevocacionPendienteEntidad
 import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
 
@@ -15,13 +17,14 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * La base de datos del dispositivo.
  *
  * Guarda lo que tiene que sobrevivir a cerrar la aplicación y **no** es
- * secreto: el borrador del reporte de siniestro. Los tokens de la sesión no
+ * secreto: el borrador del reporte de siniestro y las evidencias que se
+ * capturaron para él, con el estado de su envío. Los tokens de la sesión no
  * viven aquí, sino en el almacenamiento cifrado de `core/auth/sesion`.
  *
  * La version 2 (HU-M1.3-01) agrega la copia sin conexion de los
  * consentimientos de Open Finance y la hora de su ultima sincronizacion. La
- * migracion 1 → 2 es automatica porque solo agrega tablas: los borradores de
- * la radicacion se conservan.
+ * migracion 1 → 2 es automatica porque solo agrega tablas: los borradores y
+ * las evidencias de la radicacion se conservan.
  *
  * La version 3 (HU-M1.3-02) agrega la cola de revocaciones pendientes de envio
  * y, en la copia de cada consentimiento, su revocacion (columna nueva que
@@ -33,6 +36,7 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
 @Database(
     entities = [
         BorradorDeRadicacion::class,
+        EvidenciaCapturada::class,
         ConsentimientoEntidad::class,
         SincronizacionEntidad::class,
         RevocacionPendienteEntidad::class,
@@ -44,6 +48,8 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
 abstract class BaseDeDatosSolventa : RoomDatabase() {
 
     abstract fun borradoresDeRadicacion(): BorradorDeRadicacionDao
+
+    abstract fun evidenciasCapturadas(): EvidenciaCapturadaDao
 
     abstract fun consentimientos(): ConsentimientoDao
 

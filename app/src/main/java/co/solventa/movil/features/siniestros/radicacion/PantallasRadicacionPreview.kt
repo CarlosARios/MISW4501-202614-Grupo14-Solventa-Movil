@@ -93,6 +93,8 @@ private fun VistaPreviaEvidencias() {
     SolventaTheme {
         PantallaEvidencias(
             estado = estado(Etapa.EVIDENCIAS, DILIGENCIADA),
+            onCapturar = {},
+            onDescartar = {},
             onContinuar = {},
             onGuardarYSalir = {},
             onAtras = {},

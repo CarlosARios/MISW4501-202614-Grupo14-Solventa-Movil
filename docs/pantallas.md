@@ -64,21 +64,37 @@ Las cuatro etapas del asistente guiado, su confirmación y los dos estados que e
 | [M11d](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2397) | Paso 4 · Declaración | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | Completa |
 | [M11d2](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=701-13532) | Declaración confirmada | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | **Es un estado de M11d**, con la casilla marcada |
 | [M11e](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2510) | Radicado generado | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | Completa. El código único y el resumen del caso |
-| [M11f](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2568) | Avanzar deshabilitado por faltantes | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | **Es un estado del paso 3**: el mínimo de fotos lo pone HU-M2.1-01 |
+| [M11f](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=43-2568) | Avanzar deshabilitado por faltantes | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | **Es un estado del paso 3**: se activa mientras falte el mínimo de cuatro fotos capturadas |
 | [M13b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=51-2519) | Continuar borrador al reabrir | `features/siniestros/radicacion` | **HU-M2.2-01** | **Must** | La **hoja inferior** es de esta historia; la lista del fondo es de M2.4-01 |
-| [M12](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2222) | Cámara · captura de evidencia | `features/siniestros/radicacion` | HU-M2.1-01 | **Must** | Completa |
-| [M12b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2293) | Permisos de cámara y ubicación | `features/siniestros/radicacion` | HU-M2.1-01 | **Must** | Completa |
-| [M12c](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2413) | Precisión del GPS insuficiente | `features/siniestros/radicacion` | HU-M2.1-01 | **Must** | Completa |
+| [M12](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2222) | Cámara · captura de evidencia | `features/siniestros/evidencia` | **HU-M2.1-01** | **Must** | Completa. Foto y video de hasta 30 s, con el sello de ubicación y hora del frame. **Sin la silueta de vehículo del frame** y con un aviso de grabación que el frame no dibuja |
+| [M12b](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2293) | Permisos de cámara y ubicación | `features/siniestros/evidencia` | **HU-M2.1-01** | **Must** | Completa. La explicación es de la aplicación; **las tres opciones las pone Android**, que es lo que el frame dibuja |
+| [M12c](https://www.figma.com/design/ZBPl5l9oXTPlfiOHrzCM2M/Solventa-%E2%80%94-Prototipo-S7-%E2%80%94-Pantallas?node-id=48-2413) | Precisión del GPS insuficiente | `features/siniestros/evidencia` | **HU-M2.1-01** | **Must** | Completa. Criterio 3: avisa antes de capturar y deja capturar igual, marcando la evidencia |
 
-Recorrido: **M3 → M11a → M11b → M11c → M11d → M11e → M3**. Desvíos: al reabrir con un reporte sin terminar, la hoja
-de M13b ofrece retomarlo en su etapa; un dato que el servicio rechaza devuelve a la etapa donde se corrige.
+Recorrido: **M3 → M11a → M11b → M11c → M11d → M11e → M3**, con **M11c → M12** una vez por evidencia. Desvíos: al
+reabrir con un reporte sin terminar, la hoja de M13b ofrece retomarlo en su etapa; un dato que el servicio rechaza
+devuelve a la etapa donde se corrige, y una evidencia rechazada devuelve al paso 3.
+
+Dos diferencias con el frame del visor, las dos a propósito: **la silueta de vehículo no se dibuja**, porque la
+evidencia se captura para cuatro tipos de siniestro y una silueta de carro estorba encuadrando un vidrio roto; y
+**se agrega un aviso de «Grabando»**, porque sin él no hay forma de saber que la cámara está grabando.
+
+Dos añadidos al frame del paso 3: **tocar una casilla con foto abre lo capturado** —la fotografía a pantalla
+completa, el video con su reproductor— y cada casilla lleva una **caneca** para descartarlo y volver a tomarlo.
+El frame no los dibuja, pero sin ellos no hay manera de revisar una toma ni de corregir una que salió mal, y
+una casilla ocupada por algo inservible deja el reporte trabado.
+
+La evidencia se sube **en segundo plano**: la cámara vuelve al paso 3 apenas la captura queda registrada, y cada
+casilla muestra en qué va su envío. El archivo no pasa por el API Gateway sino que va directo al repositorio de
+evidencia con una URL firmada, que es lo que permite que quepa un video de 30 segundos. *Continuar* se habilita con el mínimo
+**capturado**, porque el criterio 5 pide que el envío no bloquee a quien está en el lugar; quien espera por las
+subidas es **Radicar**, que viaja con las llaves y el servicio comprueba cada una.
 
 Tres diferencias con el prototipo, todas por historias que aún no existen:
 
 - **La hoja «Tienes un reporte sin terminar» aparece al abrir el asistente**, no sobre *Mis siniestros*: esa lista es
   de HU-M2.4-01. El contenido es el del frame.
-- **El paso 3 no exige evidencia todavía.** La cuadrícula se muestra sin acción y con un aviso; el mínimo por tipo y
-  el estado de M11f se activan con HU-M2.1-01.
+- **El mínimo de evidencia es de cuatro fotos para todos los tipos de siniestro.** Es el único número que da el
+  prototipo (M11c, «al menos 4»); un mínimo distinto por tipo no lo respalda ningún criterio ni ningún frame.
 - **El selector de pólizas lee una lista local** con la póliza del prototipo, hasta que `GET /v1/policies` esté en
   `develop` (HU-M1.2-01).
 

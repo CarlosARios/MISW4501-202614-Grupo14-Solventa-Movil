@@ -22,6 +22,16 @@ import retrofit2.http.POST
  */
 interface SiniestrosApi {
 
+    /**
+     * Pide la URL firmada con la que se sube una evidencia (HU-M2.1-01). El
+     * archivo no pasa por aquí: va del teléfono al repositorio.
+     */
+    @POST("v1/claims/evidence/upload-url")
+    suspend fun urlDeSubida(
+        @Header(Correlacion.ENCABEZADO) correlacion: String,
+        @Body peticion: SolicitudDeSubida,
+    ): Response<RespuestaDeSubida>
+
     @POST("v1/claims")
     suspend fun radicar(
         @Header(ENCABEZADO_IDEMPOTENCIA) borrador: String,
@@ -45,7 +55,46 @@ data class SolicitudDeRadicacion(
     @SerialName("description") val descripcion: String,
     /** Respuestas de las preguntas que dependen del tipo de incidente. */
     @SerialName("details") val detalles: Map<String, String> = emptyMap(),
+    /** Lo capturado en el lugar, ya subido al repositorio de evidencia. */
+    @SerialName("evidence") val evidencia: List<EvidenciaRadicada> = emptyList(),
     @SerialName("declaration_accepted") val declaracionAceptada: Boolean,
+)
+
+/** Lo que el asegurado declara antes de subir una evidencia. */
+@Serializable
+data class SolicitudDeSubida(
+    @SerialName("kind") val tipo: String,
+    @SerialName("content_type") val tipoDeContenido: String,
+    @SerialName("byte_size") val tamanoBytes: Long,
+    @SerialName("sha256") val sha256: String,
+)
+
+/**
+ * La subida firmada. Los encabezados son los que el `PUT` tiene que llevar,
+ * exactamente esos: la firma los cubre.
+ */
+@Serializable
+data class RespuestaDeSubida(
+    @SerialName("object_key") val llaveDelObjeto: String,
+    @SerialName("upload_url") val url: String,
+    @SerialName("upload_headers") val encabezados: Map<String, String> = emptyMap(),
+    @SerialName("expires_at") val venceEn: String,
+)
+
+/** Una evidencia que viaja con la radicación: su llave y su captura. */
+@Serializable
+data class EvidenciaRadicada(
+    @SerialName("object_key") val llaveDelObjeto: String,
+    @SerialName("kind") val tipo: String,
+    @SerialName("captured_at") val capturadaEn: String,
+    @SerialName("latitude") val latitud: Double,
+    @SerialName("longitude") val longitud: Double,
+    @SerialName("altitude_m") val altitud: Double? = null,
+    @SerialName("accuracy_m") val precisionM: Double,
+    @SerialName("location_trusted") val ubicacionConfiable: Boolean,
+    @SerialName("sha256") val sha256: String,
+    @SerialName("byte_size") val tamanoBytes: Long,
+    @SerialName("duration_s") val duracionS: Int = 0,
 )
 
 /** Solo lo que la aplicación usa; el resto de la respuesta se ignora. */
@@ -56,6 +105,14 @@ data class RespuestaDeRadicacion(
     @SerialName("filing_number") val radicado: String,
     @SerialName("status") val estado: String,
     @SerialName("filed_at") val radicadoEn: String,
+    /** Lo que quedó asociado al caso, contado por el servicio. */
+    @SerialName("evidence_count") val evidencia: ConteoDeEvidencia = ConteoDeEvidencia(),
+)
+
+@Serializable
+data class ConteoDeEvidencia(
+    @SerialName("photos") val fotos: Int = 0,
+    @SerialName("videos") val videos: Int = 0,
 )
 
 @Serializable

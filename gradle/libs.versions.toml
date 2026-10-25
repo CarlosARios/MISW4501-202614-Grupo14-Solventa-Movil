@@ -78,6 +78,8 @@ androidx-camera-core = { group = "androidx.camera", name = "camera-core", versio
 androidx-camera-camera2 = { group = "androidx.camera", name = "camera-camera2", version.ref = "camerax" }
 androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycle", version.ref = "camerax" }
 androidx-camera-view = { group = "androidx.camera", name = "camera-view", version.ref = "camerax" }
+# Grabación de video de la evidencia del siniestro (HU-M2.1-01)
+androidx-camera-video = { group = "androidx.camera", name = "camera-video", version.ref = "camerax" }
 
 # Biometría del dispositivo (HU-M1.1-02)
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }

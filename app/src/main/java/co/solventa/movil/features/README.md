@@ -11,7 +11,8 @@ Un `features` **no importa de otro** `features`. Si dos flujos necesitan lo mism
 | `inicio/` | Pantalla de inicio con avisos y accesos rápidos | M3 | — |
 | `originacion/polizas/` | Mis pólizas y detalle de la póliza | M4, M5 | — |
 | `originacion/renovaciones/` | Renovación desde la alerta, póliza cancelada por no pago, renovación confirmada | M17, M17b, M17c | M3.2-02 |
-| `siniestros/radicacion/` | Reportar un siniestro y captura de evidencia con la cámara | M11a, M12 | — |
+| `siniestros/radicacion/` | Asistente guiado de la radicación: identificación, hechos, evidencias y declaración, con borrador local | M11a–M11f, M13b | HU-M2.2-01 |
+| `siniestros/evidencia/` | Captura de evidencia con la cámara: fotos y video de hasta 30 s con ubicación, hora en UTC y sello de integridad, subidos en segundo plano con URL firmada | M12, M12b, M12c | HU-M2.1-01 |
 | `siniestros/seguimiento/` | Mis siniestros, estados vacío y degradado, detalle con línea de tiempo, siniestro paramétrico resuelto, detalle sin conexión | M9, M9b, M9c, M10, M10b, M10c | M2.4-01, M2.4-02, M3.1-01 |
 | `siniestros/asistencias/` | Solicitar asistencia en sitio, ubicación desactivada, sin señal de satélite | M14, M14b, M14c | M2.3-01 |
 | `notificaciones/centro/` | Centro de notificaciones, *push* en pantalla bloqueada, adjuntar soporte pendiente y su confirmación | M15, M15b, M18, M18b, M18c | M3.1-01, M3.2-01, M3.3-01, M3.3-02 |

@@ -1,6 +1,7 @@
 package co.solventa.movil.features.siniestros.radicacion
 
 import co.solventa.movil.core.api.siniestros.ErrorDeRadicacion
+import co.solventa.movil.core.api.siniestros.EvidenciaRadicada
 import co.solventa.movil.core.api.siniestros.RespuestaDeRadicacion
 import co.solventa.movil.core.api.siniestros.SiniestrosApi
 import co.solventa.movil.core.api.siniestros.SolicitudDeRadicacion
@@ -31,10 +32,17 @@ class RadicacionRepositorioHttp @Inject constructor(
 
     private val json = Json { ignoreUnknownKeys = true }
 
-    override suspend fun radicar(borrador: String, radicacion: Radicacion): ResultadoRadicacion {
+    override suspend fun radicar(
+        borrador: String,
+        radicacion: Radicacion,
+        evidencias: List<EvidenciaRadicada>,
+    ): ResultadoRadicacion {
         val correlacion = Correlacion.nuevo()
         return try {
-            interpretar(api.radicar(borrador, correlacion, solicitud(radicacion)), correlacion)
+            interpretar(
+                api.radicar(borrador, correlacion, solicitud(radicacion, evidencias)),
+                correlacion,
+            )
         } catch (sinRed: IOException) {
             ResultadoRadicacion.NoDisponible(correlacion)
         } catch (ilegible: SerializationException) {
@@ -53,6 +61,8 @@ class RadicacionRepositorioHttp @Inject constructor(
                     casoId = cuerpo.casoId,
                     radicado = cuerpo.radicado,
                     radicadoEn = cuerpo.radicadoEn,
+                    fotos = cuerpo.evidencia.fotos,
+                    videos = cuerpo.evidencia.videos,
                 ),
             )
 
@@ -75,25 +85,39 @@ class RadicacionRepositorioHttp @Inject constructor(
         if (error.error == CLAVE_REUTILIZADA) {
             return ResultadoRadicacion.NoDisponible(correlacion)
         }
-        val campos = error.campos.mapNotNull { CAMPOS[it.campo] }.toSet()
+        val campos = error.campos.mapNotNull { campoDelContrato(it.campo) }.toSet()
         return ResultadoRadicacion.DatosInvalidos(
             campos.ifEmpty { CampoDeRadicacion.entries.toSet() },
         )
     }
 
-    private fun solicitud(r: Radicacion) = SolicitudDeRadicacion(
+    /**
+     * El contrato nombra cada evidencia rechazada con su posición
+     * —`evidence.0.object_key`—, y todas se corrigen en el mismo sitio:
+     * volviendo a capturar.
+     */
+    private fun campoDelContrato(nombre: String): CampoDeRadicacion? =
+        if (nombre.startsWith(PREFIJO_DE_EVIDENCIA)) {
+            CampoDeRadicacion.EVIDENCIAS
+        } else {
+            CAMPOS[nombre]
+        }
+
+    private fun solicitud(r: Radicacion, evidencias: List<EvidenciaRadicada>) = SolicitudDeRadicacion(
         poliza = r.poliza.trim(),
         tipoDeIncidente = r.tipo?.valorDelContrato.orEmpty(),
         ocurrioEn = r.ocurrioEn?.let { Instant.ofEpochMilli(it).toString() }.orEmpty(),
         lugar = r.lugar.trim(),
         descripcion = r.descripcion.trim(),
         detalles = r.respuestas,
+        evidencia = evidencias,
         declaracionAceptada = r.declaracionAceptada,
     )
 
     private companion object {
         const val DATO_INVALIDO = 422
         const val CLAVE_REUTILIZADA = "idempotency_key_reused"
+        const val PREFIJO_DE_EVIDENCIA = "evidence"
 
         /** Los nombres del contrato, en el orden de las etapas. */
         val CAMPOS = mapOf(
@@ -103,6 +127,7 @@ class RadicacionRepositorioHttp @Inject constructor(
             "place" to CampoDeRadicacion.LUGAR,
             "description" to CampoDeRadicacion.DESCRIPCION,
             "details" to CampoDeRadicacion.RESPUESTAS,
+            "evidence" to CampoDeRadicacion.EVIDENCIAS,
             "declaration_accepted" to CampoDeRadicacion.DECLARACION,
         )
     }
