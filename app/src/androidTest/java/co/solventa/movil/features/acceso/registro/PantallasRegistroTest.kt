@@ -43,6 +43,9 @@ class PantallasRegistroTest {
         celular = "+57 301 234 5678",
     )
 
+    /** M1c pide la contraseña para habilitar la verificación. */
+    private val contrasena = "Solventa2026!"
+
     // Criterio 1 — la captura guía al usuario paso a paso.
     @Test
     fun m1a_guia_la_captura_del_frente() {
@@ -151,7 +154,11 @@ class PantallasRegistroTest {
         composicion.setContent {
             SolventaTheme {
                 ConfirmacionDatosPantalla(
-                    estado = RegistroUiState(datos = datos, terminosAceptados = false),
+                    estado = RegistroUiState(
+                        datos = datos,
+                        contrasena = contrasena,
+                        terminosAceptados = false,
+                    ),
                     onDatosCambian = {},
                     onContrasenaCambia = {},
                     onTerminos = {},
@@ -170,7 +177,11 @@ class PantallasRegistroTest {
         composicion.setContent {
             SolventaTheme {
                 ConfirmacionDatosPantalla(
-                    estado = RegistroUiState(datos = datos, terminosAceptados = true),
+                    estado = RegistroUiState(
+                        datos = datos,
+                        contrasena = contrasena,
+                        terminosAceptados = true,
+                    ),
                     onDatosCambian = {},
                     onContrasenaCambia = {},
                     onTerminos = {},
