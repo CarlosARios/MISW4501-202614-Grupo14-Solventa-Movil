@@ -241,6 +241,77 @@ class RegistroRepositorioHttpTest {
      * Borrar las capturas del teléfono es del ViewModel, que es el que sabe
      * cuándo una imagen dejó de hacer falta. El repositorio solo las envía.
      */
+    // Criterio 3 — el proveedor de identidad no aprobó: M1e, sin motivo.
+    @Test
+    fun `una identidad no verificada lleva a M1e con la referencia`() = runTest {
+        servidor.enqueue(
+            MockResponse(
+                code = 422,
+                body = """{"error":"identity_not_verified","message":"the identity could not be verified"}""",
+            ),
+        )
+
+        val resultado = registrar()
+
+        val enviado = servidor.takeRequest()
+        assertEquals(
+            ResultadoRegistro.IdentidadNoVerificada(enviado.headers[Correlacion.ENCABEZADO]!!),
+            resultado,
+        )
+    }
+
+    // Criterio 1 — el proveedor lee el documento y M1c lo muestra.
+    @Test
+    fun `la lectura devuelve los datos como los muestra M1c`() = runTest {
+        servidor.enqueue(
+            MockResponse(
+                code = 200,
+                body = """{"document_type":"CC","document_id":"1020345678","given_names":"Carolina",
+                    "surnames":"Pérez Ruiz","birth_date":"1992-04-18"}""",
+            ),
+        )
+
+        val resultado = repositorio.leerDocumento(FRENTE, REVERSO)
+
+        assertEquals(
+            ResultadoLectura.Leido(
+                DatosDocumento(
+                    nombres = "Carolina",
+                    apellidos = "Pérez Ruiz",
+                    tipoDocumento = "CC",
+                    numeroDocumento = "1020345678",
+                    fechaNacimiento = "18/04/1992",
+                ),
+            ),
+            resultado,
+        )
+        val enviado = servidor.takeRequest()
+        assertEquals("/v1/registrations/document-reads", enviado.url.encodedPath)
+        val cuerpo = enviado.body!!.utf8()
+        assertTrue(cuerpo.contains(FRENTE_EN_BASE64))
+        assertTrue(cuerpo.contains(REVERSO_EN_BASE64))
+    }
+
+    @Test
+    fun `una lectura que falla deja una referencia`() = runTest {
+        servidor.enqueue(MockResponse(code = 503, body = """{"error":"document_read_unavailable"}"""))
+
+        val resultado = repositorio.leerDocumento(FRENTE, REVERSO)
+
+        val enviado = servidor.takeRequest()
+        assertEquals(ResultadoLectura.NoLeido(enviado.headers[Correlacion.ENCABEZADO]!!), resultado)
+    }
+
+    @Test
+    fun `una captura ilegible no se manda a leer`() = runTest {
+        preparador.ilegibles = setOf(REVERSO.rutaArchivo)
+
+        val resultado = repositorio.leerDocumento(FRENTE, REVERSO)
+
+        assertTrue(resultado is ResultadoLectura.NoLeido)
+        assertEquals(0, servidor.requestCount)
+    }
+
     @Test
     fun `el repositorio no borra las capturas`() = runTest {
         servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))

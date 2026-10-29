@@ -98,6 +98,7 @@
     <string name="registro_calidad_oscura_aviso">La imagen está muy oscura</string>
     <string name="registro_calidad_oscura_titulo">Necesitamos más luz</string>
     <string name="registro_calidad_oscura_detalle">La imagen está demasiado oscura para leer el documento. Acércate a una ventana o enciende la luz de la habitación; también puedes activar el flash del teléfono.</string>
+    <string name="registro_lectura_fallida">No pudimos leer los datos de tu documento. Revisa tu conexión y vuelve a tomar el reverso.</string>
     <string name="registro_calidad_borrosa_aviso">La imagen está borrosa</string>
     <string name="registro_calidad_borrosa_titulo">La foto salió movida</string>
     <string name="registro_calidad_borrosa_detalle">Apoya el teléfono o sostenlo con las dos manos y vuelve a intentarlo sin mover el documento.</string>

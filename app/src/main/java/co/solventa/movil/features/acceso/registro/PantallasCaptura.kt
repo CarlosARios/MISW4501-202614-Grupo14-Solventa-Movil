@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.recordarIdiomaDeLaPantalla
 import co.solventa.movil.shared.ui.AvisoSolventa
 import co.solventa.movil.shared.ui.BarraProgreso
 import co.solventa.movil.shared.ui.BotonSolventa
@@ -160,6 +161,13 @@ fun CapturaDocumentoPantalla(
             )
         }
 
+        if (estado.lecturaFallida && cara == CaraDocumento.REVERSO) {
+            AvisoSolventa(
+                texto = stringResource(R.string.registro_lectura_fallida),
+                tipo = TipoAviso.ERROR,
+            )
+        }
+
         EstadoDeLaCamaraAviso(camara = camara)
 
         Text(
@@ -192,9 +200,14 @@ fun CapturaDocumentoPantalla(
     }
 
     val problema = estado.problemaCalidad
+    // La hoja tiene su propia ventana: sin esto, M1f sale en el idioma del
+    // teléfono y no en el que el usuario eligió en la aplicación.
+    val idioma = recordarIdiomaDeLaPantalla()
     if (problema != null) {
         ModalBottomSheet(onDismissRequest = onDescartarAviso) {
-            HojaCalidadInsuficiente(problema = problema, onReintentar = onDescartarAviso)
+            idioma.Aplicar {
+                HojaCalidadInsuficiente(problema = problema, onReintentar = onDescartarAviso)
+            }
         }
     }
 }

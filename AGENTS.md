@@ -56,7 +56,7 @@ Servicios que la aplicación consume, cada uno con su cliente en `core/api/`: **
 
 El contrato del API todavía no está publicado y **ningún servicio ha sido definido como dueño del endpoint de registro**. Mientras tanto:
 
-- Los repositorios se definen como interfaz y se implementan con un doble claramente marcado, como `RegistroKycRepositorioSimulado`. Esa clase y sus pruebas se borran juntas cuando llegue el cliente real.
+- Los repositorios se definen como interfaz y se implementan con un doble claramente marcado (fue el caso de `RegistroKycRepositorioSimulado`, que reemplazó `AnalizadorDeNitidez`). El doble y sus pruebas se borran juntos cuando llega la implementación real.
 - **`@SerialName` explícito en todos los campos de los DTO.** El nombre que viaja por la red lo fija el contrato, no la propiedad en Kotlin: así un cambio de contrato es una línea y no una búsqueda por todo el proyecto.
 
 ---

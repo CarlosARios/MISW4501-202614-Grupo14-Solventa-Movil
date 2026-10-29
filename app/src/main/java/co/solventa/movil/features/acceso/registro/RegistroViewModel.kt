@@ -35,7 +35,6 @@ import javax.inject.Inject
 class RegistroViewModel @Inject constructor(
     private val kyc: RegistroKycRepositorio,
     private val registro: RegistroRepositorio,
-    private val generador: GeneradorDeDatosDeDemostracion,
     private val sesion: SesionRepositorio,
     private val capturas: PreparadorDeCaptura,
 ) : ViewModel() {
@@ -60,24 +59,38 @@ class RegistroViewModel @Inject constructor(
                     // Volver a tomar una cara reemplaza la foto anterior, que
                     // ya no se va a enviar.
                     descartarLaAnteriorDe(imagen)
-                    _estado.update {
-                        when (imagen.cara) {
-                            CaraDocumento.FRENTE -> it.copy(analizando = false, frente = imagen)
+                    when (imagen.cara) {
+                        CaraDocumento.FRENTE ->
+                            _estado.update { it.copy(analizando = false, frente = imagen) }
 
-                            // Los datos se generan al cerrar la captura, no se
-                            // leen de la foto, y se generan una sola vez: si el
-                            // usuario ya corrigió algo en M1c y vuelve atrás, no
-                            // se le borra.
-                            CaraDocumento.REVERSO -> it.copy(
-                                analizando = false,
-                                reverso = imagen,
-                                datos = it.datos ?: generador.datos(),
-                                contrasena = it.contrasena.ifBlank { generador.contrasena() },
-                            )
+                        CaraDocumento.REVERSO -> {
+                            _estado.update { it.copy(reverso = imagen, lecturaFallida = false) }
+                            leerDocumento(imagen)
                         }
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Criterio 1: el proveedor de identidad lee el documento y M1c muestra lo
+     * que leyó para que la persona lo confirme. Se lee una sola vez: si el
+     * usuario ya corrigió algo en M1c y vuelve a tomar el reverso, no se le
+     * borra. Mientras lee, la captura sigue «analizando» y no acepta otra foto.
+     */
+    private suspend fun leerDocumento(reverso: ImagenDocumento) {
+        val frente = _estado.value.frente
+        if (_estado.value.datos != null || frente == null) {
+            _estado.update { it.copy(analizando = false) }
+            return
+        }
+        when (val lectura = registro.leerDocumento(frente, reverso)) {
+            is ResultadoLectura.Leido ->
+                _estado.update { it.copy(analizando = false, datos = lectura.datos) }
+
+            is ResultadoLectura.NoLeido ->
+                _estado.update { it.copy(analizando = false, lecturaFallida = true) }
         }
     }
 
@@ -221,6 +234,11 @@ class RegistroViewModel @Inject constructor(
         // resultado sin el motivo técnico y ofrece volver a intentar y
         // contactar al soporte.
         is ResultadoRegistro.DocumentoNoLegible ->
+            copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
+
+        // Criterio 3: el proveedor no aprobó y nadie sabe por qué en el
+        // teléfono. M1e es la misma pantalla del documento no legible.
+        is ResultadoRegistro.IdentidadNoVerificada ->
             copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
     }
 

@@ -21,6 +21,11 @@ data class RegistroUiState(
     val reverso: ImagenDocumento? = null,
     val analizando: Boolean = false,
     val problemaCalidad: ProblemaCalidad? = null,
+    /**
+     * El proveedor no pudo leer el documento (criterio 1): falló la red, el
+     * servicio o la foto. Se resuelve volviendo a tomar el reverso.
+     */
+    val lecturaFallida: Boolean = false,
     val datos: DatosDocumento? = null,
     val contrasena: String = "",
     val terminosAceptados: Boolean = false,

@@ -1,5 +1,7 @@
 package co.solventa.movil.features.acceso.registro
 
+import co.solventa.movil.core.imagen.LectorDeLuminancia
+import co.solventa.movil.core.imagen.LectorDeLuminanciaJpeg
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -17,8 +19,13 @@ abstract class RegistroModule {
     @Binds
     @Singleton
     abstract fun enlazarRepositorioKyc(
-        simulado: RegistroKycRepositorioSimulado,
+        analizador: AnalizadorDeNitidez,
     ): RegistroKycRepositorio
+
+    @Binds
+    abstract fun enlazarLectorDeLuminancia(
+        lector: LectorDeLuminanciaJpeg,
+    ): LectorDeLuminancia
 
     @Binds
     @Singleton

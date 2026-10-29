@@ -96,6 +96,7 @@
     <string name="registro_calidad_oscura_aviso">The image is too dark</string>
     <string name="registro_calidad_oscura_titulo">We need more light</string>
     <string name="registro_calidad_oscura_detalle">The image is too dark to read the document. Move closer to a window or turn on the room light; you can also use the phone\'s flash.</string>
+    <string name="registro_lectura_fallida">We could not read the data on your document. Check your connection and take the back again.</string>
     <string name="registro_calidad_borrosa_aviso">The image is blurry</string>
     <string name="registro_calidad_borrosa_titulo">The photo came out blurred</string>
     <string name="registro_calidad_borrosa_detalle">Rest the phone on a surface or hold it with both hands, and try again without moving the document.</string>
