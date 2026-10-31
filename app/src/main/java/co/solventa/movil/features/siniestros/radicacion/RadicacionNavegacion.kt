@@ -63,6 +63,7 @@ fun NavGraphBuilder.grafoRadicacion(navegacion: NavController) {
                 onFechaCambia = viewModel::fijarFecha,
                 onLugarCambia = viewModel::fijarLugar,
                 onDescripcionCambia = viewModel::fijarDescripcion,
+                onMontoCambia = viewModel::fijarMontoEstimado,
                 onResponder = viewModel::responder,
                 onContinuar = viewModel::continuar,
                 onGuardarYSalir = salir,

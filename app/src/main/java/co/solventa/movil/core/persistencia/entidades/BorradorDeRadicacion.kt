@@ -1,5 +1,6 @@
 package co.solventa.movil.core.persistencia.entidades
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -26,4 +27,7 @@ data class BorradorDeRadicacion(
     val respuestasJson: String,
     val declaracionAceptada: Boolean,
     val actualizadoEn: Long,
+    /** El monto estimado como se escribió (HU-M2.2-01); vacío en un borrador anterior. */
+    @ColumnInfo(defaultValue = "")
+    val montoEstimado: String = "",
 )

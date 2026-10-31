@@ -112,6 +112,7 @@ class RadicacionRepositorioHttp @Inject constructor(
         detalles = r.respuestas,
         evidencia = evidencias,
         declaracionAceptada = r.declaracionAceptada,
+        montoEstimadoMinor = MontoEstimado.centavos(r.montoEstimado),
     )
 
     private companion object {
@@ -126,6 +127,7 @@ class RadicacionRepositorioHttp @Inject constructor(
             "occurred_at" to CampoDeRadicacion.FECHA,
             "place" to CampoDeRadicacion.LUGAR,
             "description" to CampoDeRadicacion.DESCRIPCION,
+            "estimated_amount_minor" to CampoDeRadicacion.MONTO,
             "details" to CampoDeRadicacion.RESPUESTAS,
             "evidence" to CampoDeRadicacion.EVIDENCIAS,
             "declaration_accepted" to CampoDeRadicacion.DECLARACION,

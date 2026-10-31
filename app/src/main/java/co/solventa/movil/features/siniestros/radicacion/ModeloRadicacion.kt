@@ -36,6 +36,12 @@ data class Radicacion(
     /** Respuestas de las preguntas que dependen del tipo de incidente. */
     val respuestas: Map<String, String> = emptyMap(),
     val declaracionAceptada: Boolean = false,
+    /**
+     * El monto estimado tal como se escribió (HU-M2.2-01): opcional, en pesos.
+     * Se guarda el texto y no el número para que el borrador conserve lo que
+     * el asegurado escribió aunque todavía no sea válido.
+     */
+    val montoEstimado: String = "",
 )
 
 /** Campo que el servicio puede rechazar, para marcarlo en su etapa. */
@@ -45,6 +51,7 @@ enum class CampoDeRadicacion(val etapa: Etapa) {
     FECHA(Etapa.HECHOS),
     LUGAR(Etapa.HECHOS),
     DESCRIPCION(Etapa.HECHOS),
+    MONTO(Etapa.HECHOS),
     RESPUESTAS(Etapa.HECHOS),
     EVIDENCIAS(Etapa.EVIDENCIAS),
     DECLARACION(Etapa.DECLARACION),

@@ -18,7 +18,8 @@ import org.junit.runner.RunWith
  * de `app/schemas`: agrega las tablas de la copia de consentimientos y
  * conserva el borrador de la radicacion que hubiera en el telefono. La 2 → 3
  * (HU-M1.3-02) agrega la cola de revocaciones pendientes y la revocacion de
- * cada consentimiento, y conserva la copia.
+ * cada consentimiento, y conserva la copia. La 3 → 4 (HU-M2.2-01) agrega el
+ * monto estimado al borrador de la radicacion.
  *
  * Usa el ayudante con controlador explicito: el constructor por nombre de
  * archivo falla en Windows al comparar la ruta completa con el nombre.
@@ -91,6 +92,29 @@ class MigracionBaseDeDatosTest {
         val migrada = ayudante.runMigrationsAndValidate(3)
         try {
             assertEquals(listOf("0"), textos(migrada, "SELECT COUNT(*) FROM revocacion_pendiente"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    /** HU-M2.2-01: el borrador gana el monto estimado, vacío en los que ya estaban. */
+    @Test
+    fun `la migracion 3 a 4 conserva el borrador con el monto vacio`() {
+        ayudante.createDatabase(3).apply {
+            execSQL(
+                "INSERT INTO borrador_de_radicacion (id, etapa, poliza, tipo, ocurrioEn, lugar, descripcion, " +
+                    "respuestasJson, declaracionAceptada, actualizadoEn) " +
+                    "VALUES ('borrador-1', 'HECHOS', 'AU-2025-118204', 'COLISION', 1792539000000, " +
+                    "'Autopista Norte km 12', 'Choque por alcance', '{}', 0, 1792539100000)",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 4 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(4)
+        try {
+            assertEquals(listOf("borrador-1"), textos(migrada, "SELECT id FROM borrador_de_radicacion"))
+            assertEquals(listOf(""), textos(migrada, "SELECT montoEstimado FROM borrador_de_radicacion"))
         } finally {
             migrada.close()
         }

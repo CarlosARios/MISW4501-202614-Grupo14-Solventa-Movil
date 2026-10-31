@@ -29,6 +29,7 @@ class BorradorRepositorioLocalTest {
             lugar = "Autopista Norte km 12, Bogotá",
             descripcion = "Choque por alcance en el semáforo.",
             respuestas = mapOf("personas_lesionadas" to "no", "informe_policia" to "si"),
+            montoEstimado = "4.800.000",
         ),
     )
 

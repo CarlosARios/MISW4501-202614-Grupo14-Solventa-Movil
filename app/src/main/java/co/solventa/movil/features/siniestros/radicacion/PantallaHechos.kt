@@ -8,8 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import co.solventa.movil.R
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.PantallaRegistro
@@ -19,7 +21,9 @@ import co.solventa.movil.shared.ui.TipoBoton
  * M11b · Radicación · Paso 2 Hechos.
  *
  * Cuándo, dónde y qué pasó, más las preguntas que dependen del tipo de
- * incidente elegido en el paso anterior (criterio 2).
+ * incidente elegido en el paso anterior (criterio 2), y el monto estimado,
+ * opcional, con el que el triage prioriza el caso y operaciones lo evalúa
+ * (HU-W2.2-01, HU-W2.2-03).
  */
 @Composable
 fun PantallaHechos(
@@ -27,6 +31,7 @@ fun PantallaHechos(
     onFechaCambia: (Long) -> Unit,
     onLugarCambia: (String) -> Unit,
     onDescripcionCambia: (String) -> Unit,
+    onMontoCambia: (String) -> Unit,
     onResponder: (String, String) -> Unit,
     onContinuar: () -> Unit,
     onGuardarYSalir: () -> Unit,
@@ -116,5 +121,38 @@ fun PantallaHechos(
             error = estado.camposRechazados.contains(CampoDeRadicacion.DESCRIPCION),
             lineas = 3,
         )
+
+        CampoMontoEstimado(
+            valor = estado.radicacion.montoEstimado,
+            onCambio = onMontoCambia,
+            rechazado = estado.camposRechazados.contains(CampoDeRadicacion.MONTO),
+        )
     }
+}
+
+/**
+ * El monto estimado: debajo dice cómo se va a enviar («Se enviará como
+ * $ 4.800.000 COP») o, si no es un monto, por qué.
+ */
+@Composable
+private fun CampoMontoEstimado(valor: String, onCambio: (String) -> Unit, rechazado: Boolean) {
+    val locale = LocalConfiguration.current.locales[0]
+    val lectura = MontoEstimado.leer(valor)
+    val ayuda = when (lectura) {
+        MontoEstimado.Lectura.Vacio -> stringResource(R.string.radicacion_monto_ayuda)
+        is MontoEstimado.Lectura.Valido ->
+            stringResource(R.string.radicacion_monto_vista, MontoEstimado.aTexto(lectura.pesos, locale))
+        is MontoEstimado.Lectura.Invalido -> when (lectura.problema) {
+            MontoEstimado.Problema.FORMATO -> stringResource(R.string.radicacion_monto_formato)
+            MontoEstimado.Problema.RANGO -> stringResource(R.string.radicacion_monto_rango)
+        }
+    }
+    CampoTexto(
+        etiqueta = stringResource(R.string.radicacion_monto),
+        valor = valor,
+        onCambio = onCambio,
+        ayuda = ayuda,
+        error = rechazado || lectura is MontoEstimado.Lectura.Invalido,
+        teclado = KeyboardType.Number,
+    )
 }

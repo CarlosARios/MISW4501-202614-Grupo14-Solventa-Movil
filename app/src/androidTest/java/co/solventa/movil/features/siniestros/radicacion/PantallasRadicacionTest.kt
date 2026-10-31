@@ -78,6 +78,7 @@ class PantallasRadicacionTest {
                     onFechaCambia = {},
                     onLugarCambia = {},
                     onDescripcionCambia = {},
+                    onMontoCambia = {},
                     onResponder = { _, _ -> },
                     onContinuar = {},
                     onGuardarYSalir = {},
@@ -150,6 +151,48 @@ class PantallasRadicacionTest {
         val faltan = texto(R.string.radicacion_falta_poliza) + " " + texto(R.string.comun_y) + " " +
             texto(R.string.radicacion_falta_tipo)
         composicion.onNodeWithText(texto(R.string.radicacion_faltan, faltan)).assertIsDisplayed()
+    }
+
+    // HU-M2.2-01 — el monto estimado es opcional, dice cómo se enviará y solo
+    // detiene el paso si lo escrito no es un monto.
+    @Test
+    fun el_monto_estimado_dice_como_se_enviara_y_deja_avanzar() {
+        hechos(
+            RadicacionUiState(
+                cargando = false,
+                etapa = Etapa.HECHOS,
+                radicacion = hechosCompletos.copy(montoEstimado = "4800000"),
+            ),
+        )
+
+        val locale = contexto.resources.configuration.locales[0]
+        val vista = texto(R.string.radicacion_monto_vista, MontoEstimado.aTexto(4_800_000, locale))
+        composicion.onNodeWithText(vista).assertExists()
+        composicion.onNodeWithText(texto(R.string.comun_continuar)).assertIsEnabled()
+    }
+
+    @Test
+    fun un_monto_invalido_dice_por_que_y_no_deja_avanzar() {
+        hechos(
+            RadicacionUiState(
+                cargando = false,
+                etapa = Etapa.HECHOS,
+                radicacion = hechosCompletos.copy(montoEstimado = "4,5"),
+            ),
+        )
+
+        composicion.onNodeWithText(texto(R.string.radicacion_monto_formato)).assertExists()
+        composicion.onNodeWithText(texto(R.string.comun_continuar)).assertIsNotEnabled()
+        composicion.onNodeWithText(texto(R.string.radicacion_faltan, texto(R.string.radicacion_falta_monto)))
+            .assertExists()
+    }
+
+    @Test
+    fun sin_monto_los_hechos_completos_dejan_avanzar() {
+        hechos(RadicacionUiState(cargando = false, etapa = Etapa.HECHOS, radicacion = hechosCompletos))
+
+        composicion.onNodeWithText(texto(R.string.radicacion_monto_ayuda)).assertExists()
+        composicion.onNodeWithText(texto(R.string.comun_continuar)).assertIsEnabled()
     }
 
     @Test

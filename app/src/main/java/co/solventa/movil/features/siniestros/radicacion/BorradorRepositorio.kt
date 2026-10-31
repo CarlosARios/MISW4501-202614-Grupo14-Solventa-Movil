@@ -65,6 +65,7 @@ class BorradorRepositorioLocal @Inject constructor(
             descripcion = e.descripcion,
             respuestas = respuestasDe(e.respuestasJson),
             declaracionAceptada = e.declaracionAceptada,
+            montoEstimado = e.montoEstimado,
         ),
     )
 
@@ -78,6 +79,7 @@ class BorradorRepositorioLocal @Inject constructor(
         descripcion = b.radicacion.descripcion,
         respuestasJson = json.encodeToString(b.radicacion.respuestas),
         declaracionAceptada = b.radicacion.declaracionAceptada,
+        montoEstimado = b.radicacion.montoEstimado,
         actualizadoEn = reloj(),
     )
 
