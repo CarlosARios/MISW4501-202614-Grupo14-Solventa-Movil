@@ -437,6 +437,11 @@
     <string name="evidencia_sello_hora_corto">Captured on %1$s UTC</string>
     <string name="evidencia_galeria_no_disponible">The gallery is not available: evidence is captured on site</string>
     <string name="evidencia_video">Video</string>
+    <string name="evidencia_tomar_foto">Take photo</string>
+    <string name="evidencia_norte">N</string>
+    <string name="evidencia_sur">S</string>
+    <string name="evidencia_este">E</string>
+    <string name="evidencia_oeste">W</string>
     <string name="evidencia_detener">Stop</string>
     <string name="evidencia_permisos_titulo">Allow Solventa to use the camera and your precise location?</string>
     <string name="evidencia_permisos_detalle">They are used to capture photos and video with a verifiable place and time. The gallery is not accessed and your location is not tracked outside the capture.</string>

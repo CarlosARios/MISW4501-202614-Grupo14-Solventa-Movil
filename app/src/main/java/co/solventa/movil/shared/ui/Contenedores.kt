@@ -34,6 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import co.solventa.movil.R
 import co.solventa.movil.ui.theme.Espacio
@@ -185,7 +188,10 @@ fun BarraProgreso(
         modifier = modifier
             .fillMaxWidth()
             .height(6.dp)
-            .background(colores.bordeBase, RoundedCornerShape(Espacio.x4)),
+            .background(colores.bordeBase, RoundedCornerShape(Espacio.x4))
+            // Sin esto el lector de pantalla no anuncia el avance: la barra
+            // sería solo dos rectángulos de color.
+            .semantics { progressBarRangeInfo = ProgressBarRangeInfo(avance.coerceIn(0f, 1f), 0f..1f) },
     ) {
         Box(
             modifier = Modifier
