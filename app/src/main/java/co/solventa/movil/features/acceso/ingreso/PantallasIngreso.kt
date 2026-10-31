@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.recordarIdiomaDeLaPantalla
 import co.solventa.movil.shared.ui.AvisoSolventa
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.CirculoConIcono
@@ -305,6 +306,9 @@ fun HojaDeSesionExpirada(
 ) {
     val estado = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val alcance = rememberCoroutineScope()
+    // La hoja tiene su propia ventana: sin esto sale en el idioma del
+    // teléfono y no en el que el usuario eligió en la aplicación.
+    val idioma = recordarIdiomaDeLaPantalla()
 
     ModalBottomSheet(
         onDismissRequest = { alcance.launch { estado.show() } },
@@ -313,10 +317,12 @@ fun HojaDeSesionExpirada(
         properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false),
         dragHandle = null,
     ) {
-        ContenidoSesionExpirada(
-            onConHuella = onConHuella,
-            onConContrasena = onConContrasena,
-        )
+        idioma.Aplicar {
+            ContenidoSesionExpirada(
+                onConHuella = onConHuella,
+                onConContrasena = onConContrasena,
+            )
+        }
     }
 }
 

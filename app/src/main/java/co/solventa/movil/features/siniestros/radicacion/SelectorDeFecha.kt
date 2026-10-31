@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.recordarIdiomaDeLaPantalla
 
 /**
  * El selector de fecha y hora del hecho (M11b).
@@ -35,6 +36,9 @@ fun SelectorDeFechaYHora(
     onCerrar: () -> Unit,
 ) {
     var dia by remember { mutableStateOf<Long?>(null) }
+    // Los diálogos tienen su propia ventana: sin esto los botones, el
+    // calendario y el reloj salen en el idioma del teléfono.
+    val idioma = recordarIdiomaDeLaPantalla()
 
     if (dia == null) {
         val estado = rememberDatePickerState(
@@ -44,16 +48,20 @@ fun SelectorDeFechaYHora(
         DatePickerDialog(
             onDismissRequest = onCerrar,
             confirmButton = {
-                TextButton(
-                    onClick = { dia = estado.selectedDateMillis },
-                    enabled = estado.selectedDateMillis != null,
-                ) { Text(stringResource(R.string.comun_continuar)) }
+                idioma.Aplicar {
+                    TextButton(
+                        onClick = { dia = estado.selectedDateMillis },
+                        enabled = estado.selectedDateMillis != null,
+                    ) { Text(stringResource(R.string.comun_continuar)) }
+                }
             },
             dismissButton = {
-                TextButton(onClick = onCerrar) { Text(stringResource(R.string.comun_cancelar)) }
+                idioma.Aplicar {
+                    TextButton(onClick = onCerrar) { Text(stringResource(R.string.comun_cancelar)) }
+                }
             },
         ) {
-            DatePicker(state = estado)
+            idioma.Aplicar { DatePicker(state = estado) }
         }
         return
     }
@@ -62,15 +70,19 @@ fun SelectorDeFechaYHora(
     AlertDialog(
         onDismissRequest = onCerrar,
         confirmButton = {
-            TextButton(
-                onClick = { onElegida(FechaDelHecho.combinar(dia!!, hora.hour, hora.minute)) },
-            ) { Text(stringResource(R.string.comun_aceptar)) }
+            idioma.Aplicar {
+                TextButton(
+                    onClick = { onElegida(FechaDelHecho.combinar(dia!!, hora.hour, hora.minute)) },
+                ) { Text(stringResource(R.string.comun_aceptar)) }
+            }
         },
         dismissButton = {
-            TextButton(onClick = onCerrar) { Text(stringResource(R.string.comun_cancelar)) }
+            idioma.Aplicar {
+                TextButton(onClick = onCerrar) { Text(stringResource(R.string.comun_cancelar)) }
+            }
         },
-        title = { Text(stringResource(R.string.radicacion_hora_del_hecho)) },
-        text = { TimePicker(state = hora) },
+        title = { idioma.Aplicar { Text(stringResource(R.string.radicacion_hora_del_hecho)) } },
+        text = { idioma.Aplicar { TimePicker(state = hora) } },
     )
 }
 
