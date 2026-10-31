@@ -29,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import co.solventa.movil.R
@@ -276,8 +278,8 @@ private fun SelloDeLaCaptura(estado: EvidenciaUiState, modifier: Modifier = Modi
             texto = estado.ubicacion?.let {
                 stringResource(
                     R.string.evidencia_sello_ubicacion,
-                    enGrados(it.latitud, "N", "S"),
-                    enGrados(it.longitud, "E", "O"),
+                    enGrados(it.latitud, stringResource(R.string.evidencia_norte), stringResource(R.string.evidencia_sur)),
+                    enGrados(it.longitud, stringResource(R.string.evidencia_este), stringResource(R.string.evidencia_oeste)),
                     it.precisionM.toInt(),
                 )
             } ?: stringResource(R.string.evidencia_sello_sin_ubicacion),
@@ -340,6 +342,11 @@ private fun ControlesDeLaCaptura(
             )
         }
 
+        // El disparador es solo un círculo: sin descripción, el lector de
+        // pantalla anunciaría «botón» sin decir qué hace.
+        val descripcionDelDisparador = stringResource(
+            if (estado.grabando) R.string.evidencia_detener else R.string.evidencia_tomar_foto,
+        )
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -351,7 +358,8 @@ private fun ControlesDeLaCaptura(
                     enabled = estado.puedeTomarFoto || estado.grabando,
                     role = Role.Button,
                     onClick = onTomarFoto,
-                ),
+                )
+                .semantics { contentDescription = descripcionDelDisparador },
         ) {
             Box(
                 modifier = Modifier

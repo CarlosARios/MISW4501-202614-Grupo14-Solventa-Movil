@@ -444,6 +444,12 @@
     <string name="evidencia_sello_hora_corto">Capturada el %1$s UTC</string>
     <string name="evidencia_galeria_no_disponible">La galería no está disponible: la evidencia se toma en el lugar</string>
     <string name="evidencia_video">Video</string>
+    <string name="evidencia_tomar_foto">Tomar foto</string>
+    <!-- La letra del hemisferio en el sello de la evidencia. -->
+    <string name="evidencia_norte">N</string>
+    <string name="evidencia_sur">S</string>
+    <string name="evidencia_este">E</string>
+    <string name="evidencia_oeste">O</string>
     <string name="evidencia_detener">Detener</string>
     <string name="evidencia_permisos_titulo">¿Permitir que Solventa use la cámara y tu ubicación precisa?</string>
     <string name="evidencia_permisos_detalle">Se usan para capturar fotos y video con lugar y hora verificables. No se accede a la galería ni se rastrea tu ubicación fuera de la captura.</string>

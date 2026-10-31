@@ -123,8 +123,8 @@ fun VistaDeEvidencia(
                 text = evidencia.ubicacion?.let {
                     stringResource(
                         R.string.evidencia_sello_ubicacion,
-                        enGrados(it.latitud, "N", "S"),
-                        enGrados(it.longitud, "E", "O"),
+                        enGrados(it.latitud, stringResource(R.string.evidencia_norte), stringResource(R.string.evidencia_sur)),
+                        enGrados(it.longitud, stringResource(R.string.evidencia_este), stringResource(R.string.evidencia_oeste)),
                         it.precisionM.roundToInt(),
                     )
                 } ?: stringResource(R.string.evidencia_sello_sin_ubicacion),
