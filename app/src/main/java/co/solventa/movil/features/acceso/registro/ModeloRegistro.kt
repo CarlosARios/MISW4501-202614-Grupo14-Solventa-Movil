@@ -16,12 +16,12 @@ data class ImagenDocumento(val cara: CaraDocumento, val rutaArchivo: String)
 /**
  * Datos personales que el usuario confirma en M1c antes de registrarse.
  *
- * **No se leen del documento.** La revisión INVEST de HU-M1.1-01 dejó el
- * algoritmo de extracción sin fijar, y el reconocimiento de texto en el
- * dispositivo se descartó el 17/10/2026. Los produce
- * [GeneradorDeDatosDeDemostracion] y el usuario los corrige en pantalla:
- * lo que la historia tiene que demostrar es que el dato diligenciado llega a
- * la base de datos y que con esas credenciales se puede entrar.
+ * **Los lee el proveedor de identidad, no el teléfono** (criterio 1). El
+ * reconocimiento de texto en el dispositivo se descartó el 17/10/2026; desde
+ * el 29/10/2026 la aplicación envía las dos caras a
+ * `POST /v1/registrations/document-reads` y M1c muestra lo que el proveedor
+ * leyó para que el usuario lo confirme o lo corrija. El correo y el celular
+ * no están impresos en el documento: los escribe el usuario.
  *
  * `tipoDocumento` y `celular` se conservan porque están en el frame M1c. El
  * contrato del registro no los recibe todavía.
@@ -46,7 +46,10 @@ sealed interface ResultadoCaptura {
     data class CalidadInsuficiente(val motivo: ProblemaCalidad) : ResultadoCaptura
 }
 
-/** Lo que queda del proveedor simulado: juzgar la imagen. */
+/**
+ * Juzga la imagen capturada antes de aceptarla. Lo implementa
+ * [AnalizadorDeNitidez], en el propio teléfono.
+ */
 interface RegistroKycRepositorio {
     suspend fun analizarCaptura(imagen: ImagenDocumento): ResultadoCaptura
 }

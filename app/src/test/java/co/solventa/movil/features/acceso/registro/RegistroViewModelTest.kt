@@ -53,7 +53,7 @@ class RegistroViewModelTest {
     }
 
     private fun crearViewModel() =
-        RegistroViewModel(kyc, registro, GeneradorDeDatosDeDemostracion(), sesion, capturas)
+        RegistroViewModel(kyc, registro, sesion, capturas)
 
     // Criterio 1 — guiar la captura del frente y del reverso y confirmar los
     // datos antes de enviarlos.
@@ -70,9 +70,9 @@ class RegistroViewModelTest {
             advanceUntilIdle()
 
             val estado = viewModel.estado.value
-            assertNotNull(estado.datos)
-            assertTrue("Viene con contraseña puesta", estado.contrasena.isNotBlank())
-            assertFalse("Faltan los términos", estado.puedeVerificar)
+            assertEquals("M1c muestra lo que leyó el proveedor", registro.datosLeidos, estado.datos)
+            assertTrue("La contraseña la escribe el usuario", estado.contrasena.isBlank())
+            assertFalse("Faltan la contraseña y los términos", estado.puedeVerificar)
         }
 
     /** Volver a M1b no puede borrar lo que el usuario ya corrigió en M1c. */
@@ -377,16 +377,61 @@ class RegistroViewModelTest {
 
     /** Otro intento no puede reenviar el documento que ya recibió respuesta. */
     @Test
-    fun `tras reiniciar los datos se generan de nuevo`() = runTest(dispatcher) {
+    fun `tras reiniciar el documento se vuelve a leer`() = runTest(dispatcher) {
         val viewModel = crearViewModel()
         capturarAmbasCaras(viewModel)
-        val primeros = viewModel.estado.value.datos
 
         viewModel.reiniciar()
+        assertNull(viewModel.estado.value.datos)
         capturarAmbasCaras(viewModel)
 
         assertNotNull(viewModel.estado.value.datos)
-        assertNotEquals(primeros, viewModel.estado.value.datos)
+        assertEquals(2, registro.lecturas)
+    }
+
+    // Criterio 1 — el proveedor lee el documento; si no puede, se pide
+    // volver a tomar el reverso y no se avanza a M1c.
+    @Test
+    fun `si el documento no se puede leer se avisa y no se avanza`() = runTest(dispatcher) {
+        registro.lectura = ResultadoLectura.NoLeido("ref-1")
+        val viewModel = crearViewModel()
+
+        capturarAmbasCaras(viewModel)
+
+        val estado = viewModel.estado.value
+        assertNull(estado.datos)
+        assertTrue(estado.lecturaFallida)
+        assertFalse("La captura vuelve a aceptar fotos", estado.analizando)
+    }
+
+    @Test
+    fun `volver a tomar el reverso tras una lectura fallida vuelve a leer`() = runTest(dispatcher) {
+        registro.lectura = ResultadoLectura.NoLeido("ref-1")
+        val viewModel = crearViewModel()
+        capturarAmbasCaras(viewModel)
+
+        registro.lectura = ResultadoLectura.Leido(registro.datosLeidos)
+        viewModel.capturar(ImagenDocumento(CaraDocumento.REVERSO, "/tmp/reverso-2.jpg"))
+        advanceUntilIdle()
+
+        val estado = viewModel.estado.value
+        assertEquals(registro.datosLeidos, estado.datos)
+        assertFalse(estado.lecturaFallida)
+    }
+
+    // Criterio 3 — el proveedor no aprueba: M1e con referencia y sin motivo.
+    @Test
+    fun `una identidad no verificada lleva a la verificacion no superada`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        prepararParaRegistrar(viewModel)
+
+        viewModel.registrar()
+        registro.resultado.complete(ResultadoRegistro.IdentidadNoVerificada("ref-kyc"))
+        advanceUntilIdle()
+
+        val estado = viewModel.estado.value
+        assertEquals(EstadoVerificacion.NoSuperada("ref-kyc"), estado.verificacion)
+        assertFalse(estado.cuentaActiva)
     }
 
     // Las dos capturas llegan al repositorio: son parte de la petición del
@@ -506,6 +551,7 @@ class RegistroViewModelTest {
         viewModel: RegistroViewModel,
     ) {
         capturarAmbasCaras(viewModel)
+        viewModel.actualizarContrasena("Solventa2026!")
         viewModel.aceptarTerminos(true)
     }
 }
@@ -531,6 +577,22 @@ private class KycFalso : RegistroKycRepositorio {
 private class RegistroFalso : RegistroRepositorio {
 
     val resultado = CompletableDeferred<ResultadoRegistro>()
+
+    val datosLeidos = DatosDocumento(
+        nombres = "Carolina",
+        apellidos = "Pérez Ruiz",
+        tipoDocumento = "CC",
+        numeroDocumento = "1020345678",
+        fechaNacimiento = "18/04/1992",
+    )
+    var lectura: ResultadoLectura = ResultadoLectura.Leido(datosLeidos)
+    var lecturas = 0
+        private set
+
+    override suspend fun leerDocumento(frente: ImagenDocumento, reverso: ImagenDocumento): ResultadoLectura {
+        lecturas++
+        return lectura
+    }
 
     var datosEnviados: DatosDocumento? = null
         private set

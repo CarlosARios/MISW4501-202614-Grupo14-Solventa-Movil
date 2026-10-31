@@ -1,7 +1,9 @@
 package co.solventa.movil.features.acceso.registro
 
 import co.solventa.movil.core.api.originacion.ErrorDeRegistro
+import co.solventa.movil.core.api.originacion.LecturaDeDocumento
 import co.solventa.movil.core.api.originacion.OriginacionApi
+import co.solventa.movil.core.api.originacion.SolicitudDeLectura
 import co.solventa.movil.core.api.originacion.RespuestaDeRegistro
 import co.solventa.movil.core.api.originacion.SolicitudDeRegistro
 import co.solventa.movil.core.errores.Correlacion
@@ -33,6 +35,38 @@ class RegistroRepositorioHttp @Inject constructor(
 ) : RegistroRepositorio {
 
     private val json = Json { ignoreUnknownKeys = true }
+
+    override suspend fun leerDocumento(frente: ImagenDocumento, reverso: ImagenDocumento): ResultadoLectura {
+        val correlacion = Correlacion.nuevo()
+        val frenteEnBase64 = preparador.aBase64(frente.rutaArchivo) ?: return ResultadoLectura.NoLeido(correlacion)
+        val reversoEnBase64 = preparador.aBase64(reverso.rutaArchivo) ?: return ResultadoLectura.NoLeido(correlacion)
+        return try {
+            val respuesta = api.leerDocumento(correlacion, SolicitudDeLectura(frenteEnBase64, reversoEnBase64))
+            val cuerpo = respuesta.body()
+            if (respuesta.isSuccessful && cuerpo != null) {
+                ResultadoLectura.Leido(cuerpo.enLaPantalla())
+            } else {
+                ResultadoLectura.NoLeido(correlacion)
+            }
+        } catch (sinRed: IOException) {
+            ResultadoLectura.NoLeido(correlacion)
+        } catch (ilegible: SerializationException) {
+            ResultadoLectura.NoLeido(correlacion)
+        }
+    }
+
+    /**
+     * Lo que el proveedor leyó, como lo muestra M1c: la fecha en `dd/MM/yyyy`.
+     * El correo y el celular no están impresos en el documento: los escribe
+     * la persona.
+     */
+    private fun LecturaDeDocumento.enLaPantalla() = DatosDocumento(
+        nombres = nombres,
+        apellidos = apellidos,
+        tipoDocumento = tipoDocumento,
+        numeroDocumento = numeroDocumento,
+        fechaNacimiento = enFormatoDeLaPantalla(fechaNacimiento),
+    )
 
     override suspend fun registrar(
         datos: DatosDocumento,
@@ -76,17 +110,22 @@ class RegistroRepositorioHttp @Inject constructor(
     }
 
     /**
-     * Reparte el `422` entre los dos caminos que tiene: una cara rechazada no
-     * se arregla corrigiendo el formulario, así que manda sobre los demás
-     * campos.
+     * Reparte el `422` entre los tres caminos que tiene. El rechazo del
+     * proveedor de identidad va primero y a M1e, sin motivo (criterio 3).
+     * Una cara rechazada no se arregla corrigiendo el formulario, así que
+     * manda sobre los demás campos.
      *
      * Un `422` que no trae campos reconocibles deja marcado el formulario
      * completo: algo hay que corregir y no se sabe qué.
      */
     private fun rechazo(respuesta: Response<*>, correlacion: String): ResultadoRegistro {
-        val nombres = runCatching {
+        val error = runCatching {
             json.decodeFromString<ErrorDeRegistro>(respuesta.errorBody()?.string().orEmpty())
-        }.getOrNull()?.campos?.map { it.campo }?.toSet().orEmpty()
+        }.getOrNull()
+        if (error?.error == IDENTIDAD_NO_VERIFICADA) {
+            return ResultadoRegistro.IdentidadNoVerificada(correlacion)
+        }
+        val nombres = error?.campos?.map { it.campo }?.toSet().orEmpty()
 
         if (nombres.any { it in CARAS_DEL_DOCUMENTO }) {
             return ResultadoRegistro.DocumentoNoLegible(correlacion)
@@ -122,9 +161,20 @@ class RegistroRepositorioHttp @Inject constructor(
         return "$anio-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}"
     }
 
+    /** El camino inverso: `yyyy-MM-dd` del contrato a `dd/MM/yyyy`. */
+    private fun enFormatoDeLaPantalla(fecha: String): String {
+        val partes = fecha.trim().split("-")
+        if (partes.size != 3) return fecha.trim()
+        val (anio, mes, dia) = partes
+        return "$dia/$mes/$anio"
+    }
+
     private companion object {
         const val CONFLICTO = 409
         const val DATO_INVALIDO = 422
+
+        /** El `error` del `422` con que el proveedor de identidad no aprueba. */
+        const val IDENTIDAD_NO_VERIFICADA = "identity_not_verified"
 
         /**
          * Las dos caras del documento, como las nombra el contrato. No son

@@ -42,6 +42,44 @@ fun ConIdioma(idioma: Idioma, contenido: @Composable () -> Unit) {
 }
 
 /**
+ * El idioma de la pantalla, para llevarlo a una ventana propia.
+ *
+ * Una hoja inferior (`ModalBottomSheet`) o un diálogo se dibujan en su propia
+ * ventana, y esa ventana vuelve a proveer el contexto y la configuración **del
+ * dispositivo**: lo que [ConIdioma] puso arriba no llega, y la hoja sale en el
+ * idioma del teléfono y no en el de la aplicación. Se lee el idioma **antes**
+ * de abrir la ventana y se vuelve a aplicar dentro:
+ *
+ * ```
+ * val idioma = recordarIdiomaDeLaPantalla()
+ * ModalBottomSheet(onDismissRequest = …) {
+ *     idioma.Aplicar { ContenidoDeLaHoja() }
+ * }
+ * ```
+ */
+class IdiomaDeLaPantalla internal constructor(
+    private val contexto: Context,
+    private val configuracion: Configuration,
+) {
+    @Composable
+    fun Aplicar(contenido: @Composable () -> Unit) {
+        CompositionLocalProvider(
+            LocalContext provides contexto,
+            LocalConfiguration provides configuracion,
+            content = contenido,
+        )
+    }
+}
+
+/** Lee el idioma con el que se está dibujando la pantalla. Ver [IdiomaDeLaPantalla]. */
+@Composable
+fun recordarIdiomaDeLaPantalla(): IdiomaDeLaPantalla {
+    val contexto = LocalContext.current
+    val configuracion = LocalConfiguration.current
+    return remember(contexto, configuracion) { IdiomaDeLaPantalla(contexto, configuracion) }
+}
+
+/**
  * El contexto de siempre, con los recursos en otro idioma.
  *
  * **Envuelve en lugar de reemplazar, y eso no es un detalle.**

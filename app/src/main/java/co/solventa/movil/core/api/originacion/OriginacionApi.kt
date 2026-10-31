@@ -26,6 +26,13 @@ import retrofit2.http.POST
  */
 interface OriginacionApi {
 
+    /** El proveedor de identidad lee el documento para que M1c lo confirme. */
+    @POST("v1/registrations/document-reads")
+    suspend fun leerDocumento(
+        @Header(Correlacion.ENCABEZADO) correlacion: String,
+        @Body peticion: SolicitudDeLectura,
+    ): Response<LecturaDeDocumento>
+
     @POST("v1/registrations")
     suspend fun registrar(
         @Header(Correlacion.ENCABEZADO) correlacion: String,
@@ -70,4 +77,21 @@ data class ErrorDeRegistro(
 data class CampoInvalido(
     @SerialName("field") val campo: String,
     @SerialName("code") val codigo: String,
+)
+
+/** Las dos caras del documento, en base64, para que el proveedor las lea. */
+@Serializable
+data class SolicitudDeLectura(
+    @SerialName("document_front") val frenteDelDocumento: String,
+    @SerialName("document_back") val reversoDelDocumento: String,
+)
+
+/** Los datos impresos en el documento. La fecha llega en `yyyy-MM-dd`. */
+@Serializable
+data class LecturaDeDocumento(
+    @SerialName("document_type") val tipoDocumento: String,
+    @SerialName("document_id") val numeroDocumento: String,
+    @SerialName("given_names") val nombres: String,
+    @SerialName("surnames") val apellidos: String,
+    @SerialName("birth_date") val fechaNacimiento: String,
 )
