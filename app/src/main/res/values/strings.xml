@@ -190,6 +190,7 @@
     <string name="radicacion_falta_fecha">la fecha y la hora</string>
     <string name="radicacion_falta_lugar">el lugar</string>
     <string name="radicacion_falta_descripcion">la descripción</string>
+    <string name="radicacion_falta_monto">un monto estimado válido</string>
     <string name="radicacion_falta_respuestas">responder las preguntas</string>
     <string name="radicacion_falta_declaracion">la declaración</string>
     <string name="radicacion_titulo">Reportar siniestro</string>
@@ -236,6 +237,12 @@
     <string name="radicacion_lugar_ayuda">Puedes corregirla</string>
     <string name="radicacion_descripcion">Descripción de los hechos</string>
     <string name="radicacion_descripcion_ayuda">Máximo 1.000 caracteres</string>
+    <!-- HU-M2.2-01: el monto estimado, con los textos de la radicación web (HU-W2.2-01). -->
+    <string name="radicacion_monto">Monto estimado (opcional)</string>
+    <string name="radicacion_monto_ayuda">En pesos colombianos, sin centavos (por ejemplo 4.800.000). Nos ayuda a priorizar tu caso.</string>
+    <string name="radicacion_monto_vista">Se enviará como %1$s</string>
+    <string name="radicacion_monto_formato">Escribe solo números, sin centavos (por ejemplo 4.800.000).</string>
+    <string name="radicacion_monto_rango">El monto debe estar entre 1 y 100.000.000.000 de pesos.</string>
     <string name="radicacion_evidencias_titulo">Captura la evidencia en el lugar</string>
     <string name="radicacion_evidencias_detalle">Para colisión necesitas al menos 4 fotos tomadas desde la app. No se permite seleccionar imágenes de la galería.</string>
     <string name="radicacion_evidencias_contador">Fotos · %1$d de %2$d mínimas</string>

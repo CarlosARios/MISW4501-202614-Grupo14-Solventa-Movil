@@ -102,6 +102,10 @@ data class RadicacionUiState(
             if (radicacion.descripcion.trim().length < MINIMO_DESCRIPCION) {
                 add(CampoDeRadicacion.DESCRIPCION)
             }
+            // Opcional: solo falta si se escribió algo que no es un monto.
+            if (MontoEstimado.leer(radicacion.montoEstimado) is MontoEstimado.Lectura.Invalido) {
+                add(CampoDeRadicacion.MONTO)
+            }
             if (preguntasSinResponder().isNotEmpty()) add(CampoDeRadicacion.RESPUESTAS)
         }
 

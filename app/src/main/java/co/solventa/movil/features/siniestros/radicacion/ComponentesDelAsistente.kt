@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import co.solventa.movil.R
@@ -277,6 +279,7 @@ fun CampoTexto(
     ayuda: String? = null,
     error: Boolean = false,
     lineas: Int = 1,
+    teclado: KeyboardType = KeyboardType.Text,
 ) {
     val colores = LocalColoresSolventa.current
     Column(
@@ -295,6 +298,7 @@ fun CampoTexto(
             minLines = lineas,
             isError = error,
             supportingText = ayuda?.let { { Text(it) } },
+            keyboardOptions = KeyboardOptions(keyboardType = teclado),
             shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -392,6 +396,7 @@ private fun nombreDe(campo: CampoDeRadicacion) = when (campo) {
     CampoDeRadicacion.FECHA -> R.string.radicacion_falta_fecha
     CampoDeRadicacion.LUGAR -> R.string.radicacion_falta_lugar
     CampoDeRadicacion.DESCRIPCION -> R.string.radicacion_falta_descripcion
+    CampoDeRadicacion.MONTO -> R.string.radicacion_falta_monto
     CampoDeRadicacion.RESPUESTAS -> R.string.radicacion_falta_respuestas
     CampoDeRadicacion.EVIDENCIAS -> R.string.radicacion_falta_evidencias
     CampoDeRadicacion.DECLARACION -> R.string.radicacion_falta_declaracion

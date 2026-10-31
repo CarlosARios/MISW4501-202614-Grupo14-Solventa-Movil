@@ -185,6 +185,7 @@
     <string name="radicacion_falta_fecha">the date and time</string>
     <string name="radicacion_falta_lugar">the place</string>
     <string name="radicacion_falta_descripcion">the description</string>
+    <string name="radicacion_falta_monto">a valid estimated amount</string>
     <string name="radicacion_falta_respuestas">answering the questions</string>
     <string name="radicacion_falta_declaracion">the declaration</string>
     <string name="radicacion_titulo">Report a claim</string>
@@ -231,6 +232,12 @@
     <string name="radicacion_lugar_ayuda">You can correct it</string>
     <string name="radicacion_descripcion">Description of the facts</string>
     <string name="radicacion_descripcion_ayuda">1,000 characters at most</string>
+    <!-- HU-M2.2-01: the estimated amount, with the texts of the web filing (HU-W2.2-01). -->
+    <string name="radicacion_monto">Estimated amount (optional)</string>
+    <string name="radicacion_monto_ayuda">In Colombian pesos, no cents (for example 4,800,000). It helps us prioritize your claim.</string>
+    <string name="radicacion_monto_vista">It will be sent as %1$s</string>
+    <string name="radicacion_monto_formato">Write only numbers, no cents (for example 4,800,000).</string>
+    <string name="radicacion_monto_rango">The amount must be between 1 and 100,000,000,000 pesos.</string>
     <string name="radicacion_evidencias_titulo">Capture the evidence on the spot</string>
     <string name="radicacion_evidencias_detalle">For a collision you need at least 4 photos taken from the app. Choosing images from the gallery is not allowed.</string>
     <string name="radicacion_evidencias_contador">Photos · %1$d of %2$d minimum</string>

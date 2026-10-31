@@ -98,6 +98,8 @@ class RadicacionViewModel @Inject constructor(
 
     fun fijarDescripcion(descripcion: String) = cambiar { it.copy(descripcion = descripcion) }
 
+    fun fijarMontoEstimado(monto: String) = cambiar { it.copy(montoEstimado = monto) }
+
     fun responder(pregunta: String, respuesta: String) = cambiar {
         it.copy(respuestas = it.respuestas + (pregunta to respuesta))
     }

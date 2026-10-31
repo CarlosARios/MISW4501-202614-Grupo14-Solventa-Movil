@@ -29,6 +29,8 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * La version 3 (HU-M1.3-02) agrega la cola de revocaciones pendientes de envio
  * y, en la copia de cada consentimiento, su revocacion (columna nueva que
  * admite nulos). La migracion 2 → 3 tambien es automatica y conserva todo.
+ * La 3 → 4 (HU-M2.2-01) agrega al borrador de la radicacion el monto
+ * estimado, vacio en los borradores que ya estaban.
  *
  * El esquema se exporta a `app/schemas`, que es lo que permite revisar en un
  * *pull request* qué cambió una migración.
@@ -41,8 +43,12 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         SincronizacionEntidad::class,
         RevocacionPendienteEntidad::class,
     ],
-    version = 3,
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+    version = 4,
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3),
+        AutoMigration(from = 3, to = 4),
+    ],
     exportSchema = true,
 )
 abstract class BaseDeDatosSolventa : RoomDatabase() {

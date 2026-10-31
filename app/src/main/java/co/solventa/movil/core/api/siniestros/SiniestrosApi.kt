@@ -58,6 +58,11 @@ data class SolicitudDeRadicacion(
     /** Lo capturado en el lugar, ya subido al repositorio de evidencia. */
     @SerialName("evidence") val evidencia: List<EvidenciaRadicada> = emptyList(),
     @SerialName("declaration_accepted") val declaracionAceptada: Boolean,
+    /**
+     * El monto estimado en centavos de COP (HU-M2.2-01). Sin monto no viaja:
+     * el cuerpo es el de antes y el servicio no lo cuenta en la huella.
+     */
+    @SerialName("estimated_amount_minor") val montoEstimadoMinor: Long? = null,
 )
 
 /** Lo que el asegurado declara antes de subir una evidencia. */

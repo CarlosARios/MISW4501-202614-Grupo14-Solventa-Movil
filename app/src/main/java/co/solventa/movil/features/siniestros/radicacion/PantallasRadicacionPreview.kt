@@ -79,6 +79,7 @@ private fun VistaPreviaHechos() {
             onFechaCambia = {},
             onLugarCambia = {},
             onDescripcionCambia = {},
+            onMontoCambia = {},
             onResponder = { _, _ -> },
             onContinuar = {},
             onGuardarYSalir = {},

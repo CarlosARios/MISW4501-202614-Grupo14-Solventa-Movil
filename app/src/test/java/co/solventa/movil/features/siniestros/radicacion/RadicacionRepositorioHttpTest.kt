@@ -88,6 +88,36 @@ class RadicacionRepositorioHttpTest {
         assertTrue(enviado, enviado.contains("\"otro_vehiculo\":\"si\""))
     }
 
+    /** HU-M2.2-01: el monto estimado viaja en centavos y solo si se declaró. */
+    @Test
+    fun `el monto estimado viaja en centavos solo cuando se declaro`() = runTest {
+        servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
+        servidor.enqueue(MockResponse(code = 201, body = CUERPO_CREADO))
+
+        repositorio.radicar(BORRADOR, radicacion().copy(montoEstimado = "4.800.000"))
+        repositorio.radicar(BORRADOR, radicacion())
+
+        val conMonto = servidor.takeRequest().body?.utf8().orEmpty()
+        assertTrue(conMonto, conMonto.contains("\"estimated_amount_minor\":480000000"))
+        val sinMonto = servidor.takeRequest().body?.utf8().orEmpty()
+        assertFalse(sinMonto, sinMonto.contains("estimated_amount_minor"))
+    }
+
+    @Test
+    fun `el monto rechazado por el servicio se marca en los hechos`() = runTest {
+        servidor.enqueue(
+            MockResponse(
+                code = 422,
+                body = """{"error":"validation_failed","message":"x",
+                    "fields":[{"field":"estimated_amount_minor","code":"out_of_range"}]}""",
+            ),
+        )
+
+        val resultado = repositorio.radicar(BORRADOR, radicacion())
+
+        assertEquals(ResultadoRadicacion.DatosInvalidos(setOf(CampoDeRadicacion.MONTO)), resultado)
+    }
+
     /** Un reintento con la misma clave responde 200 y es un éxito, no un conflicto. */
     @Test
     fun `un reintento devuelve el caso que ya existe`() = runTest {
