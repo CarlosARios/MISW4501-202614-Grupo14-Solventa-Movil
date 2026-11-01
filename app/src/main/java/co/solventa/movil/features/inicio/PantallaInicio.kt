@@ -43,6 +43,7 @@ fun PantallaInicio(
     onVerificacionDemorada: () -> Unit,
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier,
+    onNotificaciones: () -> Unit = {},
     vm: InicioViewModel = hiltViewModel(),
 ) {
     val sesion by vm.sesion.collectAsStateWithLifecycle()
@@ -57,6 +58,7 @@ fun PantallaInicio(
         onVerificacionDemorada = onVerificacionDemorada,
         onCerrarSesion = { vm.cerrarSesion(onCerrarSesion) },
         modifier = modifier,
+        onNotificaciones = onNotificaciones,
     )
 }
 
@@ -71,6 +73,7 @@ private fun ContenidoInicio(
     onVerificacionDemorada: () -> Unit,
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier,
+    onNotificaciones: () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(Espacio.x12),
@@ -97,6 +100,13 @@ private fun ContenidoInicio(
             texto = stringResource(R.string.inicio_reportar_siniestro),
             onClick = onReportarSiniestro,
             modifier = Modifier.padding(top = Espacio.x12),
+        )
+        // El centro de notificaciones (HU-M3.1-01): la campana de M3, mientras
+        // Inicio siga siendo provisional.
+        BotonSolventa(
+            texto = stringResource(R.string.inicio_ir_notificaciones),
+            onClick = onNotificaciones,
+            tipo = TipoBoton.SECUNDARIO,
         )
 
         Text(

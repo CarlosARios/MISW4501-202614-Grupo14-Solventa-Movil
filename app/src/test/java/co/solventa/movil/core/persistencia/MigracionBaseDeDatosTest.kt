@@ -146,6 +146,30 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /** HU-M3.1-01: la versión 6 agrega la copia del centro de notificaciones y conserva lo demás. */
+    @Test
+    fun `la migracion 5 a 6 conserva las polizas y agrega el centro de notificaciones`() {
+        ayudante.createDatabase(5).apply {
+            execSQL(
+                "INSERT INTO poliza (propietario, id, orden, contenidoCifrado) VALUES ('sub-a', 'AU-2025-118204', 0, 'x')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 6 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(6)
+        try {
+            assertEquals(listOf("AU-2025-118204"), textos(migrada, "SELECT id FROM poliza"))
+            migrada.execSQL(
+                "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn) " +
+                    "VALUES ('sub-a', 'ntf-ppo-1', 'parametric_payout', 1789162800000, NULL, NULL, NULL)",
+            )
+            assertEquals(listOf("ntf-ppo-1"), textos(migrada, "SELECT id FROM notificacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }

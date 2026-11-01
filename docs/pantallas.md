@@ -49,7 +49,7 @@ M1a y M1b usan la cámara de verdad (CameraX). El permiso se pide en caliente y 
 | M9b | Mis siniestros · sin siniestros | `features/siniestros/seguimiento` | M2.4-02 | Could | Completa (estado vacío) |
 | M9c | Mis siniestros · servicio degradado (caché) | `features/siniestros/seguimiento` | M2.4-02 · HA-L02 | Could | Completa. Es la evidencia visible de la caché de lectura |
 | M10 | Detalle del siniestro · línea de tiempo | `features/siniestros/seguimiento` | M2.4-01 | Should | Completa. Misma línea de tiempo que la web (A8) |
-| M10b | Siniestro paramétrico resuelto automáticamente | `features/siniestros/seguimiento` | M3.1-01 | **Must** | Completa. Parámetro, umbral, valor observado y clave de idempotencia — HA-D02 |
+| M10b | Siniestro paramétrico resuelto automáticamente | `features/notificaciones/centro` | **HU-M3.1-01** | **Must** | Criterio 4: lo abre la notificación sin pasos intermedios. Monto y moneda, evento (retraso del vuelo AV-8421), parámetro, umbral, valor observado con el aviso de que lo superó, medio de pago (Visa •••• 1111), fecha, póliza, siniestro y clave de idempotencia (HA-D02); sin conexión, desde la copia local. **Vive en `notificaciones/centro` y no en `siniestros/seguimiento`** porque sus datos son los del registro de la notificación (decisión del equipo) y un dominio no importa a otro |
 | M10c | Detalle del siniestro sin conexión | `features/siniestros/seguimiento` | M2.4-02 | Could | Completa |
 
 ## Radicación del siniestro
@@ -115,8 +115,8 @@ del componente `Campo` y no se leen desde fuera.
 
 | Frame | Pantalla | Paquete | Historia | Prioridad | Estado del prototipo |
 |---|---|---|---|---|---|
-| M15 | Centro de notificaciones | `features/notificaciones/centro` | M3.1-01 · M3.2-01 · M3.3-01 | Must + Should | Completa. Los tres tipos de notificación con su acción |
-| M15b | Push del sistema (pantalla bloqueada) | `features/notificaciones/centro` | M3.1-01 | **Must** | Completa. Segundo punto de inicio del recorrido |
+| M15 | Centro de notificaciones | `features/notificaciones/centro` | **HU-M3.1-01** · M3.2-01 · M3.3-01 | Must + Should | HU-M3.1-01, criterios 1, 5 y 6: «Hoy» y «Anteriores», la tarjeta del pago automático («Pago automático recibido: $ 180.000 COP», retraso del vuelo, minutos y medio de pago) con la barra y el punto de no leída, «Ver detalle» y «Marcar todas como leídas»; cargando, vacío, error y sin conexión con la hora de la copia. Se entra desde Inicio (botón provisional en lugar de la campana). Las tarjetas de renovación y de soporte pendiente son de M3.2-01 y M3.3-01; el ícono de filtros no tiene criterio |
+| M15b | Push del sistema (pantalla bloqueada) | `features/notificaciones/centro` | **HU-M3.1-01** | **Must** | Criterios 2, 3, 4 y 6: la notificación del sistema con el monto, la moneda y el evento, en el idioma de la aplicación, con «Ver detalle»; una por pago en el grupo de los pagos automáticos, con el permiso de Android 13 pedido al llegar a Inicio. **Sin Firebase (decisión del equipo), no la empuja el servidor:** la aplicación revisa el centro cada 20 s con la aplicación a la vista y cada 15 min en segundo plano (WorkManager), y la muestra al encontrar un pago nuevo. «Adjuntar soporte» y «Más tarde» son de M3.3-01 |
 | M17 | Renovación desde la alerta (datos precargados) | `features/originacion/renovaciones` | M3.2-02 | Could | Completa. Mismas cifras que la web (A4) |
 | M17b | Póliza cancelada por no pago · opciones | `features/originacion/renovaciones` | M3.2-02 · W1.6-02 | Could | Completa. *Solicitar recotización* sale al flujo web (E1) |
 | M17c | Renovación confirmada | `features/originacion/renovaciones` | M3.2-02 | Could | Completa |

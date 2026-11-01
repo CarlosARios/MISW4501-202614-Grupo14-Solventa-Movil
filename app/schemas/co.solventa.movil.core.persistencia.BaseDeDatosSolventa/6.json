@@ -1,0 +1,499 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 6,
+    "identityHash": "92a6aeded5faa8067655facd79d5002b",
+    "entities": [
+      {
+        "tableName": "borrador_de_radicacion",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `etapa` TEXT NOT NULL, `poliza` TEXT NOT NULL, `tipo` TEXT, `ocurrioEn` INTEGER, `lugar` TEXT NOT NULL, `descripcion` TEXT NOT NULL, `respuestasJson` TEXT NOT NULL, `declaracionAceptada` INTEGER NOT NULL, `actualizadoEn` INTEGER NOT NULL, `montoEstimado` TEXT NOT NULL DEFAULT '', PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "etapa",
+            "columnName": "etapa",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "poliza",
+            "columnName": "poliza",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ocurrioEn",
+            "columnName": "ocurrioEn",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lugar",
+            "columnName": "lugar",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "respuestasJson",
+            "columnName": "respuestasJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "declaracionAceptada",
+            "columnName": "declaracionAceptada",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actualizadoEn",
+            "columnName": "actualizadoEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "montoEstimado",
+            "columnName": "montoEstimado",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "evidencia_capturada",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `borradorId` TEXT NOT NULL, `posicion` INTEGER NOT NULL, `tipo` TEXT NOT NULL, `rutaArchivo` TEXT NOT NULL, `capturadaEn` INTEGER NOT NULL, `latitud` REAL NOT NULL, `longitud` REAL NOT NULL, `altitud` REAL, `precisionM` REAL NOT NULL, `ubicacionConfiable` INTEGER NOT NULL, `sha256` TEXT NOT NULL, `tamanoBytes` INTEGER NOT NULL, `duracionS` INTEGER NOT NULL, `llaveDelObjeto` TEXT, `estado` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "borradorId",
+            "columnName": "borradorId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "posicion",
+            "columnName": "posicion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "rutaArchivo",
+            "columnName": "rutaArchivo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capturadaEn",
+            "columnName": "capturadaEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitud",
+            "columnName": "latitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitud",
+            "columnName": "longitud",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "altitud",
+            "columnName": "altitud",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "precisionM",
+            "columnName": "precisionM",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ubicacionConfiable",
+            "columnName": "ubicacionConfiable",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sha256",
+            "columnName": "sha256",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tamanoBytes",
+            "columnName": "tamanoBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duracionS",
+            "columnName": "duracionS",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "llaveDelObjeto",
+            "columnName": "llaveDelObjeto",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "consentimiento",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`propietario` TEXT NOT NULL, `id` TEXT NOT NULL, `estado` TEXT NOT NULL, `vigente` INTEGER NOT NULL, `finalidad` TEXT NOT NULL, `canal` TEXT NOT NULL, `versionDeTerminos` TEXT NOT NULL, `otorgadoEn` INTEGER NOT NULL, `venceEn` INTEGER NOT NULL, `finalizadoEn` INTEGER, `comprobante` TEXT, `entidades` TEXT NOT NULL, `alcance` TEXT NOT NULL, `historial` TEXT NOT NULL, `revocacion` TEXT, PRIMARY KEY(`propietario`, `id`))",
+        "fields": [
+          {
+            "fieldPath": "propietario",
+            "columnName": "propietario",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vigente",
+            "columnName": "vigente",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finalidad",
+            "columnName": "finalidad",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "canal",
+            "columnName": "canal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "versionDeTerminos",
+            "columnName": "versionDeTerminos",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "otorgadoEn",
+            "columnName": "otorgadoEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "venceEn",
+            "columnName": "venceEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finalizadoEn",
+            "columnName": "finalizadoEn",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "comprobante",
+            "columnName": "comprobante",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "entidades",
+            "columnName": "entidades",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "alcance",
+            "columnName": "alcance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "historial",
+            "columnName": "historial",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revocacion",
+            "columnName": "revocacion",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "propietario",
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "sincronizacion",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`propietario` TEXT NOT NULL, `recurso` TEXT NOT NULL, `sincronizadoEn` INTEGER NOT NULL, PRIMARY KEY(`propietario`, `recurso`))",
+        "fields": [
+          {
+            "fieldPath": "propietario",
+            "columnName": "propietario",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recurso",
+            "columnName": "recurso",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sincronizadoEn",
+            "columnName": "sincronizadoEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "propietario",
+            "recurso"
+          ]
+        }
+      },
+      {
+        "tableName": "revocacion_pendiente",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`propietario` TEXT NOT NULL, `consentimientoId` TEXT NOT NULL, `clave` TEXT NOT NULL, `entidad` TEXT NOT NULL, `solicitadaEn` INTEGER NOT NULL, `zona` TEXT NOT NULL, `dispositivo` TEXT NOT NULL, `metodo` TEXT NOT NULL, `intentos` INTEGER NOT NULL, `ultimoError` TEXT, PRIMARY KEY(`propietario`, `consentimientoId`))",
+        "fields": [
+          {
+            "fieldPath": "propietario",
+            "columnName": "propietario",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "consentimientoId",
+            "columnName": "consentimientoId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "clave",
+            "columnName": "clave",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "entidad",
+            "columnName": "entidad",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "solicitadaEn",
+            "columnName": "solicitadaEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "zona",
+            "columnName": "zona",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "dispositivo",
+            "columnName": "dispositivo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "metodo",
+            "columnName": "metodo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "intentos",
+            "columnName": "intentos",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ultimoError",
+            "columnName": "ultimoError",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "propietario",
+            "consentimientoId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_revocacion_pendiente_clave",
+            "unique": true,
+            "columnNames": [
+              "clave"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_revocacion_pendiente_clave` ON `${TABLE_NAME}` (`clave`)"
+          }
+        ]
+      },
+      {
+        "tableName": "poliza",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`propietario` TEXT NOT NULL, `id` TEXT NOT NULL, `orden` INTEGER NOT NULL, `contenidoCifrado` TEXT NOT NULL, PRIMARY KEY(`propietario`, `id`))",
+        "fields": [
+          {
+            "fieldPath": "propietario",
+            "columnName": "propietario",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orden",
+            "columnName": "orden",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "contenidoCifrado",
+            "columnName": "contenidoCifrado",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "propietario",
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "notificacion",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`propietario` TEXT NOT NULL, `id` TEXT NOT NULL, `tipo` TEXT NOT NULL, `ocurrioEn` INTEGER NOT NULL, `leidaEn` INTEGER, `pago` TEXT, `avisadaEn` INTEGER, PRIMARY KEY(`propietario`, `id`))",
+        "fields": [
+          {
+            "fieldPath": "propietario",
+            "columnName": "propietario",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tipo",
+            "columnName": "tipo",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ocurrioEn",
+            "columnName": "ocurrioEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "leidaEn",
+            "columnName": "leidaEn",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "pago",
+            "columnName": "pago",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "avisadaEn",
+            "columnName": "avisadaEn",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "propietario",
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '92a6aeded5faa8067655facd79d5002b')"
+    ]
+  }
+}

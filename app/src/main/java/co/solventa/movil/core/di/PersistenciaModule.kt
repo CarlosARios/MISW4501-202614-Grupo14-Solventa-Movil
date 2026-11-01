@@ -9,6 +9,7 @@ import co.solventa.movil.core.persistencia.cifrado.CifradorDeDatos
 import co.solventa.movil.core.persistencia.cifrado.ClaveDelKeystore
 import co.solventa.movil.core.persistencia.dao.ConsentimientoDao
 import co.solventa.movil.core.persistencia.dao.PolizaDao
+import co.solventa.movil.core.persistencia.dao.NotificacionDao
 import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
 import dagger.Module
 import dagger.Provides
@@ -50,4 +51,7 @@ object PersistenciaModule {
     @Provides
     @Singleton
     fun proveerCifradorDeDatos(): CifradorDeDatos = CifradorAesGcm(ClaveDelKeystore::obtener)
+
+    @Provides
+    fun proveerNotificaciones(base: BaseDeDatosSolventa): NotificacionDao = base.notificaciones()
 }

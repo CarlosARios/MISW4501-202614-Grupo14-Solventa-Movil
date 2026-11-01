@@ -30,6 +30,11 @@
          manifiesto de WorkManager. Es un permiso normal. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- Mostrar la notificación del pago paramétrico automático (HU-M3.1-01,
+         criterio 3). Desde Android 13 se pide en caliente al llegar a Inicio;
+         sin él, el pago queda en el centro de notificaciones (criterio 5). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
     <!-- No se exige cámara para instalar: un dispositivo sin ella puede usar
          el resto de la aplicación, y el emulador de las pruebas nocturnas no
          siempre la tiene. -->

@@ -78,6 +78,17 @@ sealed interface Ruta {
     @Serializable
     data class DetallePoliza(val id: String) : Ruta
 
+    /** M15 · Centro de notificaciones (HU-M3.1-01). */
+    @Serializable
+    data object Notificaciones : Ruta
+
+    /**
+     * M10b · Siniestro paramétrico resuelto automáticamente (HU-M3.1-01): el
+     * detalle del pago que abre una notificación.
+     */
+    @Serializable
+    data class DetallePagoParametrico(val id: String) : Ruta
+
     /** M19 · Perfil, pestaña de la barra inferior (HU-M1.3-01). */
     @Serializable
     data object Perfil : Ruta
