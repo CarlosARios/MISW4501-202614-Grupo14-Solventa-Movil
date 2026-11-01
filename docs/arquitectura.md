@@ -23,7 +23,7 @@ Resumen de lo que los [modelos de arquitectura](https://github.com/leonelparrale
 | Rol humano | **asegurado**, único rol de este canal | No hay menú por rol ni *guards* por rol; la app entera es del asegurado |
 | Desbloqueo local | `BiometricPrompt` del sistema operativo; desbloquea la sesión guardada sin reautenticar contra el proveedor de identidad | `core/auth/biometria/` · HU-M1.1-02 |
 | Aprovisionamiento del usuario | El registro con verificación de identidad es el disparador: HA-S01 referencia HU-M1.1-01 como el momento en que el usuario entra al *user pool* | `features/acceso/registro/` |
-| Modo sin conexión | El teléfono pierde la red; el navegador del portal normalmente no | Room para borradores y caché de lectura, WorkManager para la cola de envío |
+| Modo sin conexión | El teléfono pierde la red; el navegador del portal normalmente no | Room para borradores y caché de lectura, WorkManager para la cola de envío. La caché con datos sensibles —las pólizas de HU-M1.2-01— se guarda cifrada con una clave del Keystore de Android (`core/persistencia/cifrado/`) |
 | Timeout de integración del gateway | 5 s en las rutas de cotización (ADR-02) | La app no cotiza: la cotización es un flujo web (E1). Sí aplica el límite de 30 s de HU-M1.1-01 para la verificación de identidad |
 
 ## 3. Atributos de calidad que el cliente móvil debe evidenciar

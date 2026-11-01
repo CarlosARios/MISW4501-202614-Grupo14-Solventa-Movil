@@ -120,6 +120,32 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /** HU-M1.2-01: la versión 5 agrega la copia cifrada de las pólizas y conserva lo demás. */
+    @Test
+    fun `la migracion 4 a 5 conserva el borrador y agrega la copia de las polizas`() {
+        ayudante.createDatabase(4).apply {
+            execSQL(
+                "INSERT INTO borrador_de_radicacion (id, etapa, poliza, tipo, ocurrioEn, lugar, descripcion, " +
+                    "respuestasJson, declaracionAceptada, actualizadoEn, montoEstimado) " +
+                    "VALUES ('borrador-1', 'HECHOS', 'AU-2025-118204', 'COLISION', 1792539000000, " +
+                    "'Autopista Norte km 12', 'Choque por alcance', '{}', 0, 1792539100000, '4800000')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 5 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(5)
+        try {
+            assertEquals(listOf("borrador-1"), textos(migrada, "SELECT id FROM borrador_de_radicacion"))
+            migrada.execSQL(
+                "INSERT INTO poliza (propietario, id, orden, contenidoCifrado) VALUES ('sub-a', 'AU-2025-118204', 0, 'x')",
+            )
+            assertEquals(listOf("AU-2025-118204"), textos(migrada, "SELECT id FROM poliza"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }

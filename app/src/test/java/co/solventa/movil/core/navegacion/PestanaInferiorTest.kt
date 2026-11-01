@@ -19,29 +19,33 @@ class PestanaInferiorTest {
     }
 
     @Test
-    fun `inicio y perfil navegan y las demas quedan en espera con su descripcion`() {
+    fun `inicio, polizas y perfil navegan y siniestros queda en espera con su descripcion`() {
         assertTrue(PestanaInferior.INICIO.habilitada)
         assertEquals(Ruta.Inicio, PestanaInferior.INICIO.ruta)
         assertTrue(PestanaInferior.PERFIL.habilitada)
         assertEquals(Ruta.Perfil, PestanaInferior.PERFIL.ruta)
         assertNull(PestanaInferior.INICIO.descripcionEnEspera)
+        // HU-M1.2-01: Pólizas deja de estar en espera.
+        assertTrue(PestanaInferior.POLIZAS.habilitada)
+        assertEquals(Ruta.Polizas, PestanaInferior.POLIZAS.ruta)
+        assertNull(PestanaInferior.POLIZAS.descripcionEnEspera)
 
-        listOf(PestanaInferior.POLIZAS, PestanaInferior.SINIESTROS).forEach {
-            assertFalse(it.habilitada)
-            assertNull(it.ruta)
-            assertNotNull(it.descripcionEnEspera)
-        }
+        assertFalse(PestanaInferior.SINIESTROS.habilitada)
+        assertNull(PestanaInferior.SINIESTROS.ruta)
+        assertNotNull(PestanaInferior.SINIESTROS.descripcionEnEspera)
     }
 
     @Test
     fun `cada destino marca su pestaña y consentimientos deja perfil seleccionada`() {
         assertEquals(PestanaInferior.INICIO, pestanaDe(Ruta.Inicio))
+        assertEquals(PestanaInferior.POLIZAS, pestanaDe(Ruta.Polizas))
         assertEquals(PestanaInferior.PERFIL, pestanaDe(Ruta.Perfil))
         assertEquals(PestanaInferior.PERFIL, pestanaDe(Ruta.Consentimientos))
     }
 
     @Test
     fun `fuera de las pestañas no hay barra`() {
+        assertNull(pestanaDe(Ruta.DetallePoliza("AU-2025-118204")))
         assertNull(pestanaDe(Ruta.DetalleConsentimiento("cns-1")))
         assertNull(pestanaDe(Ruta.Bienvenida))
         assertNull(pestanaDe(Ruta.Radicacion))
