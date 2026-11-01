@@ -43,6 +43,18 @@ val clienteMovilDeCognito = "6dri40bi3sk74cr0jb5djq43c0"
  */
 val urlDelApiGateway: String = System.getenv("URL_API_GATEWAY") ?: "PENDIENTE"
 
+/**
+ * URL del servicio local, el de la variante de depuracion.
+ *
+ * Por omision 10.0.2.2, que es como el emulador alcanza el localhost del PC.
+ * Un telefono conectado por USB no entiende esa direccion: ahi se abre el
+ * puente con `adb reverse tcp:8080 tcp:8080`, que hace que el localhost del
+ * telefono llegue al del PC, y se construye apuntando a el.
+ *
+ *     $env:URL_API_LOCAL = "http://localhost:8080"
+ */
+val urlDelServicioLocal: String = System.getenv("URL_API_LOCAL") ?: "http://10.0.2.2:8080"
+
 android {
     namespace = "co.solventa.movil"
     compileSdk {
@@ -86,7 +98,7 @@ android {
         // "localhost" dentro del emulador es el propio dispositivo virtual.
         debug {
             buildConfigField("String", "AMBIENTE", "\"local\"")
-            buildConfigField("String", "API_GATEWAY_URL", "\"http://10.0.2.2:8080\"")
+            buildConfigField("String", "API_GATEWAY_URL", "\"$urlDelServicioLocal\"")
             // Depuracion autentica contra el pool real, el mismo de
             // produccion. Es lo que permite comprobar en el dispositivo el
             // ingreso, la renovacion silenciosa y el vencimiento sin tener
@@ -145,6 +157,23 @@ android {
         compose = true
         buildConfig = true
     }
+
+    // Robolectric (HU-M1.3-01): Room y WorkManager se prueban en la JVM con
+    // los recursos de la aplicacion. Robolectric solo lee los assets fusionados
+    // de la variante (no los del conjunto `test`), asi que los esquemas
+    // exportados de la base entran como assets de `debug` para que
+    // MigrationTestHelper compruebe cada migracion contra el esquema
+    // versionado. Son dos JSON de pocos KB y no llegan a release ni a staging.
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+        }
+    }
+    sourceSets {
+        getByName("debug") {
+            assets.directories.add("$projectDir/schemas")
+        }
+    }
 }
 
 // Compuerta de cobertura: la misma que el pipeline del cliente web (>= 70 %).
@@ -186,6 +215,28 @@ kover {
                     // pueden ejercer sin dispositivo. Lo que sí se prueba es
                     // la aritmética del medidor de luz, que queda fuera de
                     // esta lista a propósito.
+                    // Reduce la captura con Bitmap y BitmapFactory, que no
+                    // existen fuera del dispositivo. Lo que sí se prueba en la
+                    // JVM es el repositorio del registro, que lo usa detrás de
+                    // su interfaz, y la verificación de la imagen reducida se
+                    // hace en el teléfono.
+                    "co.solventa.movil.core.imagen.PreparadorDeCapturaJpeg",
+                    "co.solventa.movil.core.imagen.ReductorDeFotoJpeg",
+                    "co.solventa.movil.core.imagen.ReduccionJpegKt",
+                    // Captura de evidencia (HU-M2.1-01): CameraX con video, el
+                    // LocationManager del sistema, la subida firmada y el
+                    // trabajador de WorkManager. Nada de eso existe fuera del
+                    // dispositivo; lo que sí se prueba en la JVM es el
+                    // repositorio y el ViewModel, que los usan detrás de sus
+                    // interfaces.
+                    "co.solventa.movil.features.siniestros.evidencia.ControladorDeEvidencia",
+                    "co.solventa.movil.features.siniestros.evidencia.CamaraDeEvidenciaKt",
+                    "co.solventa.movil.features.siniestros.evidencia.MiniaturaDeEvidenciaKt",
+                    "co.solventa.movil.features.siniestros.evidencia.VistaDeEvidenciaKt",
+                    "co.solventa.movil.features.siniestros.evidencia.TrabajadorDeSubida",
+                    "co.solventa.movil.features.siniestros.evidencia.EnvioConWorkManager",
+                    "co.solventa.movil.core.ubicacion.LocalizadorDelSistema",
+                    "co.solventa.movil.core.api.siniestros.SubidorDeArchivos",
                     "co.solventa.movil.shared.ui.camara.ControladorDeCamara",
                     "co.solventa.movil.shared.ui.camara.CamaraDeDocumento",
                     "co.solventa.movil.shared.ui.camara.VistaPreviaDeCamaraKt",
@@ -246,6 +297,7 @@ dependencies {
     implementation(libs.androidx.camera.camera2)
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.camera.video)
 
     // Biometría
     implementation(libs.androidx.biometric)
@@ -268,6 +320,9 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.work.testing)
+    testImplementation(libs.androidx.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)

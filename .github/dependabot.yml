@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: weekly
       day: monday
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 0
     # El cliente web no lo fija, asi que sus PR de Dependabot apuntan a main.
     # Aqui apuntan a develop, que es lo que pide el flujo de trabajo.
     target-branch: develop

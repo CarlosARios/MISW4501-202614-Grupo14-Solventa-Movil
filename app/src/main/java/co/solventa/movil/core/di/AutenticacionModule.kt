@@ -4,14 +4,17 @@ import co.solventa.movil.BuildConfig
 import co.solventa.movil.core.auth.cognito.CognitoApi
 import co.solventa.movil.core.auth.cognito.CognitoSesionRepositorio
 import co.solventa.movil.core.auth.interceptores.ProveedorDeToken
+import co.solventa.movil.core.auth.sesion.AlCerrarSesion
 import co.solventa.movil.core.auth.sesion.AlmacenDeSesion
 import co.solventa.movil.core.auth.sesion.AlmacenDeSesionCifrado
 import co.solventa.movil.core.auth.sesion.SesionRepositorio
+import co.solventa.movil.core.auth.sesion.VerificadorDeContrasena
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import dagger.multibindings.Multibinds
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -39,6 +42,18 @@ abstract class AutenticacionModule {
     @Binds
     @Singleton
     abstract fun enlazarAlmacenDeSesion(cifrado: AlmacenDeSesionCifrado): AlmacenDeSesion
+
+    /** La confirmacion con contraseña de una accion sensible (HU-M1.3-02). */
+    @Binds
+    @Singleton
+    abstract fun enlazarVerificadorDeContrasena(cognito: CognitoSesionRepositorio): VerificadorDeContrasena
+
+    /**
+     * Conjunto de limpiezas al cerrar la sesion (HU-M1.3-01). Declararlo aqui
+     * permite que este vacio si ningun dominio aporta una.
+     */
+    @Multibinds
+    abstract fun limpiezasAlCerrarSesion(): Set<AlCerrarSesion>
 
     companion object {
 

@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -35,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.recordarIdiomaDeLaPantalla
 import co.solventa.movil.shared.ui.AvisoSolventa
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.CirculoConIcono
@@ -301,6 +306,9 @@ fun HojaDeSesionExpirada(
 ) {
     val estado = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val alcance = rememberCoroutineScope()
+    // La hoja tiene su propia ventana: sin esto sale en el idioma del
+    // teléfono y no en el que el usuario eligió en la aplicación.
+    val idioma = recordarIdiomaDeLaPantalla()
 
     ModalBottomSheet(
         onDismissRequest = { alcance.launch { estado.show() } },
@@ -309,10 +317,12 @@ fun HojaDeSesionExpirada(
         properties = ModalBottomSheetProperties(shouldDismissOnBackPress = false),
         dragHandle = null,
     ) {
-        ContenidoSesionExpirada(
-            onConHuella = onConHuella,
-            onConContrasena = onConContrasena,
-        )
+        idioma.Aplicar {
+            ContenidoSesionExpirada(
+                onConHuella = onConHuella,
+                onConContrasena = onConContrasena,
+            )
+        }
     }
 }
 
@@ -384,7 +394,10 @@ private fun ArmazonDeAcceso(
                 verticalArrangement = Arrangement.spacedBy(Espacio.x8),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
+                    // Igual que en el contenedor de registro: con el dibujo
+                    // de borde a borde, apartarse del teclado es cosa de la
+                    // barra de acciones.
+                    .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
                     .padding(horizontal = Espacio.x16, vertical = Espacio.x16),
                 content = acciones,
             )

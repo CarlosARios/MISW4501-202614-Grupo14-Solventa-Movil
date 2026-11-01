@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -30,6 +34,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import co.solventa.movil.R
 import co.solventa.movil.ui.theme.Espacio
@@ -45,19 +52,29 @@ fun PantallaRegistro(
     titulo: String,
     modifier: Modifier = Modifier,
     onAtras: (() -> Unit)? = null,
+    onCerrar: (() -> Unit)? = null,
     acciones: @Composable ColumnScope.() -> Unit = {},
+    indicador: (@Composable () -> Unit)? = null,
     contenido: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { EncabezadoPantalla(titulo = titulo, onAtras = onAtras) },
+        topBar = {
+            EncabezadoPantalla(titulo = titulo, onAtras = onAtras, onCerrar = onCerrar, indicador = indicador)
+        },
         bottomBar = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(Espacio.x8),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .navigationBarsPadding()
+                    // La aplicacion dibuja de borde a borde, asi que el
+                    // teclado no encoge la ventana: lo hace esta barra, que
+                    // se aparta lo que ocupe el teclado o la barra de
+                    // navegacion, lo que sea mayor. Al crecer, el contenido
+                    // de arriba se encoge y el campo con el foco puede
+                    // desplazarse hasta quedar a la vista.
+                    .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.ime))
                     .padding(
                         start = Espacio.x16,
                         end = Espacio.x16,
@@ -81,7 +98,12 @@ fun PantallaRegistro(
 }
 
 @Composable
-private fun EncabezadoPantalla(titulo: String, onAtras: (() -> Unit)?) {
+private fun EncabezadoPantalla(
+    titulo: String,
+    onAtras: (() -> Unit)?,
+    onCerrar: (() -> Unit)? = null,
+    indicador: (@Composable () -> Unit)? = null,
+) {
     // La aplicacion dibuja de borde a borde, asi que el encabezado tiene que
     // dejarle su espacio a la barra de estado: sin esto el titulo queda
     // encima del reloj y los iconos del sistema.
@@ -104,7 +126,26 @@ private fun EncabezadoPantalla(titulo: String, onAtras: (() -> Unit)?) {
                             .padding(Espacio.x8),
                     )
                 }
-                Text(text = titulo, style = MaterialTheme.typography.headlineSmall)
+                Text(
+                    text = titulo,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.weight(1f),
+                )
+                // Un estado de la pantalla a la derecha del titulo, como el
+                // icono de sin red de M8 (frame 38:1503). No se toca.
+                indicador?.invoke()
+                // Salir del flujo sin terminarlo, como en M11a. Lo que ya se
+                // diligencio queda guardado como borrador.
+                if (onCerrar != null) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_x),
+                        contentDescription = stringResource(R.string.comun_cerrar),
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable(onClick = onCerrar)
+                            .padding(Espacio.x8),
+                    )
+                }
             }
             HorizontalDivider(color = LocalColoresSolventa.current.bordeBase)
         }
@@ -147,7 +188,10 @@ fun BarraProgreso(
         modifier = modifier
             .fillMaxWidth()
             .height(6.dp)
-            .background(colores.bordeBase, RoundedCornerShape(Espacio.x4)),
+            .background(colores.bordeBase, RoundedCornerShape(Espacio.x4))
+            // Sin esto el lector de pantalla no anuncia el avance: la barra
+            // sería solo dos rectángulos de color.
+            .semantics { progressBarRangeInfo = ProgressBarRangeInfo(avance.coerceIn(0f, 1f), 0f..1f) },
     ) {
         Box(
             modifier = Modifier

@@ -8,8 +8,11 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import android.content.res.Configuration
 import androidx.test.platform.app.InstrumentationRegistry
 import co.solventa.movil.R
+import co.solventa.movil.core.i18n.ConIdioma
+import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.shared.ui.camara.camaraSimulada
 import co.solventa.movil.ui.theme.SolventaTheme
 import org.junit.Assert.assertTrue
@@ -42,6 +45,9 @@ class PantallasRegistroTest {
         correo = "carolina.perez@correo.com",
         celular = "+57 301 234 5678",
     )
+
+    /** M1c pide la contraseña para habilitar la verificación. */
+    private val contrasena = "Solventa2026!"
 
     // Criterio 1 — la captura guía al usuario paso a paso.
     @Test
@@ -132,6 +138,7 @@ class PantallasRegistroTest {
                 ConfirmacionDatosPantalla(
                     estado = RegistroUiState(datos = datos),
                     onDatosCambian = {},
+                    onContrasenaCambia = {},
                     onTerminos = {},
                     onVerificar = {},
                     onAtras = {},
@@ -150,8 +157,13 @@ class PantallasRegistroTest {
         composicion.setContent {
             SolventaTheme {
                 ConfirmacionDatosPantalla(
-                    estado = RegistroUiState(datos = datos, terminosAceptados = false),
+                    estado = RegistroUiState(
+                        datos = datos,
+                        contrasena = contrasena,
+                        terminosAceptados = false,
+                    ),
                     onDatosCambian = {},
+                    onContrasenaCambia = {},
                     onTerminos = {},
                     onVerificar = {},
                     onAtras = {},
@@ -168,8 +180,13 @@ class PantallasRegistroTest {
         composicion.setContent {
             SolventaTheme {
                 ConfirmacionDatosPantalla(
-                    estado = RegistroUiState(datos = datos, terminosAceptados = true),
+                    estado = RegistroUiState(
+                        datos = datos,
+                        contrasena = contrasena,
+                        terminosAceptados = true,
+                    ),
                     onDatosCambian = {},
+                    onContrasenaCambia = {},
                     onTerminos = {},
                     onVerificar = { verificado = true },
                     onAtras = {},
@@ -283,5 +300,35 @@ class PantallasRegistroTest {
         composicion.onNodeWithContentDescription(
             texto(R.string.registro_captura_marco_descripcion),
         ).assertIsDisplayed()
+    }
+
+    // Criterio 4 — M1f se explica en el idioma de la aplicación, no en el del
+    // teléfono. La hoja se dibuja en su propia ventana, que vuelve al idioma
+    // del sistema si nadie le lleva el de la pantalla.
+    @Test
+    fun m1f_sale_en_el_idioma_de_la_aplicacion_y_no_en_el_del_telefono() {
+        val delTelefono = contexto.resources.configuration.locales[0].language
+        val elegido = if (delTelefono == "es") Idioma.INGLES else Idioma.ESPANOL
+        val configuracion = Configuration(contexto.resources.configuration).apply { setLocale(elegido.aLocale()) }
+        val enElElegido = contexto.createConfigurationContext(configuracion)
+
+        composicion.setContent {
+            SolventaTheme {
+                ConIdioma(elegido) {
+                    CapturaDocumentoPantalla(
+                        cara = CaraDocumento.REVERSO,
+                        estado = RegistroUiState(problemaCalidad = ProblemaCalidad.IMAGEN_BORROSA),
+                        onCapturar = {},
+                        onLuzInsuficiente = {},
+                        camara = camaraSimulada(),
+                        onDescartarAviso = {},
+                        onAtras = {},
+                    )
+                }
+            }
+        }
+
+        composicion.onNodeWithText(enElElegido.getString(R.string.registro_calidad_borrosa_titulo))
+            .assertIsDisplayed()
     }
 }

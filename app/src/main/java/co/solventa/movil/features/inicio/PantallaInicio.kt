@@ -37,11 +37,13 @@ import co.solventa.movil.ui.theme.SolventaTheme
 @Composable
 fun PantallaInicio(
     onRegistro: () -> Unit,
+    onReportarSiniestro: () -> Unit,
     onVerificacionExitosa: () -> Unit,
     onVerificacionNoSuperada: () -> Unit,
     onVerificacionDemorada: () -> Unit,
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier,
+    onNotificaciones: () -> Unit = {},
     vm: InicioViewModel = hiltViewModel(),
 ) {
     val sesion by vm.sesion.collectAsStateWithLifecycle()
@@ -50,11 +52,13 @@ fun PantallaInicio(
         nombre = sesion?.nombre.orEmpty(),
         correo = sesion?.correo.orEmpty(),
         onRegistro = onRegistro,
+        onReportarSiniestro = onReportarSiniestro,
         onVerificacionExitosa = onVerificacionExitosa,
         onVerificacionNoSuperada = onVerificacionNoSuperada,
         onVerificacionDemorada = onVerificacionDemorada,
         onCerrarSesion = { vm.cerrarSesion(onCerrarSesion) },
         modifier = modifier,
+        onNotificaciones = onNotificaciones,
     )
 }
 
@@ -63,11 +67,13 @@ private fun ContenidoInicio(
     nombre: String,
     correo: String,
     onRegistro: () -> Unit,
+    onReportarSiniestro: () -> Unit,
     onVerificacionExitosa: () -> Unit,
     onVerificacionNoSuperada: () -> Unit,
     onVerificacionDemorada: () -> Unit,
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier,
+    onNotificaciones: () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(Espacio.x12),
@@ -86,6 +92,21 @@ private fun ContenidoInicio(
             text = stringResource(R.string.inicio_provisional),
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(top = Espacio.x12),
+        )
+
+        // La radicacion del siniestro (HU-M2.2-01) es lo primero que se hace
+        // desde el inicio, no una pantalla mas de la lista de entregadas.
+        BotonSolventa(
+            texto = stringResource(R.string.inicio_reportar_siniestro),
+            onClick = onReportarSiniestro,
+            modifier = Modifier.padding(top = Espacio.x12),
+        )
+        // El centro de notificaciones (HU-M3.1-01): la campana de M3, mientras
+        // Inicio siga siendo provisional.
+        BotonSolventa(
+            texto = stringResource(R.string.inicio_ir_notificaciones),
+            onClick = onNotificaciones,
+            tipo = TipoBoton.SECUNDARIO,
         )
 
         Text(
@@ -126,6 +147,7 @@ private fun VistaPreviaInicio() {
             nombre = "Carolina",
             correo = "asegurado@example.com",
             onRegistro = {},
+            onReportarSiniestro = {},
             onVerificacionExitosa = {},
             onVerificacionNoSuperada = {},
             onVerificacionDemorada = {},

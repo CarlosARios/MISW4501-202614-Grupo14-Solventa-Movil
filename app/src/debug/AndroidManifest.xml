@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- El servicio local corre sobre HTTP sin cifrar, y desde Android 9 el
+         sistema bloquea el trafico en claro. Se habilita solo en depuracion:
+         produccion y staging hablan con el API Gateway por HTTPS y tienen que
+         seguir rechazandolo. -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>

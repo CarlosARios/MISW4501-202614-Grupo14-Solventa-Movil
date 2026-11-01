@@ -1,16 +1,20 @@
 package co.solventa.movil.core.auth.cognito
 
 import co.solventa.movil.BuildConfig
+import co.solventa.movil.core.auth.sesion.AlCerrarSesion
 import co.solventa.movil.core.auth.sesion.AlmacenDeSesion
 import co.solventa.movil.core.auth.sesion.ResultadoIngreso
 import co.solventa.movil.core.auth.sesion.Sesion
 import co.solventa.movil.core.auth.sesion.SesionRepositorio
 import co.solventa.movil.core.auth.sesion.TokensDeSesion
+import co.solventa.movil.core.auth.sesion.VerificacionDeContrasena
+import co.solventa.movil.core.auth.sesion.VerificadorDeContrasena
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 
 /**
@@ -33,12 +37,21 @@ import javax.inject.Singleton
 class CognitoSesionRepositorio @Inject constructor(
     private val api: CognitoApi,
     private val almacen: AlmacenDeSesion,
-) : SesionRepositorio {
+    /**
+     * Lo que cada dominio borra del dispositivo al cerrar la sesion
+     * (HU-M1.3-01). Va detras de un `Provider` porque esas limpiezas dependen
+     * a su vez de la sesion: asi se rompe el ciclo sin que `core` las conozca.
+     */
+    private val limpiezas: Provider<Set<@JvmSuppressWildcards AlCerrarSesion>>,
+) : SesionRepositorio, VerificadorDeContrasena {
 
     /** Una renovación a la vez: varias peticiones en paralelo comparten la misma. */
     private val cerrojo = Mutex()
 
-    override suspend fun sesionGuardada(): Sesion? = almacen.tokens()?.let { Sesion(it.correo, it.nombre) }
+    override suspend fun sesionGuardada(): Sesion? = almacen.tokens()?.let {
+        // El `sub` se deriva del token guardado: el almacen cifrado no cambia.
+        Sesion(it.correo, it.nombre, TokenDeIdentidad.afirmaciones(it.idToken)?.sub.orEmpty())
+    }
 
     override suspend fun biometriaHabilitada(): Boolean = almacen.biometriaHabilitada()
 
@@ -65,11 +78,37 @@ class CognitoSesionRepositorio @Inject constructor(
         ResultadoIngreso.SinConexion
     }
 
+    /**
+     * Pide a Cognito que autentique el correo de la sesion con la contraseña
+     * dada, como en el ingreso, pero **descarta los tokens que devuelve**: la
+     * sesion guardada no cambia (HU-M1.3-02, D-6 a). Sin sesion guardada la
+     * contraseña no puede ser correcta.
+     */
+    override suspend fun verificarContrasena(contrasena: String): VerificacionDeContrasena {
+        val correo = almacen.tokens()?.correo?.takeIf { it.isNotBlank() } ?: return VerificacionDeContrasena.Incorrecta
+        return try {
+            val respuesta = api.iniciarAutenticacion(
+                PeticionDeAutenticacion.conContrasena(BuildConfig.COGNITO_CLIENTE_ID, correo, contrasena),
+            )
+            if (respuesta.resultado != null) VerificacionDeContrasena.Correcta else VerificacionDeContrasena.Incorrecta
+        } catch (e: HttpException) {
+            if (e.code() in CODIGOS_DE_RECHAZO) VerificacionDeContrasena.Incorrecta else VerificacionDeContrasena.SinConexion
+        } catch (_: IOException) {
+            VerificacionDeContrasena.SinConexion
+        }
+    }
+
     override suspend fun habilitarBiometria(habilitada: Boolean) {
         almacen.habilitarBiometria(habilitada)
     }
 
+    /**
+     * Primero cada dominio borra lo suyo (la copia de los consentimientos,
+     * HU-M1.3-01) y despues los tokens. Una limpieza que falle no deja la
+     * sesion abierta.
+     */
     override suspend fun cerrar() {
+        limpiezas.get().forEach { limpieza -> runCatching { limpieza.limpiar() } }
         almacen.borrarTokens()
     }
 
@@ -122,7 +161,7 @@ class CognitoSesionRepositorio @Inject constructor(
             nombre = afirmaciones?.nombre.orEmpty(),
         )
         almacen.guardarTokens(tokens)
-        return Sesion(correo = tokens.correo, nombre = tokens.nombre)
+        return Sesion(correo = tokens.correo, nombre = tokens.nombre, sub = afirmaciones?.sub.orEmpty())
     }
 
     private companion object {

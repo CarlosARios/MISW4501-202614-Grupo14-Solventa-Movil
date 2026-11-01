@@ -71,14 +71,21 @@ fun NavGraphBuilder.grafoRegistro(navegacion: NavController) {
             val viewModel = viewModelDelGrafo(entrada, navegacion)
             val estado by viewModel.estado.collectAsStateWithLifecycle()
 
+            // Se sale de M1c cuando el registro arranca, no cuando se
+            // toca el boton: un dato rechazado o un documento ya registrado
+            // tienen que corregirse en esta misma pantalla.
+            LaunchedEffect(estado.verificacion) {
+                if (estado.verificacion == EstadoVerificacion.EnProceso) {
+                    navegacion.navigate(Ruta.Verificando)
+                }
+            }
+
             ConfirmacionDatosPantalla(
                 estado = estado,
                 onDatosCambian = viewModel::actualizarDatos,
+                onContrasenaCambia = viewModel::actualizarContrasena,
                 onTerminos = viewModel::aceptarTerminos,
-                onVerificar = {
-                    viewModel.verificarIdentidad()
-                    navegacion.navigate(Ruta.Verificando)
-                },
+                onVerificar = viewModel::registrar,
                 onAtras = { navegacion.popBackStack() },
             )
         }

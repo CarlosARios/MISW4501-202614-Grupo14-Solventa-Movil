@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Marcador de mapa, equivalente a icono/map-pin del prototipo: la
+     ubicación con la que se sella la evidencia (HU-M2.1-01). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M20,10 C20,16 12,22 12,22 C12,22 4,16 4,10 A8,8 0 0,1 20,10 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M12,7 A3,3 0 1,0 12,13 A3,3 0 1,0 12,7"
+        android:strokeWidth="2"
+        android:strokeColor="#1B1F2A"
+        android:strokeLineCap="round" />
+</vector>

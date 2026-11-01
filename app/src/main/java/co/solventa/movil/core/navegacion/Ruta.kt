@@ -54,4 +54,64 @@ sealed interface Ruta {
     /** M3 · Inicio. Primera pantalla con sesión activa. */
     @Serializable
     data object Inicio : Ruta
+
+    /**
+     * M11 · Asistente de radicación del siniestro (HU-M2.2-01).
+     *
+     * Las cuatro etapas comparten un destino: cuál se muestra lo decide el
+     * estado del asistente, que es el mismo que se guarda en el borrador. Así
+     * el indicador de pasos, el botón de avanzar y lo que se retoma al volver
+     * a entrar salen de una sola fuente.
+     */
+    @Serializable
+    data object Radicacion : Ruta
+
+    /** M11e · Radicado generado. Cierra el flujo de la radicación. */
+    @Serializable
+    data object RadicacionRadicado : Ruta
+
+    /** M4 · Mis pólizas, pestaña de la barra inferior (HU-M1.2-01). */
+    @Serializable
+    data object Polizas : Ruta
+
+    /** M5 · Detalle de una póliza (HU-M1.2-01). */
+    @Serializable
+    data class DetallePoliza(val id: String) : Ruta
+
+    /** M15 · Centro de notificaciones (HU-M3.1-01). */
+    @Serializable
+    data object Notificaciones : Ruta
+
+    /**
+     * M10b · Siniestro paramétrico resuelto automáticamente (HU-M3.1-01): el
+     * detalle del pago que abre una notificación.
+     */
+    @Serializable
+    data class DetallePagoParametrico(val id: String) : Ruta
+
+    /** M19 · Perfil, pestaña de la barra inferior (HU-M1.3-01). */
+    @Serializable
+    data object Perfil : Ruta
+
+    /** M8 · Privacidad y consentimientos (HU-M1.3-01). */
+    @Serializable
+    data object Consentimientos : Ruta
+
+    /** M8b · Detalle de un consentimiento (HU-M1.3-01). */
+    @Serializable
+    data class DetalleConsentimiento(val id: String) : Ruta
+
+    /** Consentimiento revocado y comprobante (HU-M1.3-02, frame 38:1414). */
+    @Serializable
+    data class ConsentimientoRevocado(val id: String) : Ruta
+
+    /**
+     * M12 · Cámara · captura de evidencia con GPS y hora (HU-M2.1-01).
+     *
+     * Es un destino aparte del asistente porque ocupa la pantalla completa y
+     * porque se entra y se sale de él varias veces: una por cada evidencia.
+     * Lleva el borrador al que pertenece lo capturado.
+     */
+    @Serializable
+    data class CapturaDeEvidencia(val borradorId: String, val tipoDeSiniestro: String) : Ruta
 }

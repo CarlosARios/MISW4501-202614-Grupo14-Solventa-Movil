@@ -1,7 +1,9 @@
 package co.solventa.movil.core.auth.cognito
 
+import co.solventa.movil.core.auth.sesion.AlCerrarSesion
 import co.solventa.movil.core.auth.sesion.ResultadoIngreso
 import co.solventa.movil.core.auth.sesion.TokensDeSesion
+import co.solventa.movil.core.auth.sesion.VerificacionDeContrasena
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import mockwebserver3.MockResponse
@@ -18,6 +20,7 @@ import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.Base64
+import javax.inject.Provider
 
 /**
  * La sesión contra el *user pool* de Cognito (HA-S01), con la API de Cognito
@@ -48,7 +51,8 @@ class CognitoSesionRepositorioTest {
         servidor.close()
     }
 
-    private fun repositorio() = CognitoSesionRepositorio(api, almacen)
+    private fun repositorio(limpiezas: Set<AlCerrarSesion> = emptySet()) =
+        CognitoSesionRepositorio(api, almacen, Provider { limpiezas })
 
     @Test
     fun `el ingreso usa USER_PASSWORD_AUTH y guarda la sesion del token`() = runTest {
@@ -105,6 +109,57 @@ class CognitoSesionRepositorioTest {
 
         assertEquals(ResultadoIngreso.CredencialesInvalidas, resultado)
         assertNull(almacen.tokens())
+    }
+
+    // --- HU-M1.3-02: verificar la contraseña para confirmar la revocacion ---
+
+    @Test
+    fun `la contraseña correcta se verifica con el correo de la sesion sin tocar los tokens`() = runTest {
+        val guardados = tokensGuardados(venceEn = AHORA + 60_000L)
+        almacen.guardarTokens(guardados)
+        servidor.enqueue(respuestaConTokens(idTokenDe("asegurado@example.com", "Carolina", VENCE_EN_S)))
+
+        val resultado = repositorio().verificarContrasena("unaClave")
+
+        assertEquals(VerificacionDeContrasena.Correcta, resultado)
+        val enviado = servidor.takeRequest().body?.utf8().orEmpty()
+        assertTrue(enviado.contains("USER_PASSWORD_AUTH"))
+        assertTrue(enviado.contains(guardados.correo))
+        assertEquals(guardados, almacen.tokens())
+    }
+
+    @Test
+    fun `la contraseña incorrecta no cambia la sesion`() = runTest {
+        val guardados = tokensGuardados(venceEn = AHORA + 60_000L)
+        almacen.guardarTokens(guardados)
+        servidor.enqueue(MockResponse(code = 400, body = CUERPO_NO_AUTORIZADO))
+
+        assertEquals(VerificacionDeContrasena.Incorrecta, repositorio().verificarContrasena("mala"))
+        assertEquals(guardados, almacen.tokens())
+    }
+
+    @Test
+    fun `un desafio o un error del pool no confirman`() = runTest {
+        almacen.guardarTokens(tokensGuardados(venceEn = AHORA + 60_000L))
+        servidor.enqueue(MockResponse(code = 200, body = CUERPO_DESAFIO))
+        servidor.enqueue(MockResponse(code = 500, body = "{}"))
+
+        assertEquals(VerificacionDeContrasena.Incorrecta, repositorio().verificarContrasena("temporal"))
+        assertEquals(VerificacionDeContrasena.SinConexion, repositorio().verificarContrasena("unaClave"))
+    }
+
+    @Test
+    fun `sin red la contraseña no se puede verificar`() = runTest {
+        almacen.guardarTokens(tokensGuardados(venceEn = AHORA + 60_000L))
+        servidor.close()
+
+        assertEquals(VerificacionDeContrasena.SinConexion, repositorio().verificarContrasena("unaClave"))
+    }
+
+    @Test
+    fun `sin sesion guardada la contraseña no es correcta y no se llama a Cognito`() = runTest {
+        assertEquals(VerificacionDeContrasena.Incorrecta, repositorio().verificarContrasena("unaClave"))
+        assertEquals(0, servidor.requestCount)
     }
 
     @Test
@@ -174,6 +229,40 @@ class CognitoSesionRepositorioTest {
         assertNull(almacen.tokens())
     }
 
+    /**
+     * HU-M1.3-01: cada dominio borra lo suyo antes de que se borren los
+     * tokens, y una limpieza que falla no deja la sesion abierta.
+     */
+    @Test
+    fun `cerrar ejecuta cada limpieza antes de borrar los tokens`() = runTest {
+        almacen.guardarTokens(tokensGuardados(venceEn = AHORA + 60_000L))
+        val tokensAlLimpiar = mutableListOf<Boolean>()
+        val limpieza = AlCerrarSesion { tokensAlLimpiar += almacen.tokens() != null }
+        val fallida = AlCerrarSesion { error("la base no respondio") }
+
+        repositorio(setOf(fallida, limpieza)).cerrar()
+
+        assertEquals(listOf(true), tokensAlLimpiar)
+        assertNull(almacen.tokens())
+    }
+
+    @Test
+    fun `la sesion trae el sub del token`() = runTest {
+        servidor.enqueue(respuestaConTokens(idTokenDe("asegurado@example.com", "Carolina", VENCE_EN_S, sub = "sub-123")))
+
+        val resultado = repositorio().ingresarConContrasena("asegurado@example.com", "unaClave")
+
+        assertEquals("sub-123", (resultado as ResultadoIngreso.Exitoso).sesion.sub)
+        assertEquals("sub-123", repositorio().sesionGuardada()?.sub)
+    }
+
+    @Test
+    fun `sin sub en el token la sesion lo deja vacio`() = runTest {
+        almacen.guardarTokens(tokensGuardados(venceEn = AHORA + 60_000L))
+
+        assertEquals("", repositorio().sesionGuardada()?.sub)
+    }
+
     /** El desbloqueo del criterio 2 es local: no hay petición al proveedor. */
     @Test
     fun `desbloquear no llama al pool`() = runTest {
@@ -202,8 +291,9 @@ class CognitoSesionRepositorioTest {
     }
 
     /** Un JWT con la forma que devuelve Cognito: aquí solo importa la carga. */
-    private fun idTokenDe(correo: String, nombre: String, exp: Long): String {
-        val carga = "{\"email\":\"$correo\",\"name\":\"$nombre\",\"exp\":$exp}"
+    private fun idTokenDe(correo: String, nombre: String, exp: Long, sub: String? = null): String {
+        val conSub = if (sub != null) ",\"sub\":\"$sub\"" else ""
+        val carga = "{\"email\":\"$correo\",\"name\":\"$nombre\",\"exp\":$exp$conSub}"
         val codificada = Base64.getUrlEncoder().withoutPadding().encodeToString(carga.toByteArray())
         return "encabezado.$codificada.firma"
     }

@@ -2,6 +2,8 @@ package co.solventa.movil.features.acceso.registro
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import co.solventa.movil.core.auth.sesion.SesionRepositorio
+import co.solventa.movil.core.imagen.PreparadorDeCaptura
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,14 +14,29 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Registro con verificación de identidad (HU-M1.1-01).
+ * Registro del asegurado (HU-M1.1-01).
  *
  * Vive en el grafo de navegación del registro, no en una pantalla: el estado
  * tiene que sobrevivir el paso de M1a a M1h.
+ *
+ * **Las capturas del documento son archivos del teléfono y este ViewModel es
+ * su dueño:** las borra cuando dejan de hacer falta —rechazadas por calidad,
+ * reemplazadas por otra toma de la misma cara, enviadas al servicio o
+ * descartadas al reiniciar—. Son la fotografía de un documento de identidad,
+ * así que no se quedan esperando a que el sistema vacíe la caché.
+ *
+ * **Después del registro la sesión se abre sola.** El servicio acaba de
+ * crear la cuenta con el correo y la contraseña que se enviaron, así que
+ * pedirle al usuario que los teclee otra vez para entrar no aporta nada. Si
+ * el ingreso automático falla, la cuenta igual quedó creada y el usuario
+ * puede entrar por M2a.
  */
 @HiltViewModel
 class RegistroViewModel @Inject constructor(
-    private val repositorio: RegistroKycRepositorio,
+    private val kyc: RegistroKycRepositorio,
+    private val registro: RegistroRepositorio,
+    private val sesion: SesionRepositorio,
+    private val capturas: PreparadorDeCaptura,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(RegistroUiState())
@@ -29,19 +46,27 @@ class RegistroViewModel @Inject constructor(
         if (_estado.value.analizando) return
         viewModelScope.launch {
             _estado.update { it.copy(analizando = true, problemaCalidad = null) }
-            when (val resultado = repositorio.analizarCaptura(imagen)) {
-                is ResultadoCaptura.CalidadInsuficiente -> _estado.update {
-                    it.copy(analizando = false, problemaCalidad = resultado.motivo)
+            when (val resultado = kyc.analizarCaptura(imagen)) {
+                is ResultadoCaptura.CalidadInsuficiente -> {
+                    // La foto que no sirve no se queda en el teléfono.
+                    capturas.descartar(imagen.rutaArchivo)
+                    _estado.update {
+                        it.copy(analizando = false, problemaCalidad = resultado.motivo)
+                    }
                 }
 
-                is ResultadoCaptura.Aceptada -> _estado.update {
+                ResultadoCaptura.Aceptada -> {
+                    // Volver a tomar una cara reemplaza la foto anterior, que
+                    // ya no se va a enviar.
+                    descartarLaAnteriorDe(imagen)
                     when (imagen.cara) {
-                        CaraDocumento.FRENTE -> it.copy(analizando = false, frente = imagen)
-                        CaraDocumento.REVERSO -> it.copy(
-                            analizando = false,
-                            reverso = imagen,
-                            datos = resultado.datos ?: it.datos,
-                        )
+                        CaraDocumento.FRENTE ->
+                            _estado.update { it.copy(analizando = false, frente = imagen) }
+
+                        CaraDocumento.REVERSO -> {
+                            _estado.update { it.copy(reverso = imagen, lecturaFallida = false) }
+                            leerDocumento(imagen)
+                        }
                     }
                 }
             }
@@ -49,13 +74,40 @@ class RegistroViewModel @Inject constructor(
     }
 
     /**
+     * Criterio 1: el proveedor de identidad lee el documento y M1c muestra lo
+     * que leyó para que la persona lo confirme. Se lee una sola vez: si el
+     * usuario ya corrigió algo en M1c y vuelve a tomar el reverso, no se le
+     * borra. Mientras lee, la captura sigue «analizando» y no acepta otra foto.
+     */
+    private suspend fun leerDocumento(reverso: ImagenDocumento) {
+        val frente = _estado.value.frente
+        if (_estado.value.datos != null || frente == null) {
+            _estado.update { it.copy(analizando = false) }
+            return
+        }
+        when (val lectura = registro.leerDocumento(frente, reverso)) {
+            is ResultadoLectura.Leido ->
+                _estado.update { it.copy(analizando = false, datos = lectura.datos) }
+
+            is ResultadoLectura.NoLeido ->
+                _estado.update { it.copy(analizando = false, lecturaFallida = true) }
+        }
+    }
+
+    /** La toma anterior de esa misma cara, si hubo una y es otro archivo. */
+    private suspend fun descartarLaAnteriorDe(nueva: ImagenDocumento) {
+        val anterior = when (nueva.cara) {
+            CaraDocumento.FRENTE -> _estado.value.frente
+            CaraDocumento.REVERSO -> _estado.value.reverso
+        }
+        if (anterior != null && anterior.rutaArchivo != nueva.rutaArchivo) {
+            capturas.descartar(anterior.rutaArchivo)
+        }
+    }
+
+    /**
      * Criterio 4, medido en el dispositivo: la cámara reporta poca luz y la
      * foto no llega a tomarse.
-     *
-     * Antes este aviso lo fabricaba el repositorio simulado, que declaraba
-     * oscura la primera captura aunque la habitación estuviera iluminada. Con
-     * la cámara real la medida viene del sensor, así que el aviso aparece
-     * cuando de verdad falta luz y desaparece cuando el usuario la corrige.
      */
     fun reportarLuzInsuficiente() {
         if (_estado.value.analizando) return
@@ -69,21 +121,40 @@ class RegistroViewModel @Inject constructor(
         _estado.update { it.copy(problemaCalidad = null) }
     }
 
-    /** El usuario corrige en M1c un dato que el documento trajo mal. */
+    /** El usuario corrige un dato en M1c. */
     fun actualizarDatos(datos: DatosDocumento) {
-        _estado.update { it.copy(datos = datos) }
+        _estado.update { it.copy(datos = datos).sinErroresDelServicio() }
+    }
+
+    fun actualizarContrasena(contrasena: String) {
+        _estado.update { it.copy(contrasena = contrasena).sinErroresDelServicio() }
     }
 
     fun aceptarTerminos(aceptados: Boolean) {
         _estado.update { it.copy(terminosAceptados = aceptados) }
     }
 
-    fun verificarIdentidad() {
-        val datos = _estado.value.datos ?: return
-        if (!_estado.value.puedeVerificar) return
+    /**
+     * Envía el formulario a originación. El temporizador es el mismo del
+     * criterio 6: pasados 30 segundos no se mantiene al usuario esperando.
+     */
+    fun registrar() {
+        val estadoActual = _estado.value
+        val datos = estadoActual.datos ?: return
+        // Las dos caras son parte de la petición, no un adjunto opcional: sin
+        // ellas no hay verificación de identidad que registrar.
+        val frente = estadoActual.frente ?: return
+        val reverso = estadoActual.reverso ?: return
+        if (!estadoActual.puedeVerificar) return
 
         viewModelScope.launch {
-            _estado.update { it.copy(verificacion = EstadoVerificacion.EnProceso) }
+            _estado.update {
+                it.copy(
+                    verificacion = EstadoVerificacion.EnProceso,
+                    camposInvalidos = emptySet(),
+                    yaRegistrado = false,
+                )
+            }
 
             val reloj = launch {
                 delay(LIMITE_DE_ESPERA_MS)
@@ -96,23 +167,20 @@ class RegistroViewModel @Inject constructor(
                 }
             }
 
-            val resultado = repositorio.verificarIdentidad(datos)
+            val resultado = registro.registrar(datos, estadoActual.contrasena, frente, reverso)
             reloj.cancel()
+
+            if (resultado is ResultadoRegistro.Exitoso) {
+                sesion.ingresarConContrasena(datos.correo.trim(), estadoActual.contrasena)
+                // Las imágenes ya están guardadas en el servicio: la copia del
+                // teléfono deja de hacer falta.
+                descartar(frente, reverso)
+            }
 
             _estado.update {
                 // Si ya se le avisó al usuario que el resultado llega por
                 // notificación, no se le cambia la pantalla debajo de los pies.
-                if (it.verificacion == EstadoVerificacion.Demorada) {
-                    it
-                } else {
-                    when (resultado) {
-                        is ResultadoVerificacion.Exitosa ->
-                            it.copy(verificacion = EstadoVerificacion.Exitosa)
-
-                        is ResultadoVerificacion.NoSuperada ->
-                            it.copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
-                    }
-                }
+                if (it.verificacion == EstadoVerificacion.Demorada) it else it.conResultado(resultado)
             }
         }
     }
@@ -120,7 +188,6 @@ class RegistroViewModel @Inject constructor(
     /**
      * M1g · *Avísame por notificación*. El criterio 6 pide no mantener al
      * usuario esperando: puede salir antes de que se cumplan los 30 segundos.
-     * El efecto es el mismo que el del temporizador.
      */
     fun avisarPorNotificacion() {
         _estado.update {
@@ -132,10 +199,56 @@ class RegistroViewModel @Inject constructor(
         }
     }
 
-    /** M1e · *Intentar de nuevo* devuelve el flujo a la primera captura. */
+    /**
+     * M1e · *Intentar de nuevo* devuelve el flujo a la primera captura. Los
+     * datos se generan otra vez, con otro documento y otro correo: reenviar
+     * los mismos solo serviría para recibir un `409`.
+     */
     fun reiniciar() {
+        val anterior = _estado.value
         _estado.value = RegistroUiState()
+        viewModelScope.launch { descartar(anterior.frente, anterior.reverso) }
     }
+
+    private suspend fun descartar(vararg imagenes: ImagenDocumento?) {
+        imagenes.filterNotNull().forEach { capturas.descartar(it.rutaArchivo) }
+    }
+
+    private fun RegistroUiState.conResultado(resultado: ResultadoRegistro) = when (resultado) {
+        is ResultadoRegistro.Exitoso -> copy(verificacion = EstadoVerificacion.Exitosa)
+
+        is ResultadoRegistro.DatosInvalidos -> copy(
+            verificacion = EstadoVerificacion.NoIniciada,
+            camposInvalidos = resultado.campos,
+        )
+
+        ResultadoRegistro.YaRegistrado -> copy(
+            verificacion = EstadoVerificacion.NoIniciada,
+            yaRegistrado = true,
+        )
+
+        is ResultadoRegistro.NoDisponible ->
+            copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
+
+        // Criterio 3: el documento no se pudo leer. Va a M1e, que informa el
+        // resultado sin el motivo técnico y ofrece volver a intentar y
+        // contactar al soporte.
+        is ResultadoRegistro.DocumentoNoLegible ->
+            copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
+
+        // Criterio 3: el proveedor no aprobó y nadie sabe por qué en el
+        // teléfono. M1e es la misma pantalla del documento no legible.
+        is ResultadoRegistro.IdentidadNoVerificada ->
+            copy(verificacion = EstadoVerificacion.NoSuperada(resultado.referencia))
+    }
+
+    /** Lo que el usuario acaba de cambiar deja de estar rechazado. */
+    private fun RegistroUiState.sinErroresDelServicio() =
+        if (camposInvalidos.isEmpty() && !yaRegistrado) {
+            this
+        } else {
+            copy(camposInvalidos = emptySet(), yaRegistrado = false)
+        }
 
     companion object {
         /** Criterio 6: pasados 30 segundos no se mantiene al usuario esperando. */
