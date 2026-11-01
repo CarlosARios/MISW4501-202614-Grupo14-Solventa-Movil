@@ -13,6 +13,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
@@ -42,6 +55,8 @@ import co.solventa.movil.features.auditoria.consentimientos.grafoConsentimientos
 import co.solventa.movil.features.siniestros.evidencia.grafoCapturaDeEvidencia
 import co.solventa.movil.features.siniestros.radicacion.grafoRadicacion
 import co.solventa.movil.features.inicio.PantallaInicio
+import co.solventa.movil.features.notificaciones.centro.SondeoDeNotificacionesViewModel
+import co.solventa.movil.features.notificaciones.centro.grafoNotificaciones
 import co.solventa.movil.features.perfil.destinoPerfil
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoBoton
@@ -67,6 +82,10 @@ import co.solventa.movil.ui.theme.Espacio
  * La barra inferior (HU-M1.3-01, D-14 b) se muestra solo en Inicio, Perfil y
  * Privacidad y consentimientos, como en los frames 55:3017 y 37:1233; no en el
  * detalle de un consentimiento, el acceso, el registro ni la radicación.
+ *
+ * HU-M3.1-01: aquí corre el sondeo del centro de notificaciones mientras la
+ * aplicación está a la vista, y aquí se abre el detalle del pago de la
+ * notificación que el usuario tocó, en cuanto hay una sesión abierta.
  */
 @Composable
 fun SolventaNavHost(
@@ -74,11 +93,26 @@ fun SolventaNavHost(
     navegacion: NavHostController = rememberNavController(),
     sesion: SesionViewModel = hiltViewModel(),
     idiomas: IdiomaViewModel = hiltViewModel(),
+    notificaciones: SondeoDeNotificacionesViewModel = hiltViewModel(),
 ) {
     val expirada by sesion.expirada.collectAsStateWithLifecycle()
     val idioma by idiomas.actual.collectAsStateWithLifecycle()
     val entrada by navegacion.currentBackStackEntryAsState()
     val pestana = pestanaDe(rutaDe(entrada?.destination))
+
+    // HU-M3.1-01: el centro se revisa mientras la aplicación está a la vista.
+    val ciclo = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(ciclo) {
+        ciclo.repeatOnLifecycle(Lifecycle.State.STARTED) { notificaciones.mientrasVisible() }
+    }
+    // La notificación tocada abre su detalle cuando hay sesión: una pantalla
+    // con la barra inferior solo se ve con la sesión abierta (criterio 4).
+    val pendiente by notificaciones.pendiente.collectAsStateWithLifecycle()
+    LaunchedEffect(pendiente, pestana) {
+        if (pendiente != null && pestana != null) {
+            notificaciones.abrirPendiente()?.let { navegacion.navigate(Ruta.DetallePagoParametrico(it)) }
+        }
+    }
 
     // Todo lo que se dibuje debajo lee sus textos del idioma elegido. Al
     // cambiarlo, la jerarquia se recompone traducida sin reiniciar nada.
@@ -124,6 +158,7 @@ fun SolventaNavHost(
             grafoRegistro(navegacion)
             grafoRadicacion(navegacion)
             grafoConsentimientos(navegacion)
+            grafoNotificaciones(navegacion)
             destinoPerfil(
                 onConsentimientos = { navegacion.navigate(Ruta.Consentimientos) },
                 onSesionCerrada = {
@@ -140,9 +175,11 @@ fun SolventaNavHost(
             composable<Ruta.Inicio> {
                 // Entrar al inicio es lo que marca que hay sesión abierta.
                 LaunchedEffect(Unit) { sesion.iniciarVigilancia() }
+                PedirPermisoDeNotificaciones(onRespondido = notificaciones::permisoRespondido)
                 PantallaInicio(
                     onRegistro = { navegacion.navigate(Ruta.Registro) },
                     onReportarSiniestro = { navegacion.navigate(Ruta.Radicacion) },
+                    onNotificaciones = { navegacion.navigate(Ruta.Notificaciones) },
                     onVerificacionExitosa = { navegacion.navigate(Ruta.VerificacionExitosa) },
                     onVerificacionNoSuperada = { navegacion.navigate(Ruta.VerificacionNoSuperada) },
                     onVerificacionDemorada = { navegacion.navigate(Ruta.VerificacionDemorada) },
@@ -171,6 +208,28 @@ fun SolventaNavHost(
             },
         )
     }
+    }
+}
+
+/**
+ * Pide el permiso de notificaciones una vez por sesión al llegar a Inicio
+ * (HU-M3.1-01, criterio 3), desde Android 13 que es donde existe. La respuesta
+ * se registra en seguida con el servicio: sin permiso no se envía *push* y el
+ * pago espera en el centro (criterio 5).
+ */
+@Composable
+private fun PedirPermisoDeNotificaciones(onRespondido: () -> Unit) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+    val contexto = LocalContext.current
+    var pedido by rememberSaveable { mutableStateOf(false) }
+    val lanzador = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { onRespondido() }
+    LaunchedEffect(Unit) {
+        val concedido = ContextCompat.checkSelfPermission(contexto, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        if (!concedido && !pedido) {
+            pedido = true
+            lanzador.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
 }
 
