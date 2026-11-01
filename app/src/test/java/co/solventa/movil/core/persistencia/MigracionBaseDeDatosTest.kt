@@ -120,9 +120,9 @@ class MigracionBaseDeDatosTest {
         }
     }
 
-    /** HU-M3.1-01: la versión 5 agrega la copia del centro de notificaciones y conserva lo demás. */
+    /** HU-M1.2-01: la versión 5 agrega la copia cifrada de las pólizas y conserva lo demás. */
     @Test
-    fun `la migracion 4 a 5 conserva el borrador y agrega el centro de notificaciones`() {
+    fun `la migracion 4 a 5 conserva el borrador y agrega la copia de las polizas`() {
         ayudante.createDatabase(4).apply {
             execSQL(
                 "INSERT INTO borrador_de_radicacion (id, etapa, poliza, tipo, ocurrioEn, lugar, descripcion, " +
@@ -137,6 +137,29 @@ class MigracionBaseDeDatosTest {
         val migrada = ayudante.runMigrationsAndValidate(5)
         try {
             assertEquals(listOf("borrador-1"), textos(migrada, "SELECT id FROM borrador_de_radicacion"))
+            migrada.execSQL(
+                "INSERT INTO poliza (propietario, id, orden, contenidoCifrado) VALUES ('sub-a', 'AU-2025-118204', 0, 'x')",
+            )
+            assertEquals(listOf("AU-2025-118204"), textos(migrada, "SELECT id FROM poliza"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    /** HU-M3.1-01: la versión 6 agrega la copia del centro de notificaciones y conserva lo demás. */
+    @Test
+    fun `la migracion 5 a 6 conserva las polizas y agrega el centro de notificaciones`() {
+        ayudante.createDatabase(5).apply {
+            execSQL(
+                "INSERT INTO poliza (propietario, id, orden, contenidoCifrado) VALUES ('sub-a', 'AU-2025-118204', 0, 'x')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 6 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(6)
+        try {
+            assertEquals(listOf("AU-2025-118204"), textos(migrada, "SELECT id FROM poliza"))
             migrada.execSQL(
                 "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn) " +
                     "VALUES ('sub-a', 'ntf-ppo-1', 'parametric_payout', 1789162800000, NULL, NULL, NULL)",

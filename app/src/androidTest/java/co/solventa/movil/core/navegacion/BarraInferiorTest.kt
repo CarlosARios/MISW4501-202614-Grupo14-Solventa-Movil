@@ -16,8 +16,9 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * La barra inferior (HU-M1.3-01, D-14 b): Pólizas y Siniestros en espera y
- * Perfil seleccionada en Privacidad y consentimientos.
+ * La barra inferior (HU-M1.3-01, D-14 b): Siniestros en espera y Perfil
+ * seleccionada en Privacidad y consentimientos. Pólizas navega a M4 desde
+ * HU-M1.2-01.
  */
 class BarraInferiorTest {
 
@@ -39,11 +40,20 @@ class BarraInferiorTest {
     }
 
     @Test
-    fun polizas_y_siniestros_estan_en_espera_y_deshabilitadas() {
+    fun siniestros_esta_en_espera_y_deshabilitada() {
         montar(Ruta.Inicio)
 
-        composicion.onNodeWithContentDescription(texto(R.string.navegacion_pestana_polizas_en_espera)).assertIsDisplayed().assertIsNotEnabled()
         composicion.onNodeWithContentDescription(texto(R.string.navegacion_pestana_siniestros_en_espera)).assertIsDisplayed().assertIsNotEnabled()
+    }
+
+    /** HU-M1.2-01: la pestaña Pólizas lleva a M4 y queda seleccionada allí. */
+    @Test
+    fun polizas_navega_y_queda_seleccionada_en_mis_polizas() {
+        montar(Ruta.Polizas)
+
+        composicion.onNodeWithText(texto(R.string.navegacion_pestana_polizas).uppercase()).assertIsSelected()
+        composicion.onNodeWithText(texto(R.string.navegacion_pestana_inicio).uppercase()).performClick()
+        assertEquals(listOf(PestanaInferior.INICIO), elegidas)
     }
 
     @Test

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 5,
-    "identityHash": "f028b41aa79aa473af152137b89eb9b5",
+    "identityHash": "27823f50d7138fb19626f06bf86cd3e2",
     "entities": [
       {
         "tableName": "borrador_de_radicacion",
@@ -402,8 +402,8 @@
         ]
       },
       {
-        "tableName": "notificacion",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`propietario` TEXT NOT NULL, `id` TEXT NOT NULL, `tipo` TEXT NOT NULL, `ocurrioEn` INTEGER NOT NULL, `leidaEn` INTEGER, `pago` TEXT, `avisadaEn` INTEGER, PRIMARY KEY(`propietario`, `id`))",
+        "tableName": "poliza",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`propietario` TEXT NOT NULL, `id` TEXT NOT NULL, `orden` INTEGER NOT NULL, `contenidoCifrado` TEXT NOT NULL, PRIMARY KEY(`propietario`, `id`))",
         "fields": [
           {
             "fieldPath": "propietario",
@@ -418,31 +418,16 @@
             "notNull": true
           },
           {
-            "fieldPath": "tipo",
-            "columnName": "tipo",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "ocurrioEn",
-            "columnName": "ocurrioEn",
+            "fieldPath": "orden",
+            "columnName": "orden",
             "affinity": "INTEGER",
             "notNull": true
           },
           {
-            "fieldPath": "leidaEn",
-            "columnName": "leidaEn",
-            "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "pago",
-            "columnName": "pago",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "avisadaEn",
-            "columnName": "avisadaEn",
-            "affinity": "INTEGER"
+            "fieldPath": "contenidoCifrado",
+            "columnName": "contenidoCifrado",
+            "affinity": "TEXT",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -456,7 +441,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f028b41aa79aa473af152137b89eb9b5')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '27823f50d7138fb19626f06bf86cd3e2')"
     ]
   }
 }

@@ -306,7 +306,6 @@
     <string name="navegacion_pestana_polizas">Policies</string>
     <string name="navegacion_pestana_siniestros">Claims</string>
     <string name="navegacion_pestana_perfil">Profile</string>
-    <string name="navegacion_pestana_polizas_en_espera">Policies, coming soon</string>
     <string name="navegacion_pestana_siniestros_en_espera">Claims, coming soon</string>
 
     <!-- M8 · Privacy and consents and M8b · Details (HU-M1.3-01, frames 37:1233, 37:1418 and 38:1503) -->
@@ -487,6 +486,72 @@
     <string name="evidencia_estado_corto_subiendo">Sending…</string>
     <string name="evidencia_estado_corto_subida">Sent</string>
     <string name="evidencia_estado_corto_fallida">Failed</string>
+    <!-- M4 · My policies and M5 · Policy details (HU-M1.2-01): wallet with offline access -->
+    <string name="originacion_polizas_titulo">My policies</string>
+    <string name="originacion_polizas_ultima_sincronizacion">Last synced: %1$s at %2$s · available offline</string>
+    <string name="originacion_polizas_sincronizando">Syncing your policies…</string>
+    <string name="originacion_polizas_sin_conexion_titulo">Offline</string>
+    <string name="originacion_polizas_sin_conexion">We\'re showing the policies synced on %1$s at %2$s. They\'ll update automatically when the signal comes back.</string>
+    <string name="originacion_polizas_sin_conexion_sin_copia">There are no synced policies on this device yet. They\'ll download automatically when the signal comes back.</string>
+    <string name="originacion_polizas_sin_conexion_icono">Offline</string>
+    <string name="originacion_polizas_desactualizada_titulo">The information may be out of date</string>
+    <plurals name="originacion_polizas_desactualizada">
+        <item quantity="one">Your policies haven\'t synced in more than %1$d day. You can still view them, but some details may have changed.</item>
+        <item quantity="other">Your policies haven\'t synced in more than %1$d days. You can still view them, but some details may have changed.</item>
+    </plurals>
+    <plurals name="originacion_polizas_cambios_titulo">
+        <item quantity="one">Sync complete · %1$d change</item>
+        <item quantity="other">Sync complete · %1$d changes</item>
+    </plurals>
+    <string name="originacion_polizas_cambio_renovada">Your policy %1$s was renewed until %2$s.</string>
+    <string name="originacion_polizas_cambio_cancelada">Your policy %1$s was cancelled.</string>
+    <string name="originacion_polizas_cambio_modificada">Your policy %1$s was updated.</string>
+    <string name="originacion_polizas_cambios_ver_detalle">Tap each one to see the details.</string>
+    <string name="originacion_polizas_cambios_cerrar">Dismiss the changes notice</string>
+    <string name="originacion_polizas_error">We couldn\'t update your policies. We\'re showing the last synced information.</string>
+    <string name="originacion_polizas_error_sin_copia">We couldn\'t load your policies. Please try again in a few minutes.</string>
+    <string name="originacion_polizas_reintentar">Try again</string>
+    <string name="originacion_polizas_vacio">You don\'t have any policies with Solventa yet.</string>
+    <string name="originacion_polizas_cargando">Loading your policies</string>
+    <string name="originacion_polizas_subtitulo_vigencia">%1$s · %2$s → %3$s</string>
+    <string name="originacion_polizas_subtitulo_vence">%1$s · ends %2$s</string>
+    <string name="originacion_polizas_subtitulo_renovada">%1$s · renewed until %2$s</string>
+    <string name="originacion_polizas_subtitulo_vencio">%1$s · ended %2$s</string>
+    <string name="originacion_polizas_subtitulo_cancelada">%1$s · cancelled</string>
+    <string name="originacion_polizas_situacion_activa">Active</string>
+    <string name="originacion_polizas_situacion_por_vencer">Expiring soon</string>
+    <string name="originacion_polizas_situacion_vencida">Expired</string>
+    <string name="originacion_polizas_situacion_cancelada">Cancelled</string>
+    <string name="originacion_polizas_situacion_renovada">%1$s · renewed</string>
+    <string name="originacion_polizas_sin_cobertura">No coverage</string>
+    <string name="originacion_polizas_valor_asegurado">Insured value</string>
+    <string name="originacion_polizas_prima_mensual">premium %1$s / month</string>
+    <string name="originacion_polizas_ver_detalle">See the details of policy %1$s</string>
+    <string name="originacion_polizas_linea_vida">Life</string>
+    <string name="originacion_polizas_linea_autos">Auto</string>
+    <string name="originacion_polizas_linea_hogar">Home</string>
+    <string name="originacion_polizas_linea_viaje">Travel</string>
+    <string name="originacion_polizas_cobertura_muerte">Death</string>
+    <string name="originacion_polizas_cobertura_incapacidad">Total and permanent disability</string>
+    <string name="originacion_polizas_cobertura_choque">Collision</string>
+    <string name="originacion_polizas_cobertura_hurto">Theft</string>
+    <string name="originacion_polizas_cobertura_terceros">Third-party damage</string>
+    <string name="originacion_polizas_cobertura_vidrios">Glass</string>
+    <string name="originacion_polizas_cobertura_otros">Other events</string>
+    <string name="originacion_polizas_cobertura_agua">Water damage</string>
+    <string name="originacion_polizas_cobertura_retraso_de_vuelo">Flight delay</string>
+    <string name="originacion_poliza_titulo">Policy details</string>
+    <string name="originacion_poliza_numero">Policy number</string>
+    <string name="originacion_poliza_tipo">Type of insurance</string>
+    <string name="originacion_poliza_objeto">Insured item</string>
+    <string name="originacion_poliza_vigencia">Coverage period</string>
+    <string name="originacion_poliza_vigencia_valor">From %1$s to %2$s</string>
+    <string name="originacion_poliza_coberturas">Included coverages</string>
+    <string name="originacion_poliza_sin_coberturas">This policy has no registered coverages.</string>
+    <string name="originacion_poliza_prima">Monthly premium</string>
+    <string name="originacion_poliza_asegurado">Main insured</string>
+    <string name="originacion_poliza_no_disponible">This policy is no longer available on this device.</string>
+    <string name="originacion_poliza_sin_conexion">Offline: information synced on %1$s at %2$s.</string>
     <!-- M15 · Notification center, M15b · System push and M10b · Parametric payment (HU-M3.1-01) -->
     <string name="notificaciones_centro_titulo">Notifications</string>
     <string name="notificaciones_centro_marcar_todas">Mark all as read</string>

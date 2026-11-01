@@ -5,6 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 
@@ -23,6 +24,10 @@ import retrofit2.http.POST
  * El identificador de correlación lo pone quien llama para poder
  * devolvérselo al usuario como referencia cuando el registro falle; el
  * interceptor respeta el que ya venga puesto.
+ *
+ * HU-M1.2-01 agrega la billetera de pólizas, `GET /v1/policies` (contrato
+ * `docs/contratos/HU-M1.2-01-api.md`): esa sí lleva el token, que es como el
+ * servicio sabe de quién son las pólizas.
  */
 interface OriginacionApi {
 
@@ -38,6 +43,13 @@ interface OriginacionApi {
         @Header(Correlacion.ENCABEZADO) correlacion: String,
         @Body peticion: SolicitudDeRegistro,
     ): Response<RespuestaDeRegistro>
+
+    /**
+     * Todas las pólizas del asegurado de la sesión (HU-M1.2-01). El titular
+     * sale del token; 401 es la sesión vencida y 503, el servicio caído.
+     */
+    @GET("v1/policies")
+    suspend fun polizas(): Response<ListaDePolizasDto>
 }
 
 /**

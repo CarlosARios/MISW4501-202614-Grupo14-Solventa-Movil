@@ -21,8 +21,8 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
 /**
  * Pestañas de la barra inferior del frame 55:3017 (HU-M1.3-01, D-14 b). Las que
  * todavia no tienen pantalla quedan **en espera**: visibles, atenuadas y sin
- * navegar, con una descripcion que lo dice (Pólizas es de HU-M1.2-01 y Mis
- * siniestros de HU-M2.4-01; la radicacion sigue entrando por Inicio).
+ * navegar, con una descripcion que lo dice (Mis siniestros es de HU-M2.4-01; la
+ * radicacion sigue entrando por Inicio). Pólizas lleva a M4 desde HU-M1.2-01.
  */
 enum class PestanaInferior(
     @param:StringRes val etiqueta: Int,
@@ -33,7 +33,7 @@ enum class PestanaInferior(
     @param:StringRes val descripcionEnEspera: Int?,
 ) {
     INICIO(R.string.navegacion_pestana_inicio, R.drawable.ic_inicio, Ruta.Inicio, null),
-    POLIZAS(R.string.navegacion_pestana_polizas, R.drawable.ic_polizas, null, R.string.navegacion_pestana_polizas_en_espera),
+    POLIZAS(R.string.navegacion_pestana_polizas, R.drawable.ic_polizas, Ruta.Polizas, null),
     SINIESTROS(
         R.string.navegacion_pestana_siniestros,
         R.drawable.ic_siniestros,
@@ -49,10 +49,12 @@ enum class PestanaInferior(
 /**
  * La pestaña que se marca en cada destino, o `null` donde la barra no se
  * muestra. Privacidad y consentimientos se abre desde Perfil, asi que deja
- * Perfil seleccionada, como en el frame 37:1233.
+ * Perfil seleccionada, como en el frame 37:1233. Mis pólizas (HU-M1.2-01) es
+ * su propia pestaña; su detalle no lleva barra, como el de un consentimiento.
  */
 fun pestanaDe(ruta: Ruta?): PestanaInferior? = when (ruta) {
     Ruta.Inicio -> PestanaInferior.INICIO
+    Ruta.Polizas -> PestanaInferior.POLIZAS
     Ruta.Perfil, Ruta.Consentimientos -> PestanaInferior.PERFIL
     else -> null
 }
