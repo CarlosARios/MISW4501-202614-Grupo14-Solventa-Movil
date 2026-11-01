@@ -70,6 +70,14 @@ sealed interface Ruta {
     @Serializable
     data object RadicacionRadicado : Ruta
 
+    /** M4 · Mis pólizas, pestaña de la barra inferior (HU-M1.2-01). */
+    @Serializable
+    data object Polizas : Ruta
+
+    /** M5 · Detalle de una póliza (HU-M1.2-01). */
+    @Serializable
+    data class DetallePoliza(val id: String) : Ruta
+
     /** M19 · Perfil, pestaña de la barra inferior (HU-M1.3-01). */
     @Serializable
     data object Perfil : Ruta

@@ -42,6 +42,7 @@ import co.solventa.movil.features.auditoria.consentimientos.grafoConsentimientos
 import co.solventa.movil.features.siniestros.evidencia.grafoCapturaDeEvidencia
 import co.solventa.movil.features.siniestros.radicacion.grafoRadicacion
 import co.solventa.movil.features.inicio.PantallaInicio
+import co.solventa.movil.features.originacion.polizas.grafoPolizas
 import co.solventa.movil.features.perfil.destinoPerfil
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoBoton
@@ -67,6 +68,7 @@ import co.solventa.movil.ui.theme.Espacio
  * La barra inferior (HU-M1.3-01, D-14 b) se muestra solo en Inicio, Perfil y
  * Privacidad y consentimientos, como en los frames 55:3017 y 37:1233; no en el
  * detalle de un consentimiento, el acceso, el registro ni la radicación.
+ * Desde HU-M1.2-01 también en Mis pólizas, pero no en el detalle de la póliza.
  */
 @Composable
 fun SolventaNavHost(
@@ -124,6 +126,7 @@ fun SolventaNavHost(
             grafoRegistro(navegacion)
             grafoRadicacion(navegacion)
             grafoConsentimientos(navegacion)
+            grafoPolizas(navegacion)
             destinoPerfil(
                 onConsentimientos = { navegacion.navigate(Ruta.Consentimientos) },
                 onSesionCerrada = {
@@ -178,6 +181,7 @@ fun SolventaNavHost(
 private fun rutaDe(destino: NavDestination?): Ruta? = when {
     destino == null -> null
     destino.hasRoute<Ruta.Inicio>() -> Ruta.Inicio
+    destino.hasRoute<Ruta.Polizas>() -> Ruta.Polizas
     destino.hasRoute<Ruta.Perfil>() -> Ruta.Perfil
     destino.hasRoute<Ruta.Consentimientos>() -> Ruta.Consentimientos
     else -> null

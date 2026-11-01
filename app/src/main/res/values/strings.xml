@@ -311,7 +311,6 @@
     <string name="navegacion_pestana_polizas">Pólizas</string>
     <string name="navegacion_pestana_siniestros">Siniestros</string>
     <string name="navegacion_pestana_perfil">Perfil</string>
-    <string name="navegacion_pestana_polizas_en_espera">Pólizas, próximamente</string>
     <string name="navegacion_pestana_siniestros_en_espera">Siniestros, próximamente</string>
 
     <!-- M8 · Privacidad y consentimientos y M8b · Detalle (HU-M1.3-01, frames 37:1233, 37:1418 y 38:1503) -->
@@ -495,4 +494,72 @@
     <string name="evidencia_estado_corto_subiendo">Enviando…</string>
     <string name="evidencia_estado_corto_subida">Enviada</string>
     <string name="evidencia_estado_corto_fallida">Falló</string>
+    <!-- M4 · Mis pólizas y M5 · Detalle de la póliza (HU-M1.2-01): billetera con consulta sin conexión -->
+    <string name="originacion_polizas_titulo">Mis pólizas</string>
+    <string name="originacion_polizas_ultima_sincronizacion">Última sincronización: %1$s a las %2$s · disponible sin conexión</string>
+    <string name="originacion_polizas_sincronizando">Sincronizando tus pólizas…</string>
+    <string name="originacion_polizas_sin_conexion_titulo">Sin conexión</string>
+    <string name="originacion_polizas_sin_conexion">Te mostramos las pólizas sincronizadas el %1$s a las %2$s. Se actualizarán automáticamente al recuperar la señal.</string>
+    <string name="originacion_polizas_sin_conexion_sin_copia">Todavía no hay pólizas sincronizadas en este dispositivo. Se descargarán automáticamente al recuperar la señal.</string>
+    <string name="originacion_polizas_sin_conexion_icono">Sin conexión</string>
+    <string name="originacion_polizas_desactualizada_titulo">La información podría estar desactualizada</string>
+    <plurals name="originacion_polizas_desactualizada">
+        <item quantity="one">Tus pólizas no se sincronizan desde hace más de %1$d día. Puedes consultarlas, pero algunos datos podrían haber cambiado.</item>
+        <item quantity="many">Tus pólizas no se sincronizan desde hace más de %1$d días. Puedes consultarlas, pero algunos datos podrían haber cambiado.</item>
+        <item quantity="other">Tus pólizas no se sincronizan desde hace más de %1$d días. Puedes consultarlas, pero algunos datos podrían haber cambiado.</item>
+    </plurals>
+    <plurals name="originacion_polizas_cambios_titulo">
+        <item quantity="one">Sincronización completada · %1$d cambio</item>
+        <item quantity="many">Sincronización completada · %1$d cambios</item>
+        <item quantity="other">Sincronización completada · %1$d cambios</item>
+    </plurals>
+    <string name="originacion_polizas_cambio_renovada">Tu póliza %1$s fue renovada hasta el %2$s.</string>
+    <string name="originacion_polizas_cambio_cancelada">Tu póliza %1$s quedó cancelada.</string>
+    <string name="originacion_polizas_cambio_modificada">Tu póliza %1$s tuvo cambios.</string>
+    <string name="originacion_polizas_cambios_ver_detalle">Toca cada una para ver el detalle.</string>
+    <string name="originacion_polizas_cambios_cerrar">Cerrar el aviso de cambios</string>
+    <string name="originacion_polizas_error">No pudimos actualizar tus pólizas. Te mostramos la última información sincronizada.</string>
+    <string name="originacion_polizas_error_sin_copia">No pudimos cargar tus pólizas. Intenta de nuevo en unos minutos.</string>
+    <string name="originacion_polizas_reintentar">Reintentar</string>
+    <string name="originacion_polizas_vacio">Todavía no tienes pólizas con Solventa.</string>
+    <string name="originacion_polizas_cargando">Cargando tus pólizas</string>
+    <string name="originacion_polizas_subtitulo_vigencia">%1$s · %2$s → %3$s</string>
+    <string name="originacion_polizas_subtitulo_vence">%1$s · vence %2$s</string>
+    <string name="originacion_polizas_subtitulo_renovada">%1$s · renovada hasta %2$s</string>
+    <string name="originacion_polizas_subtitulo_vencio">%1$s · venció %2$s</string>
+    <string name="originacion_polizas_subtitulo_cancelada">%1$s · cancelada</string>
+    <string name="originacion_polizas_situacion_activa">Activa</string>
+    <string name="originacion_polizas_situacion_por_vencer">Por vencer</string>
+    <string name="originacion_polizas_situacion_vencida">Vencida</string>
+    <string name="originacion_polizas_situacion_cancelada">Cancelada</string>
+    <string name="originacion_polizas_situacion_renovada">%1$s · renovada</string>
+    <string name="originacion_polizas_sin_cobertura">Sin cobertura</string>
+    <string name="originacion_polizas_valor_asegurado">Valor asegurado</string>
+    <string name="originacion_polizas_prima_mensual">prima %1$s / mes</string>
+    <string name="originacion_polizas_ver_detalle">Ver el detalle de la póliza %1$s</string>
+    <string name="originacion_polizas_linea_vida">Vida</string>
+    <string name="originacion_polizas_linea_autos">Autos</string>
+    <string name="originacion_polizas_linea_hogar">Hogar</string>
+    <string name="originacion_polizas_linea_viaje">Viaje</string>
+    <string name="originacion_polizas_cobertura_muerte">Muerte</string>
+    <string name="originacion_polizas_cobertura_incapacidad">Incapacidad total y permanente</string>
+    <string name="originacion_polizas_cobertura_choque">Choque</string>
+    <string name="originacion_polizas_cobertura_hurto">Hurto</string>
+    <string name="originacion_polizas_cobertura_terceros">Daños a terceros</string>
+    <string name="originacion_polizas_cobertura_vidrios">Vidrios</string>
+    <string name="originacion_polizas_cobertura_otros">Otros eventos</string>
+    <string name="originacion_polizas_cobertura_agua">Daños por agua</string>
+    <string name="originacion_polizas_cobertura_retraso_de_vuelo">Retraso de vuelo</string>
+    <string name="originacion_poliza_titulo">Detalle de la póliza</string>
+    <string name="originacion_poliza_numero">Número de póliza</string>
+    <string name="originacion_poliza_tipo">Tipo de seguro</string>
+    <string name="originacion_poliza_objeto">Bien asegurado</string>
+    <string name="originacion_poliza_vigencia">Vigencia</string>
+    <string name="originacion_poliza_vigencia_valor">Del %1$s al %2$s</string>
+    <string name="originacion_poliza_coberturas">Coberturas incluidas</string>
+    <string name="originacion_poliza_sin_coberturas">La póliza no tiene coberturas registradas.</string>
+    <string name="originacion_poliza_prima">Prima mensual</string>
+    <string name="originacion_poliza_asegurado">Asegurado principal</string>
+    <string name="originacion_poliza_no_disponible">Esta póliza ya no está disponible en este dispositivo.</string>
+    <string name="originacion_poliza_sin_conexion">Sin conexión: información sincronizada el %1$s a las %2$s.</string>
 </resources>

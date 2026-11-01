@@ -9,7 +9,7 @@ Un `features` **no importa de otro** `features`. Si dos flujos necesitan lo mism
 | `acceso/registro/` | Registro con verificación de identidad (KYC): captura del frente y del reverso, confirmación de los datos extraídos, iluminación insuficiente, verificando identidad, resultado y aviso por notificación | M1a–M1h | HU-M1.1-01 |
 | `acceso/ingreso/` | Bienvenida, inicio de sesión con biometría o contraseña, tres intentos, sesión expirada | M0, M2a–M2d | HU-M1.1-02 |
 | `inicio/` | Pantalla de inicio con avisos y accesos rápidos | M3 | — |
-| `originacion/polizas/` | Mis pólizas y detalle de la póliza | M4, M5 | — |
+| `originacion/polizas/` | Billetera de pólizas con consulta sin conexión (**HU-M1.2-01**): `PolizasRepositorio` sobre `GET /v1/policies` de originación y la copia **cifrada** en Room (cada póliza como JSON cifrado con la clave del Keystore; una lista `partial` no reemplaza la copia), `DetectorDeCambios` (renovada, cancelada o modificada, comparando la copia con la lista nueva), `SincronizacionDePolizasWorker` al volver la red, `PresentacionDePolizas` (situación, orden, renovaciones y copia de más de 30 días), M4 con sus estados y M5 | M4, M5 | HU-M1.2-01 |
 | `originacion/renovaciones/` | Renovación desde la alerta, póliza cancelada por no pago, renovación confirmada | M17, M17b, M17c | M3.2-02 |
 | `siniestros/radicacion/` | Asistente guiado de la radicación: identificación, hechos, evidencias y declaración, con borrador local | M11a–M11f, M13b | HU-M2.2-01 |
 | `siniestros/evidencia/` | Captura de evidencia con la cámara: fotos y video de hasta 30 s con ubicación, hora en UTC y sello de integridad, subidos en segundo plano con URL firmada | M12, M12b, M12c | HU-M2.1-01 |
