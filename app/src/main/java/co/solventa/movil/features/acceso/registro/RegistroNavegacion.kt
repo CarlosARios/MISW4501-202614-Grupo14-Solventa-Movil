@@ -105,6 +105,13 @@ fun NavGraphBuilder.grafoRegistro(navegacion: NavController) {
                     is EstadoVerificacion.Demorada ->
                         navegacion.navigate(Ruta.VerificacionDemorada)
 
+                    // Un dato rechazado (422) o un documento ya registrado
+                    // (409) devuelven el estado a NoIniciada: se corrigen en
+                    // M1c, que marca los campos. Sin esto la pantalla se
+                    // quedaba esperando un resultado que ya había llegado.
+                    is EstadoVerificacion.NoIniciada ->
+                        navegacion.popBackStack(Ruta.ConfirmacionDatos, inclusive = false)
+
                     else -> Unit
                 }
             }

@@ -29,6 +29,6 @@ abstract class RadicacionModule {
     @Binds
     @Singleton
     abstract fun enlazarRepositorioDePolizas(
-        demostracion: PolizasDeDemostracion,
+        billetera: PolizasDeLaBilletera,
     ): PolizasRepositorio
 }

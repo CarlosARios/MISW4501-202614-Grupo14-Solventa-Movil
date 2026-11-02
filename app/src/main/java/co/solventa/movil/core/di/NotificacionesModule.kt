@@ -25,14 +25,23 @@ object NotificacionesModule {
     @Provides
     @Singleton
     fun proveerApiDeNotificaciones(cliente: OkHttpClient): NotificacionesApi {
-        val json = Json { ignoreUnknownKeys = true }
         return Retrofit.Builder()
             .baseUrl(urlBase())
             .client(cliente)
-            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .addConverterFactory(JSON_DE_NOTIFICACIONES.asConverterFactory("application/json".toMediaType()))
             .build()
             .create(NotificacionesApi::class.java)
     }
 
     private fun urlBase(): String = BuildConfig.API_GATEWAY_URL.trimEnd('/') + "/"
+}
+
+/**
+ * `encodeDefaults`: el `platform` de `DispositivoDto` vale `android` por defecto,
+ * y sin esto kotlinx no lo envia; el servicio responde 400 («platform must be
+ * android») y el telefono nunca queda registrado para el push.
+ */
+internal val JSON_DE_NOTIFICACIONES = Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = true
 }
