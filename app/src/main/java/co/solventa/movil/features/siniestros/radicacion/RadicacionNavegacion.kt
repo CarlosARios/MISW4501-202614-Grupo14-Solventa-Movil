@@ -124,9 +124,13 @@ fun NavGraphBuilder.grafoRadicacion(navegacion: NavController) {
             PantallaRadicado(
                 estado = estado,
                 caso = caso,
-                // La lista de siniestros es de HU-M2.4-01; hasta que exista,
-                // las dos salidas llevan al inicio.
-                onIrAMisSiniestros = alInicio,
+                // El detalle del caso recién radicado (HU-M2.4-01, HA-L02),
+                // sin dejar el asistente en la pila: atrás vuelve al inicio.
+                onIrAMisSiniestros = {
+                    navegacion.navigate(Ruta.DetalleSiniestro(caso.casoId)) {
+                        popUpTo(Ruta.Inicio)
+                    }
+                },
                 onIrAlInicio = alInicio,
             )
         }

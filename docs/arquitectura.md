@@ -30,7 +30,7 @@ Resumen de lo que los [modelos de arquitectura](https://github.com/leonelparrale
 
 | Historia de arquitectura | Qué muestra la app | Dónde |
 |---|---|---|
-| HA-L02 · Consulta rápida con caché de lectura | Mis siniestros con «actualizado hoy 14:30 · disponible sin conexión», y el estado degradado cuando la fuente no responde | `features/siniestros/seguimiento/` (M9, M9c, M10c) |
+| HA-L02 · Consulta rápida con caché de lectura | Mis siniestros y el detalle con «Actualizado hoy a las 14:30»; cuando el servicio de siniestros no lee su base en 900 ms responde desde su caché de lectura (`stale: true`) y la app muestra el estado degradado con la hora de esa versión (contrato `docs/contratos/HA-L02-api.md` del repositorio de servicios) | `features/siniestros/seguimiento/` (M9, M9c, M10) |
 | HA-D02 · Cobro sin pérdida ante caída de la pasarela | Siniestro paramétrico resuelto automáticamente, con parámetro, umbral, valor observado y clave de idempotencia | `features/siniestros/seguimiento/` (M10b) |
 | HA-S01 · Autenticación y autorización por roles | 401 → sesión expirada; desbloqueo biométrico; cierre automático por inactividad a los cinco minutos | `core/auth/`, `features/acceso/` (M2, M2d) |
 | RN-02 · Revocación efectiva ≤ 5 min | Revocación del consentimiento desde el perfil, con reintento | `features/auditoria/consentimientos/` (M8, M8b) |

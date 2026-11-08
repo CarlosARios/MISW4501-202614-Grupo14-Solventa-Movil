@@ -19,10 +19,11 @@ import co.solventa.movil.R
 import co.solventa.movil.ui.theme.LocalColoresSolventa
 
 /**
- * Pestañas de la barra inferior del frame 55:3017 (HU-M1.3-01, D-14 b). Las que
- * todavia no tienen pantalla quedan **en espera**: visibles, atenuadas y sin
- * navegar, con una descripcion que lo dice (Mis siniestros es de HU-M2.4-01; la
- * radicacion sigue entrando por Inicio). Pólizas lleva a M4 desde HU-M1.2-01.
+ * Pestañas de la barra inferior del frame 55:3017 (HU-M1.3-01, D-14 b). Una
+ * pestaña que todavia no tiene pantalla queda **en espera**: visible, atenuada
+ * y sin navegar, con una descripcion que lo dice. Hoy las cuatro navegan:
+ * Pólizas lleva a M4 desde HU-M1.2-01 y Siniestros a M9 desde HA-L02 (la
+ * radicacion sigue entrando por Inicio).
  */
 enum class PestanaInferior(
     @param:StringRes val etiqueta: Int,
@@ -34,12 +35,7 @@ enum class PestanaInferior(
 ) {
     INICIO(R.string.navegacion_pestana_inicio, R.drawable.ic_inicio, Ruta.Inicio, null),
     POLIZAS(R.string.navegacion_pestana_polizas, R.drawable.ic_polizas, Ruta.Polizas, null),
-    SINIESTROS(
-        R.string.navegacion_pestana_siniestros,
-        R.drawable.ic_siniestros,
-        null,
-        R.string.navegacion_pestana_siniestros_en_espera,
-    ),
+    SINIESTROS(R.string.navegacion_pestana_siniestros, R.drawable.ic_siniestros, Ruta.Siniestros, null),
     PERFIL(R.string.navegacion_pestana_perfil, R.drawable.ic_perfil, Ruta.Perfil, null),
     ;
 
@@ -55,6 +51,7 @@ enum class PestanaInferior(
 fun pestanaDe(ruta: Ruta?): PestanaInferior? = when (ruta) {
     Ruta.Inicio -> PestanaInferior.INICIO
     Ruta.Polizas -> PestanaInferior.POLIZAS
+    Ruta.Siniestros -> PestanaInferior.SINIESTROS
     Ruta.Perfil, Ruta.Consentimientos -> PestanaInferior.PERFIL
     else -> null
 }

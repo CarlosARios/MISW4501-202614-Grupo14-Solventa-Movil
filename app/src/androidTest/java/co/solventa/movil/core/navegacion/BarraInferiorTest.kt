@@ -1,11 +1,8 @@
 package co.solventa.movil.core.navegacion
 
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
@@ -16,9 +13,9 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * La barra inferior (HU-M1.3-01, D-14 b): Siniestros en espera y Perfil
- * seleccionada en Privacidad y consentimientos. Pólizas navega a M4 desde
- * HU-M1.2-01.
+ * La barra inferior (HU-M1.3-01, D-14 b): Perfil seleccionada en Privacidad y
+ * consentimientos. Pólizas navega a M4 desde HU-M1.2-01 y Siniestros a M9
+ * desde HA-L02.
  */
 class BarraInferiorTest {
 
@@ -39,11 +36,14 @@ class BarraInferiorTest {
         }
     }
 
+    /** HA-L02: la pestaña Siniestros lleva a M9 y queda seleccionada allí. */
     @Test
-    fun siniestros_esta_en_espera_y_deshabilitada() {
-        montar(Ruta.Inicio)
+    fun siniestros_navega_y_queda_seleccionada_en_mis_siniestros() {
+        montar(Ruta.Siniestros)
 
-        composicion.onNodeWithContentDescription(texto(R.string.navegacion_pestana_siniestros_en_espera)).assertIsDisplayed().assertIsNotEnabled()
+        composicion.onNodeWithText(texto(R.string.navegacion_pestana_siniestros).uppercase()).assertIsSelected()
+        composicion.onNodeWithText(texto(R.string.navegacion_pestana_polizas).uppercase()).assertIsEnabled().performClick()
+        assertEquals(listOf(PestanaInferior.POLIZAS), elegidas)
     }
 
     /** HU-M1.2-01: la pestaña Pólizas lleva a M4 y queda seleccionada allí. */
