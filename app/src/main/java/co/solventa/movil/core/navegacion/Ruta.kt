@@ -78,6 +78,14 @@ sealed interface Ruta {
     @Serializable
     data class DetallePoliza(val id: String) : Ruta
 
+    /** M9 · Mis siniestros, pestaña de la barra inferior (HU-M2.4-01, HA-L02). */
+    @Serializable
+    data object Siniestros : Ruta
+
+    /** M10 · Detalle del siniestro con su línea de tiempo (HU-M2.4-01, HA-L02). */
+    @Serializable
+    data class DetalleSiniestro(val id: String) : Ruta
+
     /** M15 · Centro de notificaciones (HU-M3.1-01). */
     @Serializable
     data object Notificaciones : Ruta

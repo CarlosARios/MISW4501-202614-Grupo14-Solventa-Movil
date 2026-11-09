@@ -56,6 +56,7 @@ import co.solventa.movil.features.siniestros.evidencia.grafoCapturaDeEvidencia
 import co.solventa.movil.features.siniestros.radicacion.grafoRadicacion
 import co.solventa.movil.features.inicio.PantallaInicio
 import co.solventa.movil.features.originacion.polizas.grafoPolizas
+import co.solventa.movil.features.siniestros.seguimiento.grafoConsultaDeSiniestros
 import co.solventa.movil.features.notificaciones.centro.SondeoDeNotificacionesViewModel
 import co.solventa.movil.features.notificaciones.centro.grafoNotificaciones
 import co.solventa.movil.features.perfil.destinoPerfil
@@ -161,6 +162,7 @@ fun SolventaNavHost(
             grafoRadicacion(navegacion)
             grafoConsentimientos(navegacion)
             grafoPolizas(navegacion)
+            grafoConsultaDeSiniestros(navegacion)
             grafoNotificaciones(navegacion)
             destinoPerfil(
                 onConsentimientos = { navegacion.navigate(Ruta.Consentimientos) },
@@ -241,6 +243,7 @@ private fun rutaDe(destino: NavDestination?): Ruta? = when {
     destino == null -> null
     destino.hasRoute<Ruta.Inicio>() -> Ruta.Inicio
     destino.hasRoute<Ruta.Polizas>() -> Ruta.Polizas
+    destino.hasRoute<Ruta.Siniestros>() -> Ruta.Siniestros
     destino.hasRoute<Ruta.Perfil>() -> Ruta.Perfil
     destino.hasRoute<Ruta.Consentimientos>() -> Ruta.Consentimientos
     else -> null
