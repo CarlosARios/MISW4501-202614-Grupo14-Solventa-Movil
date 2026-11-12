@@ -12,6 +12,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +27,7 @@ import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.core.i18n.IdiomaViewModel
 import co.solventa.movil.shared.ui.AvisoSolventa
 import co.solventa.movil.shared.ui.BarraProgreso
+import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.PantallaRegistro
 import co.solventa.movil.shared.ui.TarjetaSolventa
 import co.solventa.movil.shared.ui.TipoAviso
@@ -41,12 +43,29 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
 @Composable
 fun MisSiniestrosPantalla(
     onAbrir: (String) -> Unit,
+    onReportar: () -> Unit,
+    onContinuarBorrador: () -> Unit,
     modifier: Modifier = Modifier,
     vm: MisSiniestrosViewModel = hiltViewModel(),
+    borradoresVm: BorradoresViewModel = hiltViewModel(),
     idiomas: IdiomaViewModel = hiltViewModel(),
 ) {
     val estado by vm.estado.collectAsStateWithLifecycle()
+    val borradores by borradoresVm.estado.collectAsStateWithLifecycle()
     val idioma by idiomas.actual.collectAsStateWithLifecycle()
+
+    // Un reporte que se envió solo ya es un caso: se vuelve a consultar la
+    // lista para que aparezca en «En curso» (M13c).
+    val radicado = borradores.radicado?.radicado
+    LaunchedEffect(radicado) { if (radicado != null) vm.reintentar() }
+
+    LaunchedEffect(borradores.abrirAsistente) {
+        if (borradores.abrirAsistente) {
+            borradoresVm.asistenteAbierto()
+            onContinuarBorrador()
+        }
+    }
+
     ContenidoMisSiniestros(
         estado = estado,
         idioma = idioma,
@@ -54,7 +73,23 @@ fun MisSiniestrosPantalla(
         onAbrir = onAbrir,
         onReintentar = vm::reintentar,
         modifier = modifier,
+        borradores = borradores,
+        onReportar = onReportar,
+        onAbrirBorrador = borradoresVm::abrir,
+        onReintentarEnvios = borradoresVm::reintentarEnvios,
+        onCerrarRadicado = borradoresVm::cerrarAvisoDeRadicado,
     )
+
+    val hoja = borradores.hoja
+    if (hoja != null) {
+        HojaDeBorradorGuardado(
+            borrador = hoja,
+            idioma = idioma,
+            onContinuar = borradoresVm::continuar,
+            onDescartar = borradoresVm::descartar,
+            onCerrar = borradoresVm::cerrarHoja,
+        )
+    }
 }
 
 /** La pantalla sin estado propio: lo que prueban las pruebas de interfaz. */
@@ -66,8 +101,23 @@ fun ContenidoMisSiniestros(
     onAbrir: (String) -> Unit,
     onReintentar: () -> Unit,
     modifier: Modifier = Modifier,
+    borradores: BorradoresUiState = BorradoresUiState(),
+    onReportar: (() -> Unit)? = null,
+    onAbrirBorrador: (String) -> Unit = {},
+    onReintentarEnvios: () -> Unit = {},
+    onCerrarRadicado: () -> Unit = {},
 ) {
     PantallaRegistro(titulo = stringResource(R.string.siniestros_seguimiento_titulo), modifier = modifier) {
+        // HU-M2.2-02: lo del teléfono va primero y no depende de que el
+        // servicio responda; sin señal es justo lo que hay que ver.
+        AvisosDeBorradores(borradores, idioma, onReintentarEnvios, onCerrarRadicado)
+        if (onReportar != null) {
+            BotonSolventa(
+                texto = stringResource(R.string.siniestros_borradores_reportar),
+                onClick = onReportar,
+            )
+        }
+        SeccionDeBorradores(borradores.borradores, idioma, onAbrirBorrador)
         val frescura = estado.frescura
         if (frescura != null && frescura.desdeCache) {
             AvisoDeVersionEnCache(frescura.leidoEn, ahora, idioma, estado.recargando, onReintentar)
@@ -89,6 +139,7 @@ fun ContenidoMisSiniestros(
                 Seccion(R.string.siniestros_seguimiento_cerrados, estado.cerrados, cache, idioma, onAbrir, conProgreso = false)
             }
         }
+        PieDeSincronizacion(borradores.radicado)
     }
 }
 

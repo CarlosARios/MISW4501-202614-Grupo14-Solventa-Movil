@@ -183,7 +183,7 @@ fun SolventaNavHost(
                 PedirPermisoDeNotificaciones(onRespondido = notificaciones::permisoRespondido)
                 PantallaInicio(
                     onRegistro = { navegacion.navigate(Ruta.Registro) },
-                    onReportarSiniestro = { navegacion.navigate(Ruta.Radicacion) },
+                    onReportarSiniestro = { navegacion.navigate(Ruta.Radicacion()) },
                     onNotificaciones = { navegacion.navigate(Ruta.Notificaciones) },
                     onVerificacionExitosa = { navegacion.navigate(Ruta.VerificacionExitosa) },
                     onVerificacionNoSuperada = { navegacion.navigate(Ruta.VerificacionNoSuperada) },

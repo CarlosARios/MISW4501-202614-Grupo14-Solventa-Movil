@@ -2,6 +2,8 @@ package co.solventa.movil.features.siniestros.radicacion
 
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasProgressBarRangeInfo
@@ -264,7 +266,7 @@ class PantallasRadicacionTest {
     }
 
     @Test
-    fun mientras_la_evidencia_viaja_no_se_radica_y_se_explica() {
+    fun mientras_la_evidencia_viaja_se_puede_radicar_y_se_explica() {
         declaracion(
             RadicacionUiState(
                 cargando = false,
@@ -274,7 +276,8 @@ class PantallasRadicacionTest {
             ),
         )
 
-        composicion.onNodeWithText(texto(R.string.radicacion_radicar)).assertIsNotEnabled()
+        // HU-M2.2-02: el reporte se encola y sale cuando la evidencia termine.
+        composicion.onNodeWithText(texto(R.string.radicacion_radicar)).assertIsEnabled()
         composicion.onNodeWithText(texto(R.string.radicacion_evidencias_esperando_envio)).assertIsDisplayed()
     }
 
@@ -300,5 +303,31 @@ class PantallasRadicacionTest {
         hechos(RadicacionUiState(cargando = false, etapa = Etapa.HECHOS, radicacion = identificada))
 
         composicion.onNode(hasProgressBarRangeInfo(ProgressBarRangeInfo(0.5f, 0f..1f))).assertExists()
+    }
+
+    /** M13a (HU-M2.2-02): sin red, el aviso y el recuadro del borrador guardado en el teléfono. */
+    @Test
+    fun sin_conexion_avisa_que_el_borrador_queda_en_el_telefono() {
+        hechos(
+            RadicacionUiState(
+                cargando = false,
+                etapa = Etapa.HECHOS,
+                radicacion = identificada,
+                sinConexion = true,
+                guardadoEn = 1_761_000_000_000L,
+                evidencias = (1..4).map { foto(it) },
+            ),
+        )
+
+        composicion.onAllNodesWithContentDescription(texto(R.string.radicacion_offline_titulo), substring = true)
+            .onFirst().assertExists()
+        composicion.onNodeWithContentDescription(texto(R.string.radicacion_offline_icono)).assertExists()
+    }
+
+    @Test
+    fun con_red_no_hay_aviso_sin_conexion() {
+        hechos(RadicacionUiState(cargando = false, etapa = Etapa.HECHOS, radicacion = identificada))
+
+        composicion.onNodeWithContentDescription(texto(R.string.radicacion_offline_icono)).assertDoesNotExist()
     }
 }

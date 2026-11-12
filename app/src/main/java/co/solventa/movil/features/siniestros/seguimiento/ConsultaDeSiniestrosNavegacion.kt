@@ -12,7 +12,12 @@ import co.solventa.movil.core.navegacion.Ruta
  */
 fun NavGraphBuilder.grafoConsultaDeSiniestros(navegacion: NavController) {
     composable<Ruta.Siniestros> {
-        MisSiniestrosPantalla(onAbrir = { id -> navegacion.navigate(Ruta.DetalleSiniestro(id)) })
+        MisSiniestrosPantalla(
+            onAbrir = { id -> navegacion.navigate(Ruta.DetalleSiniestro(id)) },
+            onReportar = { navegacion.navigate(Ruta.Radicacion()) },
+            // M13b: el borrador elegido ya quedó de primero; el asistente lo retoma.
+            onContinuarBorrador = { navegacion.navigate(Ruta.Radicacion(retomar = true)) },
+        )
     }
     composable<Ruta.DetalleSiniestro> {
         DetalleSiniestroPantalla(onAtras = { navegacion.popBackStack() })

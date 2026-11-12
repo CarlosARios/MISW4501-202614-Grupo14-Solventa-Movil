@@ -16,6 +16,12 @@ sealed interface EstadoDelEnvio {
      * usa la misma clave y no crea un segundo caso.
      */
     data class NoDisponible(val referencia: String) : EstadoDelEnvio
+
+    /**
+     * Sin señal, o el servicio no respondió: el reporte quedó completo en el
+     * teléfono y sale solo al volver la red (HU-M2.2-02).
+     */
+    data object EnCola : EstadoDelEnvio
 }
 
 data class RadicacionUiState(
@@ -37,20 +43,24 @@ data class RadicacionUiState(
      * todavia no se decide si se retoma o se descarta (criterio 7).
      */
     val retomandoBorrador: Boolean = false,
+    /** El teléfono no tiene red (HU-M2.2-02, M13a). */
+    val sinConexion: Boolean = false,
+    /** Cuándo se escribió el borrador por última vez en el teléfono. */
+    val guardadoEn: Long? = null,
 ) {
     /** Lo que falta en la etapa actual. Vacío significa que se puede avanzar. */
     val faltantes: Set<CampoDeRadicacion>
         get() = faltantesDe(etapa)
 
     /**
-     * Criterio 3: el botón de avanzar depende de lo que falte. En la última
-     * etapa espera además a que la evidencia haya llegado a la plataforma:
-     * el servicio comprueba cada llave al radicar.
+     * Criterio 3: el botón de avanzar depende de lo que falte. Radicar ya no
+     * espera a que la evidencia termine de subir: si falta algo, el reporte
+     * se encola y el envío en segundo plano la espera (HU-M2.2-02).
      */
     val puedeAvanzar: Boolean
         get() = faltantes.isEmpty() &&
             envio != EstadoDelEnvio.Enviando &&
-            !(esUltimaEtapa && hayEnviosEnCurso)
+            envio != EstadoDelEnvio.EnCola
 
     /** Criterio 5: cuánto se lleva recorrido, de 0 a 1. */
     val avance: Float
@@ -77,6 +87,10 @@ data class RadicacionUiState(
 
     val videosCapturados: Int
         get() = evidencias.count { it.tipo == TipoDeEvidencia.VIDEO }
+
+    /** Lo que ocupan las fotos ya reducidas (M13a). */
+    val tamanoDeFotos: Long
+        get() = evidencias.filter { it.tipo == TipoDeEvidencia.FOTO }.sumOf { it.tamanoBytes }
 
     /** Si queda alguna evidencia viajando o esperando a la red. */
     val hayEnviosEnCurso: Boolean

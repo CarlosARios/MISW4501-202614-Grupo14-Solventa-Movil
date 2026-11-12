@@ -1,6 +1,8 @@
 package co.solventa.movil.features.siniestros.radicacion
 
+import co.solventa.movil.core.sincronizacion.ObservadorDeConectividad
 import co.solventa.movil.features.siniestros.evidencia.EvidenciaRepositorio
+import co.solventa.movil.features.siniestros.radicacion.envio.ColaDeRadicacion
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -31,6 +33,8 @@ class RadicacionViewModel @Inject constructor(
     private val radicaciones: RadicacionRepositorio,
     private val polizas: PolizasRepositorio,
     private val evidencias: EvidenciaRepositorio,
+    private val conectividad: ObservadorDeConectividad,
+    private val cola: ColaDeRadicacion,
 ) : ViewModel() {
 
     private val _estado = MutableStateFlow(RadicacionUiState())
@@ -57,9 +61,16 @@ class RadicacionViewModel @Inject constructor(
                     polizas = vigentes,
                     cargando = false,
                     retomandoBorrador = true,
+                    guardadoEn = borrador.actualizadoEn,
                 )
             }
             observarEvidencias(_estado.value.borradorId)
+        }
+        // M13a: sin red el asistente lo dice y sigue guardando en el teléfono.
+        viewModelScope.launch {
+            conectividad.conectado.collect { conectado ->
+                _estado.update { it.copy(sinConexion = !conectado) }
+            }
         }
     }
 
@@ -129,12 +140,23 @@ class RadicacionViewModel @Inject constructor(
     /**
      * Envía la radicación con el identificador del borrador como clave, de
      * modo que un reintento no crea un segundo caso.
+     *
+     * **Sin red, o con evidencia todavía subiendo, el reporte se encola**
+     * (HU-M2.2-02): queda completo en el teléfono y sale en segundo plano.
+     * Lo mismo si el servicio no responde: el asegurado no tiene que volver a
+     * intentarlo a mano.
      */
     fun radicar() {
         val actual = _estado.value
         if (!actual.puedeAvanzar || !actual.esUltimaEtapa) return
 
         viewModelScope.launch {
+            guardado?.cancel()
+            guardar()
+            if (actual.sinConexion || actual.hayEnviosEnCurso) {
+                encolar(actual.borradorId)
+                return@launch
+            }
             _estado.update {
                 it.copy(envio = EstadoDelEnvio.Enviando, camposRechazados = emptySet())
             }
@@ -161,11 +183,15 @@ class RadicacionViewModel @Inject constructor(
                     )
                 }
 
-                is ResultadoRadicacion.NoDisponible -> _estado.update {
-                    it.copy(envio = EstadoDelEnvio.NoDisponible(resultado.referencia))
-                }
+                is ResultadoRadicacion.NoDisponible -> encolar(actual.borradorId)
             }
         }
+    }
+
+    private suspend fun encolar(borradorId: String) {
+        borradores.encolar(borradorId)
+        cola.encolar(borradorId)
+        _estado.update { it.copy(envio = EstadoDelEnvio.EnCola) }
     }
 
     /** Cierra el aviso de falla para volver a intentar el envío. */
@@ -188,6 +214,7 @@ class RadicacionViewModel @Inject constructor(
         val id = _estado.value.borradorId
         guardado?.cancel()
         viewModelScope.launch {
+            cola.cancelar(id)
             borradores.descartar(id)
             evidencias.limpiar(id)
             val nuevo = borradores.nuevoIdentificador()
@@ -232,6 +259,7 @@ class RadicacionViewModel @Inject constructor(
                 radicacion = actual.radicacion,
             ),
         )
+        _estado.update { it.copy(guardadoEn = System.currentTimeMillis()) }
     }
 
     /** Lo que el usuario acaba de corregir deja de estar marcado. */

@@ -46,6 +46,11 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * asegurado, con la marca de cuales ya se avisaron con una notificacion del
  * sistema. La migracion 5 → 6 tambien es automatica y conserva todo.
  *
+ * La version 7 (HU-M2.2-02) agrega al borrador de la radicacion su dueño y el
+ * estado de su envio en segundo plano, y a cada evidencia su dueño. La
+ * migracion 6 → 7 es automatica; lo que ya estaba queda sin dueño y no se
+ * muestra a nadie.
+ *
  * El esquema se exporta a `app/schemas`, que es lo que permite revisar en un
  * *pull request* qué cambió una migración.
  */
@@ -59,13 +64,14 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         PolizaEntidad::class,
         NotificacionEntidad::class,
     ],
-    version = 6,
+    version = 7,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
     ],
     exportSchema = true,
 )

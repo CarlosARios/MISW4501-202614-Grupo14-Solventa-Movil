@@ -12,6 +12,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import co.solventa.movil.core.navegacion.Ruta
 
 /**
@@ -27,13 +28,26 @@ import co.solventa.movil.core.navegacion.Ruta
 fun NavGraphBuilder.grafoRadicacion(navegacion: NavController) {
 
     composable<Ruta.Radicacion> { entrada ->
+        val ruta = entrada.toRoute<Ruta.Radicacion>()
         val viewModel = viewModelDelAsistente(entrada)
         val estado by viewModel.estado.collectAsStateWithLifecycle()
 
         LaunchedEffect(estado.envio) {
-            if (estado.envio is EstadoDelEnvio.Radicado) {
-                navegacion.navigate(Ruta.RadicacionRadicado)
+            when (estado.envio) {
+                is EstadoDelEnvio.Radicado -> navegacion.navigate(Ruta.RadicacionRadicado)
+                // HU-M2.2-02: el reporte quedó en cola; su tarjeta en *Mis
+                // siniestros* muestra cómo va el envío.
+                EstadoDelEnvio.EnCola -> navegacion.navigate(Ruta.Siniestros) {
+                    popUpTo(Ruta.Inicio)
+                    launchSingleTop = true
+                }
+                else -> Unit
             }
+        }
+
+        // Desde *Mis siniestros* ya se eligió continuar (M13b).
+        LaunchedEffect(ruta.retomar, estado.retomandoBorrador) {
+            if (ruta.retomar && estado.retomandoBorrador) viewModel.continuarBorrador()
         }
 
         BackHandler(enabled = !estado.esPrimeraEtapa) { viewModel.volver() }
@@ -43,8 +57,12 @@ fun NavGraphBuilder.grafoRadicacion(navegacion: NavController) {
 
         val salir = {
             // Guardar y salir: el borrador ya está escrito, así que basta con
-            // dejar el flujo.
-            navegacion.popBackStack(Ruta.Inicio, inclusive = false)
+            // dejar el flujo. Se va a *Mis siniestros*, donde queda su
+            // tarjeta (HU-M2.2-02, M13b).
+            navegacion.navigate(Ruta.Siniestros) {
+                popUpTo(Ruta.Inicio)
+                launchSingleTop = true
+            }
             Unit
         }
 
@@ -98,7 +116,7 @@ fun NavGraphBuilder.grafoRadicacion(navegacion: NavController) {
 
         // Criterio 7: al volver a entrar se ofrece retomar lo que quedó a
         // medias, antes de tocar nada.
-        if (estado.retomandoBorrador) {
+        if (estado.retomandoBorrador && !ruta.retomar) {
             HojaDeBorrador(
                 estado = estado,
                 onContinuar = viewModel::continuarBorrador,
@@ -147,7 +165,7 @@ private fun viewModelDelAsistente(
     navegacion: NavController? = null,
 ): RadicacionViewModel {
     val dueño = remember(entrada) {
-        navegacion?.getBackStackEntry(Ruta.Radicacion) ?: entrada
+        navegacion?.getBackStackEntry<Ruta.Radicacion>() ?: entrada
     }
     return hiltViewModel(dueño)
 }

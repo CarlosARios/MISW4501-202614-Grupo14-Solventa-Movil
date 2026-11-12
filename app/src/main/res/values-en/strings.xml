@@ -477,7 +477,7 @@
     </plurals>
     <string name="evidencia_grabando">Recording</string>
     <string name="radicacion_video_capturado">%1$d s · %2$s</string>
-    <string name="radicacion_evidencias_esperando_envio">Waiting for the evidence to be sent</string>
+    <string name="radicacion_evidencias_esperando_envio">The evidence is still uploading: once you file, the report will be sent as soon as it finishes</string>
     <string name="evidencia_ver">View this evidence</string>
     <string name="evidencia_descartar_y_repetir">Discard and take another</string>
     <string name="radicacion_video_ver">Play video</string>
@@ -665,4 +665,54 @@
     <string name="siniestros_seguimiento_incidente_vidrios">Glass</string>
     <string name="siniestros_seguimiento_incidente_agua">Water damage</string>
     <string name="siniestros_seguimiento_incidente_otro">Other</string>
+    <!-- HU-M2.2-02 · Local draft and offline sync -->
+    <string name="radicacion_offline_icono">Offline</string>
+    <string name="radicacion_offline_titulo">No connection</string>
+    <string name="radicacion_offline_detalle">We saved your form on the phone. You can keep going with the report; once the signal is back it will be sent automatically in the background, with nothing to repeat.</string>
+    <plurals name="radicacion_offline_detalle_con_fotos">
+        <item quantity="one">We saved your form and the evidence on the phone. You can keep going with the report; once the signal is back it will be sent automatically in the background, with nothing to repeat.</item>
+        <item quantity="other">We saved your form and the %1$d pieces of evidence on the phone. You can keep going with the report; once the signal is back it will be sent automatically in the background, with nothing to repeat.</item>
+    </plurals>
+    <string name="radicacion_offline_guardado">Draft saved on the phone · %1$s</string>
+    <plurals name="radicacion_offline_guardado_con_fotos">
+        <item quantity="one">Draft saved on the phone · %1$s · %2$d compressed photo (%3$s MB)</item>
+        <item quantity="other">Draft saved on the phone · %1$s · %2$d compressed photos (%3$s MB)</item>
+    </plurals>
+    <string name="radicacion_offline_canal">Reports sent while offline</string>
+    <string name="radicacion_offline_registrado_titulo">Claim filed</string>
+    <string name="radicacion_offline_notificacion">Your report was sent when the signal came back. Filing number: %1$s.</string>
+    <string name="siniestros_borradores_reportar">+ Report a claim</string>
+    <string name="siniestros_borradores_seccion">Drafts (%1$d)</string>
+    <string name="siniestros_borradores_titulo">%1$s (draft)</string>
+    <string name="siniestros_borradores_sin_tipo">Report</string>
+    <string name="siniestros_borradores_abrir">Open the draft</string>
+    <string name="siniestros_borradores_guardado">Saved %1$s · step %2$d of %3$d</string>
+    <plurals name="siniestros_borradores_intentos_fallidos">
+        <item quantity="one">Saved %1$s · %2$d failed attempt · last %3$s</item>
+        <item quantity="other">Saved %1$s · %2$d failed attempts · last %3$s</item>
+    </plurals>
+    <plurals name="siniestros_borradores_fotos">
+        <item quantity="one">%1$d photo</item>
+        <item quantity="other">%1$d photos</item>
+    </plurals>
+    <plurals name="siniestros_borradores_videos">
+        <item quantity="one">%1$d video</item>
+        <item quantity="other">%1$d videos</item>
+    </plurals>
+    <string name="siniestros_borradores_sin_enviar">Not sent</string>
+    <string name="siniestros_borradores_enviando">Sending…</string>
+    <string name="siniestros_borradores_envio_fallido">Sending failed</string>
+    <string name="siniestros_borradores_radicado">Filed</string>
+    <string name="siniestros_borradores_registrado_titulo">Claim filed</string>
+    <string name="siniestros_borradores_registrado">Your report saved offline was sent automatically when the signal came back (%1$s). Filing number: %2$s. An adviser will review it and we will let you know at every stage.</string>
+    <string name="siniestros_borradores_fallido_titulo">We couldn\'t send your report</string>
+    <plurals name="siniestros_borradores_fallido">
+        <item quantity="one">Sending failed %1$d time because the service did not respond. Your draft and your %2$d photos are still saved on the phone. Retrying will not create a duplicate filing.</item>
+        <item quantity="other">Sending failed %1$d times, with growing waits, because the service did not respond. Your draft and your %2$d photos are still saved on the phone. Retrying will not create a duplicate filing.</item>
+    </plurals>
+    <plurals name="siniestros_borradores_sincronizado">
+        <item quantity="one">Synced in the background · %1$d attempt · no data lost</item>
+        <item quantity="other">Synced in the background · %1$d attempts with growing waits · no data lost</item>
+    </plurals>
+    <string name="siniestros_borradores_hoja_detalle">%1$s · saved on %2$s at %3$s at step %4$d of %5$d (%6$s). You can continue exactly where you left off.</string>
 </resources>

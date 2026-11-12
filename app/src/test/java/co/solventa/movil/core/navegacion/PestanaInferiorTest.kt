@@ -49,7 +49,7 @@ class PestanaInferiorTest {
         assertNull(pestanaDe(Ruta.DetalleSiniestro("8f14e45f-ceea-467a-9f3a-5a2d0b1c7e90")))
         assertNull(pestanaDe(Ruta.DetalleConsentimiento("cns-1")))
         assertNull(pestanaDe(Ruta.Bienvenida))
-        assertNull(pestanaDe(Ruta.Radicacion))
+        assertNull(pestanaDe(Ruta.Radicacion()))
         assertNull(pestanaDe(null))
     }
 }
