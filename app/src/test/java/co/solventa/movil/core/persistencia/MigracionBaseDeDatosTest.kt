@@ -170,6 +170,34 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /**
+     * HU-M2.2-02: el borrador gana su dueño y el estado de su envío, y la
+     * evidencia su dueño. Lo que ya estaba queda en edición y sin dueño.
+     */
+    @Test
+    fun `la migracion 6 a 7 conserva el borrador en edicion y sin dueno`() {
+        ayudante.createDatabase(6).apply {
+            execSQL(
+                "INSERT INTO borrador_de_radicacion (id, etapa, poliza, tipo, ocurrioEn, lugar, descripcion, " +
+                    "respuestasJson, declaracionAceptada, actualizadoEn, montoEstimado) " +
+                    "VALUES ('borrador-1', 'HECHOS', 'AU-2025-118204', 'COLISION', 1792539000000, " +
+                    "'Autopista Norte km 12', 'Choque por alcance', '{}', 0, 1792539100000, '')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 7 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(7)
+        try {
+            assertEquals(listOf("borrador-1"), textos(migrada, "SELECT id FROM borrador_de_radicacion"))
+            assertEquals(listOf(""), textos(migrada, "SELECT propietario FROM borrador_de_radicacion"))
+            assertEquals(listOf("edicion"), textos(migrada, "SELECT envio FROM borrador_de_radicacion"))
+            assertEquals(listOf("0"), textos(migrada, "SELECT CAST(intentos AS TEXT) FROM borrador_de_radicacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }

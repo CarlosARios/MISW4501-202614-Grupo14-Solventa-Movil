@@ -43,6 +43,7 @@ fun PantallaIdentificacion(
         titulo = stringResource(R.string.radicacion_titulo),
         onAtras = onAtras,
         onCerrar = onGuardarYSalir,
+        indicador = { IndicadorSinConexion(estado.sinConexion) },
         modifier = modifier,
         acciones = {
             BotonSolventa(
@@ -60,6 +61,7 @@ fun PantallaIdentificacion(
         },
     ) {
         PasosDelAsistente(etapa = estado.etapa, avance = estado.avance)
+        AvisoSinConexion(estado)
 
         Text(
             text = stringResource(R.string.radicacion_identificacion_pregunta),

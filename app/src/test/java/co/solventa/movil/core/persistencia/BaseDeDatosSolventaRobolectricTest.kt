@@ -49,10 +49,11 @@ class BaseDeDatosSolventaRobolectricTest {
             respuestasJson = "{}",
             declaracionAceptada = false,
             actualizadoEn = 1_792_539_100_000L,
+            propietario = "sub-asegurado",
         )
 
         base.borradoresDeRadicacion().guardar(borrador)
 
-        assertEquals(borrador, base.borradoresDeRadicacion().enCurso())
+        assertEquals(borrador, base.borradoresDeRadicacion().enCurso("sub-asegurado"))
     }
 }

@@ -30,4 +30,22 @@ data class BorradorDeRadicacion(
     /** El monto estimado como se escribió (HU-M2.2-01); vacío en un borrador anterior. */
     @ColumnInfo(defaultValue = "")
     val montoEstimado: String = "",
+    /**
+     * El `sub` de quien lo empezó (HU-M2.2-02, criterio 6). Otra cuenta en el
+     * mismo teléfono no lo ve. Los borradores de antes de la versión 7 quedan
+     * vacíos y no los ve nadie.
+     */
+    @ColumnInfo(defaultValue = "")
+    val propietario: String = "",
+    /** `edicion`, `en_cola`, `enviando`, `fallido` o `radicado` (HU-M2.2-02). */
+    @ColumnInfo(defaultValue = "edicion")
+    val envio: String = "edicion",
+    /** Intentos de envío fallidos desde el último reintento manual. */
+    @ColumnInfo(defaultValue = "0")
+    val intentos: Int = 0,
+    val ultimoIntentoEn: Long? = null,
+    /** El número de radicado que dio el servicio; queda hasta que se muestra el aviso. */
+    val radicado: String? = null,
+    val radicadoEn: Long? = null,
+    val casoId: String? = null,
 )

@@ -485,7 +485,7 @@
     </plurals>
     <string name="evidencia_grabando">Grabando</string>
     <string name="radicacion_video_capturado">%1$d s · %2$s</string>
-    <string name="radicacion_evidencias_esperando_envio">Esperando el envío de las evidencias</string>
+    <string name="radicacion_evidencias_esperando_envio">Las evidencias siguen subiendo: al radicar, el reporte se enviará en cuanto terminen</string>
     <string name="evidencia_ver">Ver esta evidencia</string>
     <string name="evidencia_descartar_y_repetir">Descartar y tomar otra</string>
     <string name="radicacion_video_ver">Ver video</string>
@@ -675,4 +675,54 @@
     <string name="siniestros_seguimiento_incidente_vidrios">Vidrios</string>
     <string name="siniestros_seguimiento_incidente_agua">Daño por agua</string>
     <string name="siniestros_seguimiento_incidente_otro">Otro</string>
+    <!-- HU-M2.2-02 · Borrador local y sincronización sin conexión -->
+    <string name="radicacion_offline_icono">Sin conexión</string>
+    <string name="radicacion_offline_titulo">Sin conexión</string>
+    <string name="radicacion_offline_detalle">Guardamos tu formulario en el teléfono. Puedes seguir con el reporte; al recuperar la señal se enviará automáticamente en segundo plano sin que tengas que repetir nada.</string>
+    <plurals name="radicacion_offline_detalle_con_fotos">
+        <item quantity="one">Guardamos tu formulario y la evidencia en el teléfono. Puedes seguir con el reporte; al recuperar la señal se enviará automáticamente en segundo plano sin que tengas que repetir nada.</item>
+        <item quantity="other">Guardamos tu formulario y las %1$d evidencias en el teléfono. Puedes seguir con el reporte; al recuperar la señal se enviará automáticamente en segundo plano sin que tengas que repetir nada.</item>
+    </plurals>
+    <string name="radicacion_offline_guardado">Borrador guardado localmente · %1$s</string>
+    <plurals name="radicacion_offline_guardado_con_fotos">
+        <item quantity="one">Borrador guardado localmente · %1$s · %2$d foto comprimida (%3$s MB)</item>
+        <item quantity="other">Borrador guardado localmente · %1$s · %2$d fotos comprimidas (%3$s MB)</item>
+    </plurals>
+    <string name="radicacion_offline_canal">Reportes enviados sin conexión</string>
+    <string name="radicacion_offline_registrado_titulo">Siniestro registrado</string>
+    <string name="radicacion_offline_notificacion">Tu reporte se envió al recuperar la señal. Radicado asignado: %1$s.</string>
+    <string name="siniestros_borradores_reportar">+ Reportar un siniestro</string>
+    <string name="siniestros_borradores_seccion">Borradores (%1$d)</string>
+    <string name="siniestros_borradores_titulo">%1$s (borrador)</string>
+    <string name="siniestros_borradores_sin_tipo">Reporte</string>
+    <string name="siniestros_borradores_abrir">Abrir el borrador</string>
+    <string name="siniestros_borradores_guardado">Guardado %1$s · paso %2$d de %3$d</string>
+    <plurals name="siniestros_borradores_intentos_fallidos">
+        <item quantity="one">Guardado %1$s · %2$d intento fallido · último %3$s</item>
+        <item quantity="other">Guardado %1$s · %2$d intentos fallidos · último %3$s</item>
+    </plurals>
+    <plurals name="siniestros_borradores_fotos">
+        <item quantity="one">%1$d foto</item>
+        <item quantity="other">%1$d fotos</item>
+    </plurals>
+    <plurals name="siniestros_borradores_videos">
+        <item quantity="one">%1$d video</item>
+        <item quantity="other">%1$d videos</item>
+    </plurals>
+    <string name="siniestros_borradores_sin_enviar">Sin enviar</string>
+    <string name="siniestros_borradores_enviando">Enviando…</string>
+    <string name="siniestros_borradores_envio_fallido">Envío fallido</string>
+    <string name="siniestros_borradores_radicado">Radicado</string>
+    <string name="siniestros_borradores_registrado_titulo">Siniestro registrado</string>
+    <string name="siniestros_borradores_registrado">Tu reporte guardado sin conexión se envió automáticamente al recuperar la señal (%1$s). Radicado asignado: %2$s. Un asesor lo revisará y te avisaremos cada cambio de etapa.</string>
+    <string name="siniestros_borradores_fallido_titulo">No pudimos enviar tu reporte</string>
+    <plurals name="siniestros_borradores_fallido">
+        <item quantity="one">El envío falló %1$d vez porque el servicio no respondió. Tu borrador y tus %2$d fotos siguen guardados en el teléfono. Al reintentar no se creará un radicado duplicado.</item>
+        <item quantity="other">El envío falló %1$d veces con espera creciente porque el servicio no respondió. Tu borrador y tus %2$d fotos siguen guardados en el teléfono. Al reintentar no se creará un radicado duplicado.</item>
+    </plurals>
+    <plurals name="siniestros_borradores_sincronizado">
+        <item quantity="one">Sincronizado en segundo plano · %1$d intento · sin datos perdidos</item>
+        <item quantity="other">Sincronizado en segundo plano · %1$d intentos con espera creciente · sin datos perdidos</item>
+    </plurals>
+    <string name="siniestros_borradores_hoja_detalle">%1$s · guardado el %2$s a las %3$s en el paso %4$d de %5$d (%6$s). Puedes continuar exactamente donde quedaste.</string>
 </resources>

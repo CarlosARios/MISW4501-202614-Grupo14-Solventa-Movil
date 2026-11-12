@@ -64,7 +64,13 @@ sealed interface Ruta {
      * a entrar salen de una sola fuente.
      */
     @Serializable
-    data object Radicacion : Ruta
+    data class Radicacion(
+        /**
+         * Se entra para continuar un borrador elegido en *Mis siniestros*
+         * (HU-M2.2-02, M13b): ya se decidió, así que no se vuelve a preguntar.
+         */
+        val retomar: Boolean = false,
+    ) : Ruta
 
     /** M11e · Radicado generado. Cierra el flujo de la radicación. */
     @Serializable

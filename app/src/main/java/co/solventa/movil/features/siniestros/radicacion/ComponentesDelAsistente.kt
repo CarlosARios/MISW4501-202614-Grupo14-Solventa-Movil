@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
@@ -33,7 +34,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import co.solventa.movil.R
 import co.solventa.movil.features.siniestros.evidencia.EstadoDeEvidencia
+import co.solventa.movil.core.i18n.FormatoDeFecha
+import co.solventa.movil.core.i18n.Idioma
+import co.solventa.movil.shared.ui.AvisoSolventa
 import co.solventa.movil.shared.ui.BarraProgreso
+import co.solventa.movil.shared.ui.TipoAviso
 import co.solventa.movil.ui.theme.Espacio
 import co.solventa.movil.ui.theme.LocalColoresSolventa
 
@@ -352,9 +357,9 @@ fun TextoDeFaltantes(estado: RadicacionUiState, modifier: Modifier = Modifier) {
     val faltantes = estado.faltantes
     val colores = LocalColoresSolventa.current
 
-    // En la declaración puede no faltar ningún dato y aun así no poder
-    // radicar: la evidencia todavía está viajando y el servicio comprueba
-    // cada llave al crear el caso.
+    // En la declaración puede no faltar ningún dato con la evidencia aún
+    // viajando: se puede radicar igual, y el reporte sale cuando termine de
+    // subir (HU-M2.2-02). El texto lo explica.
     if (faltantes.isEmpty() && estado.esUltimaEtapa && estado.hayEnviosEnCurso) {
         Text(
             text = stringResource(R.string.radicacion_evidencias_esperando_envio),
@@ -439,3 +444,57 @@ fun resumenDelCaso(caso: CasoRadicado): String {
     val video = if (caso.videos > 0) stringResource(R.string.radicacion_evidencias_con_video) else ""
     return fotos + video
 }
+
+/** El ícono de sin red de la barra superior (M13a, HU-M2.2-02). */
+@Composable
+fun IndicadorSinConexion(sinConexion: Boolean) {
+    if (!sinConexion) return
+    Icon(
+        painter = painterResource(R.drawable.ic_sin_conexion),
+        contentDescription = stringResource(R.string.radicacion_offline_icono),
+        tint = MaterialTheme.colorScheme.error,
+        modifier = Modifier
+            .size(40.dp)
+            .padding(Espacio.x8),
+    )
+}
+
+/**
+ * M13a: sin red, el aviso de que el reporte se guarda en el teléfono y el
+ * recuadro con la hora del borrador y lo que pesan las fotos comprimidas
+ * (HU-M2.2-02, criterio 1).
+ */
+@Composable
+fun AvisoSinConexion(estado: RadicacionUiState) {
+    if (!estado.sinConexion) return
+    val idioma = if (LocalConfiguration.current.locales[0].language == "en") Idioma.INGLES else Idioma.ESPANOL
+    AvisoSolventa(
+        tipo = TipoAviso.ERROR,
+        titulo = stringResource(R.string.radicacion_offline_titulo),
+        texto = if (estado.fotosCapturadas > 0) {
+            pluralStringResource(R.plurals.radicacion_offline_detalle_con_fotos, estado.fotosCapturadas, estado.fotosCapturadas)
+        } else {
+            stringResource(R.string.radicacion_offline_detalle)
+        },
+    )
+    val guardadoEn = estado.guardadoEn ?: return
+    val momento = "${FormatoDeFecha.fecha(guardadoEn, idioma)} ${FormatoDeFecha.hora(guardadoEn, idioma)}"
+    AvisoSolventa(
+        tipo = TipoAviso.EXITO,
+        texto = if (estado.fotosCapturadas > 0) {
+            pluralStringResource(
+                R.plurals.radicacion_offline_guardado_con_fotos,
+                estado.fotosCapturadas,
+                momento,
+                estado.fotosCapturadas,
+                megas(estado.tamanoDeFotos),
+            )
+        } else {
+            stringResource(R.string.radicacion_offline_guardado, momento)
+        },
+    )
+}
+
+/** «2,1» a partir de los bytes, con una cifra decimal. */
+internal fun megas(bytes: Long): String =
+    String.format(java.util.Locale.forLanguageTag("es-CO"), "%.1f", bytes / 1_048_576.0)

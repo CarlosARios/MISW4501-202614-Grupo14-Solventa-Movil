@@ -5,6 +5,7 @@ import co.solventa.movil.core.imagen.ReductorDeFoto
 import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
 import co.solventa.movil.core.ubicacion.Ubicacion
+import co.solventa.movil.features.siniestros.UsuarioActual
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.io.File
@@ -66,6 +67,7 @@ class EvidenciaRepositorioLocal @Inject constructor(
     private val huellas: HuellaDeArchivo,
     private val reductor: ReductorDeFoto,
     private val envios: EnvioDeEvidencia,
+    private val usuario: UsuarioActual,
 ) : EvidenciaRepositorio {
 
     override fun observar(borradorId: String): Flow<List<EvidenciaDelReporte>> =
@@ -102,6 +104,7 @@ class EvidenciaRepositorioLocal @Inject constructor(
                 duracionS = duracionS,
                 llaveDelObjeto = null,
                 estado = EstadoDeEvidencia.PENDIENTE.guardado,
+                propietario = usuario.sub(),
             ),
         )
         envios.pedir()
@@ -157,6 +160,7 @@ class EvidenciaRepositorioLocal @Inject constructor(
         ubicacion = fila.ubicacion(),
         duracionS = fila.duracionS,
         estado = EstadoDeEvidencia.de(fila.estado),
+        tamanoBytes = fila.tamanoBytes,
     )
 
     private fun EvidenciaCapturada.ubicacion(): Ubicacion? =

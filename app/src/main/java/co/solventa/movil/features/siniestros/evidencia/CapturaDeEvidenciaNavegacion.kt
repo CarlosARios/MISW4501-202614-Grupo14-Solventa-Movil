@@ -2,6 +2,7 @@ package co.solventa.movil.features.siniestros.evidencia
 
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -30,7 +31,11 @@ fun NavGraphBuilder.grafoCapturaDeEvidencia(navegacion: NavController) {
         val estado by viewModel.estado.collectAsStateWithLifecycle()
         val camara = recordarCamaraDeEvidencia()
         val alcance = rememberCoroutineScope()
-        val cache = LocalContext.current.cacheDir
+        // Fuera de la caché: Android la puede vaciar mientras el borrador
+        // espera señal, y el reporte perdería sus fotos (HU-M2.2-02). Tampoco
+        // entra en las copias de seguridad.
+        val contexto = LocalContext.current
+        val cache = remember(contexto) { File(contexto.noBackupFilesDir, "evidencia").apply { mkdirs() } }
 
         LaunchedEffect(ruta.borradorId) { viewModel.abrir(ruta.borradorId) }
 

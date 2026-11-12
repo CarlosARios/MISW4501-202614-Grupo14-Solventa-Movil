@@ -34,6 +34,8 @@ data class EvidenciaDelReporte(
     val ubicacion: Ubicacion?,
     val duracionS: Int,
     val estado: EstadoDeEvidencia,
+    /** Lo que ocupa ya reducida, para el resumen del borrador local (M13a). */
+    val tamanoBytes: Long = 0L,
 ) {
     /** Criterio 3: sin ubicación confiable la evidencia se conserva, marcada. */
     val ubicacionConfiable: Boolean

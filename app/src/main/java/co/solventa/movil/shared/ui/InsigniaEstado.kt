@@ -19,7 +19,7 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
 import co.solventa.movil.ui.theme.Radio
 
 /** Tono de una insignia de estado. */
-enum class TipoInsignia { EXITO, NEUTRO, ADVERTENCIA, INFORMACION }
+enum class TipoInsignia { EXITO, NEUTRO, ADVERTENCIA, INFORMACION, ERROR }
 
 /**
  * Insignia de estado con punto **y** texto, como «● Activo» del prototipo
@@ -41,6 +41,8 @@ fun InsigniaEstado(
         // Un estado en curso que no pide nada, como «En evaluación» de M9 y
         // M10 (HU-M2.4-01).
         TipoInsignia.INFORMACION -> colores.informacionSuave to colores.informacionFuerte
+        // «Envío fallido» de un borrador (M13d, HU-M2.2-02).
+        TipoInsignia.ERROR -> colores.errorSuave to colores.errorFuerte
     }
     Row(
         verticalAlignment = Alignment.CenterVertically,

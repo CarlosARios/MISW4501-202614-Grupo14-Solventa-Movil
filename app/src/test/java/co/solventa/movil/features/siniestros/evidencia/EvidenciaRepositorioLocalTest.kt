@@ -4,6 +4,7 @@ import co.solventa.movil.core.imagen.ReductorDeFoto
 import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
 import co.solventa.movil.core.ubicacion.Ubicacion
+import co.solventa.movil.features.siniestros.UsuarioActual
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -23,7 +24,7 @@ class EvidenciaRepositorioLocalTest {
     private val dao = DaoEnMemoria()
     private val envios = EnvioFalso()
     private val reductor = ReductorFalso()
-    private val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(), reductor, envios)
+    private val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(), reductor, envios, UsuarioActual { DUENO })
 
     private val ubicacionBuena = Ubicacion(4.7712, -74.0452, 2601.0, 8f, 1_792_000_000_000)
 
@@ -37,6 +38,8 @@ class EvidenciaRepositorioLocalTest {
         assertEquals("photo", fila.tipo)
         assertEquals(0, fila.posicion)
         assertEquals(1, envios.pedidos)
+        // HU-M2.2-02: la captura queda a nombre de quien tiene la sesión.
+        assertEquals(DUENO, fila.propietario)
     }
 
     // Criterio 5: la fotografía se acota antes de medirla. Si se midiera
@@ -100,7 +103,7 @@ class EvidenciaRepositorioLocalTest {
 
     @Test
     fun `un archivo ilegible no se registra`() = runTest {
-        val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(ilegible = true), reductor, envios)
+        val repositorio = EvidenciaRepositorioLocal(dao, HuellaFalsa(ilegible = true), reductor, envios, UsuarioActual { DUENO })
 
         val guardada = repositorio.capturar(BORRADOR, archivo("rota.jpg"), TipoDeEvidencia.FOTO, ubicacionBuena)
 
@@ -172,6 +175,7 @@ class EvidenciaRepositorioLocalTest {
 
     private companion object {
         const val BORRADOR = "borrador-1"
+        const val DUENO = "sub-asegurado"
         const val HUELLA = "abc123"
         const val TAMANO = 312_044L
     }
@@ -213,8 +217,11 @@ class EvidenciaRepositorioLocalTest {
         override suspend fun listarDeBorrador(borradorId: String): List<EvidenciaCapturada> =
             filas.filter { it.borradorId == borradorId }.sortedBy { it.posicion }
 
-        override suspend fun pendientes(): List<EvidenciaCapturada> =
-            filas.filterNot { it.estado == EstadoDeEvidencia.SUBIDA.guardado }
+        override suspend fun pendientes(propietario: String): List<EvidenciaCapturada> =
+            filas.filter { it.propietario == propietario }
+                .filterNot { it.estado == EstadoDeEvidencia.SUBIDA.guardado }
+
+        override fun deUsuario(propietario: String): Flow<List<EvidenciaCapturada>> = flujo
 
         override suspend fun marcar(id: String, estado: String) {
             reemplazar(id) { it.copy(estado = estado) }
