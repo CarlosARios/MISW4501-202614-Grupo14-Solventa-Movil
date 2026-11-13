@@ -1,5 +1,7 @@
 package co.solventa.movil.features.siniestros.seguimiento
 
+import kotlinx.serialization.Serializable
+
 /**
  * El estado de un siniestro, como lo nombra el servicio de siniestros. Un
  * código que la aplicación todavía no conoce queda como [DESCONOCIDO] y se
@@ -24,7 +26,12 @@ enum class EstadoDeSiniestro(val codigo: String) {
     }
 }
 
-/** Un siniestro del asegurado (HU-M2.4-01): lo que muestran la tarjeta de M9 y el encabezado de M10. */
+/**
+ * Un siniestro del asegurado (HU-M2.4-01): lo que muestran la tarjeta de M9 y
+ * el encabezado de M10. Es serializable para guardarlo en la copia local sin
+ * conexión (criterio 5).
+ */
+@Serializable
 data class Siniestro(
     val id: String,
     /** `SIN-<año>-<cinco dígitos>`. */
@@ -43,9 +50,43 @@ data class Siniestro(
     val radicadoEn: Long,
     /** Solo en el detalle. */
     val lugar: String? = null,
+    /** Lo que resolvió el siniestro paramétrico sin evaluación manual (criterio 3); `null` en los demás. */
+    val resolucionAutomatica: ResolucionAutomatica? = null,
+) {
+    val automatico: Boolean get() = resolucionAutomatica != null
+}
+
+/**
+ * El evento externo que cruzó el umbral de la póliza y generó el pago
+ * (HU-M2.4-01, criterio 3): el parámetro objetivo, su umbral y el valor
+ * observado.
+ */
+@Serializable
+data class Disparador(
+    /** `flight_delay`… */
+    val parametro: String,
+    /** Lo observado, por ejemplo el vuelo `AV-8421`. */
+    val referencia: String,
+    val umbral: Double,
+    val observado: Double,
+    /** `minutes`… */
+    val unidad: String,
+    val observadoEn: Long,
 )
 
+/** La resolución automática de un siniestro paramétrico. */
+@Serializable
+data class ResolucionAutomatica(val resueltaEn: Long, val version: String, val disparador: Disparador)
+
+/**
+ * El tiempo estimado de resolución de un caso en evaluación (criterio 2),
+ * del triage del servicio: el nivel y los días hábiles.
+ */
+@Serializable
+data class EstimacionDeResolucion(val nivel: Int?, val diasHabiles: Int)
+
 /** Un cambio de estado de la línea de tiempo. */
+@Serializable
 data class CambioDeEstado(val estado: EstadoDeSiniestro, val en: Long)
 
 /**
@@ -65,5 +106,13 @@ data class Frescura(val desdeCache: Boolean, val leidoEn: Long) {
     }
 }
 
-/** El detalle de M10: el siniestro y cada cambio de estado, el más antiguo primero. */
-data class DetalleDeSiniestro(val siniestro: Siniestro, val cambios: List<CambioDeEstado>)
+/**
+ * El detalle de M10: el siniestro, cada cambio de estado (el más antiguo
+ * primero) y, en evaluación, la estimación del triage si ya la hay.
+ */
+@Serializable
+data class DetalleDeSiniestro(
+    val siniestro: Siniestro,
+    val cambios: List<CambioDeEstado>,
+    val estimacion: EstimacionDeResolucion? = null,
+)

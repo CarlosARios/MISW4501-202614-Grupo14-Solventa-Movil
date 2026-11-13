@@ -35,6 +35,34 @@ object DatosDeConsulta {
         CambioDeEstado(EstadoDeSiniestro.EN_EVALUACION, AHORA - 260 * HORA),
     )
 
+    /** El pago paramétrico del prototipo (M10b, HU-M2.4-01): AV-8421 con 215 minutos de retraso, umbral 180. */
+    val parametrico = Siniestro(
+        id = "6f1c2a7e-3b4d-4e5f-8a9b-0c1d2e3f4a5b", radicado = "SIN-2026-01702",
+        estado = EstadoDeSiniestro.PAGADO, codigoDeEstado = "paid",
+        poliza = "VJ-2026-000931", linea = "travel", producto = "Viaje", objetoAsegurado = null,
+        tipoDeIncidente = "flight_delay", ocurrioEn = AHORA - 113 * HORA, radicadoEn = AHORA - 113 * HORA,
+        lugar = "AV-8421",
+        resolucionAutomatica = ResolucionAutomatica(
+            resueltaEn = AHORA - 113 * HORA + 180_000L,
+            version = "parametric-rules-v1",
+            disparador = Disparador("flight_delay", "AV-8421", 180.0, 215.0, "minutes", AHORA - 113 * HORA),
+        ),
+    )
+
+    fun detalleParametrico() = DetalleSiniestroUiState(
+        cargando = false,
+        siniestro = parametrico,
+        etapas = LineaDeTiempo.armar(
+            parametrico,
+            listOf(
+                CambioDeEstado(EstadoDeSiniestro.APROBADO, parametrico.radicadoEn),
+                CambioDeEstado(EstadoDeSiniestro.PAGADO, parametrico.radicadoEn + 480_000L),
+            ),
+        ),
+        progreso = LineaDeTiempo.progreso(parametrico),
+        frescura = Frescura(false, AHORA),
+    )
+
     fun detalle(desdeCache: Boolean, leidoEn: Long = AHORA) = DetalleSiniestroUiState(
         cargando = false,
         siniestro = hogar,

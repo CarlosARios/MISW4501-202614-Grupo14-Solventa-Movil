@@ -45,12 +45,12 @@ M1a y M1b usan la cámara de verdad (CameraX). El permiso se pide en caliente y 
 
 | Frame | Pantalla | Paquete | Historia | Prioridad | Estado del prototipo |
 |---|---|---|---|---|---|
-| M9 | Mis siniestros | `features/siniestros/seguimiento` | M2.4-01 | Should | Completa. Lista con estados, borrador y «actualizado hoy 14:30 · disponible sin conexión» |
+| M9 | Mis siniestros | `features/siniestros/seguimiento` | M2.4-01 | Should | Completa. Lista con estados, borrador y «actualizado hoy 14:30 · disponible sin conexión». **HU-M2.4-01 (criterio 5):** sin red muestra la última lista guardada en el teléfono (copia cifrada en Room, `siniestro_guardado`) con el aviso «Sin conexión · Última actualización», para poder abrir cada caso |
 | M9b | Mis siniestros · sin siniestros | `features/siniestros/seguimiento` | M2.4-02 | Could | Completa (estado vacío) |
 | M9c | Mis siniestros · servicio degradado (caché) | `features/siniestros/seguimiento` | M2.4-02 · HA-L02 | Could | Completa. Es la evidencia visible de la caché de lectura |
-| M10 | Detalle del siniestro · línea de tiempo | `features/siniestros/seguimiento` | M2.4-01 | Should | Completa. Misma línea de tiempo que la web (A8) |
+| M10 | Detalle del siniestro · línea de tiempo | `features/siniestros/seguimiento` | M2.4-01 | Should | Completa. Misma línea de tiempo que la web (A8). **HU-M2.4-01:** la etapa «En evaluación» trae desde cuándo y el tiempo estimado del triage (`GET /v1/claims/{id}/triage`, criterio 2); un siniestro paramétrico (`automatic_resolution` del servicio) lleva el rótulo «Resolución automática · sin evaluación manual», la tarjeta «Por qué se pagó automáticamente» (parámetro objetivo, umbral, valor observado y fecha del pago) y la línea Evento detectado → Validación automática → Pago ejecutado (criterio 3). El monto y el medio de pago no los da el servicio de siniestros: siguen en M10b |
 | M10b | Siniestro paramétrico resuelto automáticamente | `features/notificaciones/centro` | **HU-M3.1-01** | **Must** | Criterio 4: lo abre la notificación sin pasos intermedios. Monto y moneda, evento (retraso del vuelo AV-8421), parámetro, umbral, valor observado con el aviso de que lo superó, medio de pago (Visa •••• 1111), fecha, póliza, siniestro y clave de idempotencia (HA-D02); sin conexión, desde la copia local. **Vive en `notificaciones/centro` y no en `siniestros/seguimiento`** porque sus datos son los del registro de la notificación (decisión del equipo) y un dominio no importa a otro |
-| M10c | Detalle del siniestro sin conexión | `features/siniestros/seguimiento` | M2.4-02 | Could | Completa |
+| M10c | Detalle del siniestro sin conexión | `features/siniestros/seguimiento` | M2.4-02 · **HU-M2.4-01** | Could | Completa. Ícono sin red en la barra, aviso rojo «Sin conexión · Última actualización: hoy … a las …» y pie «versión guardada en el dispositivo», distintos del aviso amarillo de M9c (servicio degradado con red, criterio 4) |
 
 ## Radicación del siniestro
 

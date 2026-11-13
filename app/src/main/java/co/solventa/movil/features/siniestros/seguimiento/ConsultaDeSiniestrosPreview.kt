@@ -6,7 +6,7 @@ import co.solventa.movil.core.i18n.Idioma
 import co.solventa.movil.ui.theme.SolventaTheme
 
 /**
- * Vistas previas de M9, M9c y M10 con los datos del prototipo (HU-M2.4-01,
+ * Vistas previas de M9, M9c, M10, M10b y M10c con los datos del prototipo (HU-M2.4-01,
  * HA-L02). Son herramienta de diseño: no corren en la aplicación.
  */
 private const val AHORA_PREVIA = 1_789_569_000_000L // 16/09/2026 14:30 UTC
@@ -73,4 +73,50 @@ private fun DetalleSiniestroPrevia() = SolventaTheme {
 @Composable
 private fun DetalleSiniestroDesdeCachePrevia() = SolventaTheme {
     ContenidoDetalleSiniestro(detallePrevia(desdeCache = true), Idioma.ESPANOL, AHORA_PREVIA, onAtras = {}, onReintentar = {})
+}
+
+/** El pago paramétrico del prototipo (M10b): AV-8421, 215 minutos de retraso, umbral 180. */
+private val parametricoPrevia = Siniestro(
+    id = "6f1c2a7e-3b4d-4e5f-8a9b-0c1d2e3f4a5b", radicado = "SIN-2026-01702",
+    estado = EstadoDeSiniestro.PAGADO, codigoDeEstado = "paid",
+    poliza = "VJ-2026-000931", linea = "travel", producto = "Viaje", objetoAsegurado = null,
+    tipoDeIncidente = "flight_delay", ocurrioEn = AHORA_PREVIA - 113 * HORA_PREVIA,
+    radicadoEn = AHORA_PREVIA - 113 * HORA_PREVIA, lugar = "AV-8421",
+    resolucionAutomatica = ResolucionAutomatica(
+        resueltaEn = AHORA_PREVIA - 113 * HORA_PREVIA + 180_000L,
+        version = "parametric-rules-v1",
+        disparador = Disparador("flight_delay", "AV-8421", 180.0, 215.0, "minutes", AHORA_PREVIA - 113 * HORA_PREVIA),
+    ),
+)
+
+@Preview(name = "M10b · Siniestro paramétrico resuelto automáticamente", showBackground = true, heightDp = 1200)
+@Composable
+private fun DetalleParametricoPrevia() = SolventaTheme {
+    val pagado = parametricoPrevia.radicadoEn + 480_000L
+    val estado = DetalleSiniestroUiState(
+        cargando = false,
+        siniestro = parametricoPrevia,
+        etapas = LineaDeTiempo.armar(
+            parametricoPrevia,
+            listOf(
+                CambioDeEstado(EstadoDeSiniestro.EN_EVALUACION, parametricoPrevia.radicadoEn),
+                CambioDeEstado(EstadoDeSiniestro.APROBADO, parametricoPrevia.radicadoEn),
+                CambioDeEstado(EstadoDeSiniestro.PAGADO, pagado),
+            ),
+        ),
+        progreso = LineaDeTiempo.progreso(parametricoPrevia),
+        frescura = Frescura(false, AHORA_PREVIA),
+    )
+    ContenidoDetalleSiniestro(estado, Idioma.ESPANOL, AHORA_PREVIA, onAtras = {}, onReintentar = {})
+}
+
+@Preview(name = "M10c · Detalle sin conexión", showBackground = true, heightDp = 1200)
+@Composable
+private fun DetalleSinConexionPrevia() = SolventaTheme {
+    val estado = detallePrevia(desdeCache = false).copy(
+        frescura = null,
+        copiaLocalDe = AHORA_PREVIA,
+        estimacion = EstimacionDeResolucion(nivel = 2, diasHabiles = 5),
+    )
+    ContenidoDetalleSiniestro(estado, Idioma.ESPANOL, AHORA_PREVIA, onAtras = {}, onReintentar = {})
 }

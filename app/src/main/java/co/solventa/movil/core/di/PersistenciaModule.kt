@@ -11,6 +11,7 @@ import co.solventa.movil.core.persistencia.dao.ConsentimientoDao
 import co.solventa.movil.core.persistencia.dao.PolizaDao
 import co.solventa.movil.core.persistencia.dao.NotificacionDao
 import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
+import co.solventa.movil.core.persistencia.dao.SiniestroGuardadoDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -54,4 +55,8 @@ object PersistenciaModule {
 
     @Provides
     fun proveerNotificaciones(base: BaseDeDatosSolventa): NotificacionDao = base.notificaciones()
+
+    /** La copia sin conexión de los siniestros (HU-M2.4-01). */
+    @Provides
+    fun proveerSiniestrosGuardados(base: BaseDeDatosSolventa): SiniestroGuardadoDao = base.siniestrosGuardados()
 }

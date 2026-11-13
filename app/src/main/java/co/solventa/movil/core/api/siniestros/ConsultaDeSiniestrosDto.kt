@@ -31,6 +31,7 @@ data class ResumenDeSiniestroDto(
     @SerialName("incident_type") val tipoDeIncidente: String,
     @SerialName("occurred_at") val ocurrioEn: String,
     @SerialName("filed_at") val radicadoEn: String,
+    @SerialName("automatic_resolution") val resolucionAutomatica: ResolucionAutomaticaDto? = null,
 )
 
 @Serializable
@@ -51,6 +52,7 @@ data class DetalleDeSiniestroDto(
     @SerialName("occurred_at") val ocurrioEn: String,
     @SerialName("filed_at") val radicadoEn: String,
     @SerialName("place") val lugar: String = "",
+    @SerialName("automatic_resolution") val resolucionAutomatica: ResolucionAutomaticaDto? = null,
     @SerialName("stale") val desdeCache: Boolean = false,
     @SerialName("as_of") val leidoEn: String? = null,
 )
@@ -70,4 +72,42 @@ data class HistorialDeSiniestroDto(
     @SerialName("changes") val cambios: List<CambioDeEstadoDto> = emptyList(),
     @SerialName("stale") val desdeCache: Boolean = false,
     @SerialName("as_of") val leidoEn: String? = null,
+)
+
+/**
+ * Lo que resolvió un siniestro paramétrico sin evaluación manual
+ * (HU-M2.4-01, criterio 3): el evento externo que cruzó el umbral de la
+ * póliza. `null` en un siniestro evaluado por un analista.
+ */
+@Serializable
+data class ResolucionAutomaticaDto(
+    @SerialName("resolved_at") val resueltaEn: String,
+    @SerialName("rule_version") val version: String,
+    @SerialName("trigger") val disparador: DisparadorDto,
+)
+
+/** El parámetro objetivo, su umbral y el valor observado que generó el pago. */
+@Serializable
+data class DisparadorDto(
+    /** `flight_delay`… */
+    @SerialName("parameter") val parametro: String,
+    /** Lo observado, por ejemplo el vuelo `AV-8421`. */
+    @SerialName("event_reference") val referencia: String,
+    @SerialName("threshold") val umbral: Double,
+    @SerialName("observed") val observado: Double,
+    /** `minutes`… */
+    @SerialName("unit") val unidad: String,
+    @SerialName("observed_at") val observadoEn: String,
+)
+
+/**
+ * El triage del siniestro en la vista del asegurado (HU-W2.2-01): el nivel y
+ * cuántos días hábiles se espera que tome resolverlo (HU-M2.4-01, criterio 2).
+ * Mientras no se ha calculado, `state` es `pending` y lo demás llega en `null`.
+ */
+@Serializable
+data class TriajeDelAseguradoDto(
+    @SerialName("state") val estado: String,
+    @SerialName("level") val nivel: Int? = null,
+    @SerialName("estimated_resolution_business_days") val diasHabilesEstimados: Int? = null,
 )

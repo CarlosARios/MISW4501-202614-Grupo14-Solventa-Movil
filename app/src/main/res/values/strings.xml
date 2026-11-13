@@ -656,7 +656,7 @@
     <string name="siniestros_seguimiento_que_sigue_pagado">El pago se hizo a tu medio registrado. Este caso está cerrado.</string>
     <string name="siniestros_seguimiento_que_sigue_rechazado">Tu caso fue rechazado. Te enviamos el motivo por correo.</string>
     <string name="siniestros_seguimiento_que_sigue_desconocido">Te avisaremos por notificación push en cada cambio de etapa.</string>
-    <string name="siniestros_seguimiento_pie_actualizado">Actualizado %1$s</string>
+    <string name="siniestros_seguimiento_pie_actualizado">Actualizado %1$s · disponible sin conexión</string>
     <string name="siniestros_seguimiento_pie_cache">Versión en caché de %1$s</string>
     <string name="siniestros_seguimiento_estado_radicado">Radicado</string>
     <string name="siniestros_seguimiento_estado_devuelto">Devuelto al cliente</string>
@@ -675,6 +675,35 @@
     <string name="siniestros_seguimiento_incidente_vidrios">Vidrios</string>
     <string name="siniestros_seguimiento_incidente_agua">Daño por agua</string>
     <string name="siniestros_seguimiento_incidente_otro">Otro</string>
+    <!-- HU-M2.4-01: resolución automática, estimado de la evaluación y copia sin conexión. -->
+    <string name="siniestros_seguimiento_incidente_retraso_vuelo">Retraso de vuelo</string>
+    <string name="siniestros_seguimiento_parametro_retraso_vuelo">Retraso del vuelo %1$s</string>
+    <string name="siniestros_seguimiento_unidad_minutos">minutos</string>
+    <string name="siniestros_seguimiento_etapa_evento_detectado">Evento detectado</string>
+    <string name="siniestros_seguimiento_etapa_validacion_automatica">Validación automática de la cobertura</string>
+    <string name="siniestros_seguimiento_etapa_pago_ejecutado">Pago ejecutado</string>
+    <string name="siniestros_seguimiento_evento_observado">Observado: %1$s %2$s</string>
+    <string name="siniestros_seguimiento_validacion_automatica_detalle">Póliza vigente · umbral superado</string>
+    <string name="siniestros_seguimiento_resolucion_automatica">Resolución automática · sin evaluación manual</string>
+    <string name="siniestros_seguimiento_por_que_automatico">Por qué se pagó automáticamente</string>
+    <string name="siniestros_seguimiento_parametro_objetivo">Parámetro objetivo</string>
+    <string name="siniestros_seguimiento_umbral">Umbral de la cobertura</string>
+    <string name="siniestros_seguimiento_umbral_valor">Mayor o igual a %1$s %2$s</string>
+    <string name="siniestros_seguimiento_valor_observado">Valor observado</string>
+    <string name="siniestros_seguimiento_valor_observado_valor">%1$s %2$s · %3$s %4$s</string>
+    <string name="siniestros_seguimiento_pago_ejecutado">Pago ejecutado</string>
+    <string name="siniestros_seguimiento_estimacion_con_nivel">Prioridad Triage %1$d · resolución estimada: %2$s</string>
+    <string name="siniestros_seguimiento_estimacion">Resolución estimada: %1$s</string>
+    <string name="siniestros_seguimiento_sin_conexion_titulo">Sin conexión</string>
+    <string name="siniestros_seguimiento_sin_conexion_texto">Última actualización: %1$s. Los cambios de etapa se reflejarán al recuperar la señal.</string>
+    <string name="siniestros_seguimiento_hoy_completo">hoy %1$s a las %2$s</string>
+    <string name="siniestros_seguimiento_fecha_completa">%1$s a las %2$s</string>
+    <string name="siniestros_seguimiento_pie_sin_conexion">Última actualización: %1$s · versión guardada en el dispositivo</string>
+    <plurals name="siniestros_seguimiento_dias_habiles">
+        <item quantity="one">%1$d día hábil</item>
+        <item quantity="many">%1$d días hábiles</item>
+        <item quantity="other">%1$d días hábiles</item>
+    </plurals>
     <!-- HU-M2.2-02 · Borrador local y sincronización sin conexión -->
     <string name="radicacion_offline_icono">Sin conexión</string>
     <string name="radicacion_offline_titulo">Sin conexión</string>

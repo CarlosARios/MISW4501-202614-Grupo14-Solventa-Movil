@@ -9,12 +9,14 @@ import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
 import co.solventa.movil.core.persistencia.dao.PolizaDao
 import co.solventa.movil.core.persistencia.dao.NotificacionDao
 import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
+import co.solventa.movil.core.persistencia.dao.SiniestroGuardadoDao
 import co.solventa.movil.core.persistencia.entidades.BorradorDeRadicacion
 import co.solventa.movil.core.persistencia.entidades.ConsentimientoEntidad
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
 import co.solventa.movil.core.persistencia.entidades.PolizaEntidad
 import co.solventa.movil.core.persistencia.entidades.NotificacionEntidad
 import co.solventa.movil.core.persistencia.entidades.RevocacionPendienteEntidad
+import co.solventa.movil.core.persistencia.entidades.SiniestroGuardadoEntidad
 import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
 
 /**
@@ -51,6 +53,10 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * migracion 6 → 7 es automatica; lo que ya estaba queda sin dueño y no se
  * muestra a nadie.
  *
+ * La version 8 (HU-M2.4-01) agrega la copia sin conexion de *Mis siniestros*
+ * y del detalle de cada caso, cifrada como la de las polizas. La migracion
+ * 7 → 8 es automatica porque solo agrega una tabla.
+ *
  * El esquema se exporta a `app/schemas`, que es lo que permite revisar en un
  * *pull request* qué cambió una migración.
  */
@@ -63,8 +69,9 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         RevocacionPendienteEntidad::class,
         PolizaEntidad::class,
         NotificacionEntidad::class,
+        SiniestroGuardadoEntidad::class,
     ],
-    version = 7,
+    version = 8,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -72,6 +79,7 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8),
     ],
     exportSchema = true,
 )
@@ -88,6 +96,8 @@ abstract class BaseDeDatosSolventa : RoomDatabase() {
     abstract fun polizas(): PolizaDao
 
     abstract fun notificaciones(): NotificacionDao
+
+    abstract fun siniestrosGuardados(): SiniestroGuardadoDao
 
     companion object {
         const val NOMBRE = "solventa.db"
