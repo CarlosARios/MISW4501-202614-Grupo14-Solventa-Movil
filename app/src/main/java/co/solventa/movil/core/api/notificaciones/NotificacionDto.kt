@@ -18,13 +18,32 @@ data class ListaDeNotificacionesDto(
 @Serializable
 data class NotificacionDto(
     @SerialName("notification_id") val id: String,
-    /** `parametric_payout` o `claim_stage_changed`; un tipo que la aplicación no conoce se ignora. */
+    /** `parametric_payout`, `claim_stage_changed` o `policy_expiry`; un tipo que la aplicación no conoce se ignora. */
     @SerialName("kind") val tipo: String,
     @SerialName("occurred_at") val ocurrioEn: String,
     @SerialName("created_at") val creadaEn: String,
     @SerialName("read_at") val leidaEn: String? = null,
     @SerialName("payout") val pago: PagoParametricoDto? = null,
     @SerialName("stage") val etapa: CambioDeEtapaDto? = null,
+    @SerialName("expiry") val vencimiento: AlertaDeVencimientoDto? = null,
+)
+
+/**
+ * La alerta de vencimiento de una póliza (HU-M3.2-01): a 30, 15 o 5 días del
+ * fin de la vigencia. `coverage_end` es la fecha exacta del vencimiento;
+ * `days_left`, los días que faltaban al enviarla.
+ */
+@Serializable
+data class AlertaDeVencimientoDto(
+    @SerialName("policy_id") val poliza: String,
+    /** `life`, `auto`, `home` o `travel`. */
+    @SerialName("line") val linea: String,
+    @SerialName("product") val producto: String? = null,
+    @SerialName("insured_object") val objetoAsegurado: String? = null,
+    @SerialName("coverage_end") val venceEn: String,
+    /** 30, 15 o 5. */
+    @SerialName("milestone_days") val hito: Int,
+    @SerialName("days_left") val diasRestantes: Int,
 )
 
 /**

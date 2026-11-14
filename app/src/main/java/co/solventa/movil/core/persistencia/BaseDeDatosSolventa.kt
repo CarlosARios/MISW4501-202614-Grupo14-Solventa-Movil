@@ -61,6 +61,10 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * de etapa del siniestro (columna nueva que admite nulos). La migracion 8 → 9
  * es automatica y conserva todo.
  *
+ * La version 10 (HU-M3.2-01) agrega a la copia de cada notificacion su alerta
+ * de vencimiento de poliza (columna nueva que admite nulos). La migracion
+ * 9 → 10 es automatica y conserva todo.
+ *
  * El esquema se exporta a `app/schemas`, que es lo que permite revisar en un
  * *pull request* qué cambió una migración.
  */
@@ -75,7 +79,7 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         NotificacionEntidad::class,
         SiniestroGuardadoEntidad::class,
     ],
-    version = 9,
+    version = 10,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -85,6 +89,7 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 7, to = 8),
         AutoMigration(from = 8, to = 9),
+        AutoMigration(from = 9, to = 10),
     ],
     exportSchema = true,
 )

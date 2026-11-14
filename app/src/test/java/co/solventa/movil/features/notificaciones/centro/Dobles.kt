@@ -225,3 +225,25 @@ fun etapaDto(
         pagadoEn = pagado,
     ),
 )
+
+/**
+ * La alerta de vencimiento de AU-2025-118204 (HU-M3.2-01), como la entrega el
+ * servicio: Autos, placa KJT-482, a 15 días del fin de la vigencia.
+ */
+fun vencimientoDto(
+    hito: Int = 15,
+    dias: Int = 15,
+    ocurrio: String = "2026-09-11T13:00:00Z",
+    vence: String = "2026-09-26T05:00:00Z",
+    producto: String? = "Autos",
+    objeto: String? = "KJT-482",
+) = NotificacionDto(
+    id = "ntf-expiry-AU-2025-118204-20260926-$hito",
+    tipo = "policy_expiry",
+    ocurrioEn = ocurrio,
+    creadaEn = ocurrio,
+    vencimiento = co.solventa.movil.core.api.notificaciones.AlertaDeVencimientoDto(
+        poliza = "AU-2025-118204", linea = "auto", producto = producto, objetoAsegurado = objeto, venceEn = vence,
+        hito = hito, diasRestantes = dias,
+    ),
+)

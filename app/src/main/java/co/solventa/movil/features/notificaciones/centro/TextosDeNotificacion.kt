@@ -102,6 +102,31 @@ object TextosDeNotificacion {
         else -> R.drawable.ic_reloj
     }
 
+    /**
+     * Si la alerta de vencimiento dice «vence hoy» en lugar de los días que
+     * faltan (HU-M3.2-01): con cero días, o menos si llegara así.
+     */
+    fun venceHoy(a: AlertaDeVencimiento): Boolean = a.diasRestantes <= 0
+
+    /** El nombre del tipo de seguro, si la alerta no trae el del producto (HU-M3.2-01). */
+    @StringRes
+    fun lineaDeVencimiento(linea: String): Int = when (linea) {
+        LineasDeVencimiento.VIDA -> R.string.notificaciones_vencimiento_linea_vida
+        LineasDeVencimiento.AUTOS -> R.string.notificaciones_vencimiento_linea_autos
+        LineasDeVencimiento.HOGAR -> R.string.notificaciones_vencimiento_linea_hogar
+        LineasDeVencimiento.VIAJE -> R.string.notificaciones_vencimiento_linea_viaje
+        else -> R.string.notificaciones_vencimiento_linea_generica
+    }
+
+    /**
+     * Cómo se nombra la póliza en la alerta: el producto —o, si no viene, el
+     * tipo de seguro ya traducido en [nombreDeLinea]— y lo asegurado, si lo
+     * hay: «Autos · KJT-482».
+     */
+    fun descripcionDePoliza(a: AlertaDeVencimiento, nombreDeLinea: String): String =
+        listOfNotNull(a.producto?.takeIf { it.isNotBlank() } ?: nombreDeLinea, a.objetoAsegurado?.takeIf { it.isNotBlank() })
+            .joinToString(" · ")
+
     /** Si la notificación es de hoy, para agruparla en «Hoy» o «Anteriores» (M15). */
     fun esDeHoy(instante: Long, ahora: Long, zona: ZoneId = ZoneId.systemDefault()): Boolean {
         val dia = { t: Long -> Instant.ofEpochMilli(t).atZone(zona).toLocalDate() }

@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -50,8 +51,8 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
  * con las no leídas marcadas, «Marcar todas como leídas» y «Ver detalle», que
  * abre el pago (M10b). Se lee de la copia local, así que también sirve sin
  * conexión. Muestra los pagos paramétricos y, desde HU-M3.3-01, cada cambio de
- * etapa de un siniestro, que abre su línea de tiempo (M10). La renovación es
- * de HU-M3.2-01.
+ * etapa de un siniestro, que abre su línea de tiempo (M10), y desde
+ * HU-M3.2-01 la alerta de vencimiento de cada póliza, que abre su detalle (M5).
  */
 @Composable
 fun CentroPantalla(
@@ -182,7 +183,11 @@ private fun Seccion(
             accion?.invoke()
         }
         notificaciones.forEach {
-            if (it.etapa != null) TarjetaDeEtapa(it, idioma, deHoy, onAbrir) else TarjetaDePago(it, idioma, deHoy, onAbrir)
+            when {
+                it.etapa != null -> TarjetaDeEtapa(it, idioma, deHoy, onAbrir)
+                it.vencimiento != null -> TarjetaDeVencimiento(it, idioma, deHoy, onAbrir)
+                else -> TarjetaDePago(it, idioma, deHoy, onAbrir)
+            }
         }
     }
 }
@@ -360,6 +365,87 @@ private fun TarjetaDeEtapa(n: Notificacion, idioma: Idioma, deHoy: Boolean, onAb
                         modifier = Modifier.weight(1f),
                     )
                     Text(text = verLinea, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Una tarjeta de alerta de vencimiento (HU-M3.2-01): cuántos días faltan, la
+ * póliza y la fecha exacta del vencimiento (criterio 1), y «Ver póliza», que
+ * abre su detalle (M5). El prototipo no dibuja este estado: sigue la misma
+ * forma de la tarjeta del pago, con el color de advertencia.
+ */
+@Composable
+private fun TarjetaDeVencimiento(n: Notificacion, idioma: Idioma, deHoy: Boolean, onAbrir: (DestinoDeNotificacion) -> Unit) {
+    val a = n.vencimiento ?: return
+    val colores = LocalColoresSolventa.current
+    val titulo = if (TextosDeNotificacion.venceHoy(a)) {
+        stringResource(R.string.notificaciones_vencimiento_titulo_hoy)
+    } else {
+        pluralStringResource(R.plurals.notificaciones_vencimiento_titulo, a.diasRestantes, a.diasRestantes)
+    }
+    val cuerpo = stringResource(
+        R.string.notificaciones_vencimiento_cuerpo,
+        a.poliza,
+        TextosDeNotificacion.descripcionDePoliza(a, stringResource(TextosDeNotificacion.lineaDeVencimiento(a.linea))),
+        FormatoDeFecha.fecha(a.venceEn, idioma),
+    )
+    val hora = FormatoDeFecha.hora(n.ocurrioEn, idioma)
+    val cuando = if (deHoy) {
+        stringResource(R.string.notificaciones_centro_hora_hoy, hora)
+    } else {
+        stringResource(R.string.notificaciones_centro_hora_fecha, FormatoDeFecha.fecha(n.ocurrioEn, idioma), hora)
+    }
+    val sinLeer = stringResource(R.string.notificaciones_centro_sin_leer)
+    val verPoliza = stringResource(R.string.notificaciones_vencimiento_ver_poliza)
+    TarjetaSolventa(
+        relleno = androidx.compose.foundation.layout.PaddingValues(0.dp),
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (n.leida) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
+            .clickable(onClickLabel = verPoliza) { onAbrir(n.destino) },
+    ) {
+        Row {
+            if (!n.leida) {
+                Box(modifier = Modifier.width(4.dp).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(Espacio.x8), modifier = Modifier.padding(Espacio.x16)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Espacio.x12), verticalAlignment = Alignment.Top) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(40.dp).background(colores.advertenciaSuave, RoundedCornerShape(8.dp)),
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_polizas),
+                            contentDescription = null,
+                            tint = colores.advertenciaFuerte,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Espacio.x4)) {
+                        Text(text = titulo, style = MaterialTheme.typography.titleMedium)
+                        Text(text = cuerpo, style = MaterialTheme.typography.bodyMedium, color = colores.textoSecundario)
+                    }
+                    if (!n.leida) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = Espacio.x8)
+                                .size(8.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                .semantics { contentDescription = sinLeer },
+                        )
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = cuando.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colores.textoSecundario,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(text = verPoliza, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }

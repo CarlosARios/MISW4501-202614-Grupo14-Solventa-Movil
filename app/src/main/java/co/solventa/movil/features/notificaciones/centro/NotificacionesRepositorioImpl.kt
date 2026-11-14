@@ -150,10 +150,14 @@ class NotificacionesRepositorioImpl internal constructor(
         false
     }
 
-    /** Solo los tipos que la aplicación sabe mostrar: el pago paramétrico y, desde HU-M3.3-01, el cambio de etapa. */
+    /**
+     * Solo los tipos que la aplicación sabe mostrar: el pago paramétrico, el
+     * cambio de etapa (HU-M3.3-01) y el vencimiento de una póliza (HU-M3.2-01).
+     */
     private fun conocida(n: Notificacion): Boolean = when (n.tipo) {
         TiposDeNotificacion.PAGO_PARAMETRICO -> n.pago != null
         TiposDeNotificacion.CAMBIO_DE_ETAPA -> n.etapa != null
+        TiposDeNotificacion.VENCIMIENTO_DE_POLIZA -> n.vencimiento != null
         else -> false
     }
 

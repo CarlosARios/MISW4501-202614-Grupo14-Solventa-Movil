@@ -41,19 +41,29 @@ object MapeadorDeNotificaciones {
                 cambioEn = instante(e.cambioEn), monto = e.monto, moneda = e.moneda, pagadoEn = e.pagadoEn?.let(::instante),
             )
         },
+        vencimiento = dto.vencimiento?.let { v ->
+            AlertaDeVencimiento(
+                poliza = v.poliza, linea = v.linea, producto = v.producto, objetoAsegurado = v.objetoAsegurado,
+                venceEn = instante(v.venceEn), hito = v.hito, diasRestantes = v.diasRestantes,
+            )
+        },
     )
 
     fun aEntidad(n: Notificacion, propietario: String) = NotificacionEntidad(
         propietario = propietario, id = n.id, tipo = n.tipo, ocurrioEn = n.ocurrioEn, leidaEn = n.leidaEn,
         pago = n.pago?.let { json.encodeToString(PagoGuardado.serializer(), PagoGuardado.de(it)) },
         etapa = n.etapa?.let { json.encodeToString(EtapaGuardada.serializer(), EtapaGuardada.de(it)) },
+        vencimiento = n.vencimiento?.let { json.encodeToString(VencimientoGuardado.serializer(), VencimientoGuardado.de(it)) },
     )
 
-    /** La notificación guardada; un pago o una etapa ilegibles la dejan sin ellos. */
+    /** La notificación guardada; un pago, una etapa o un vencimiento ilegibles la dejan sin ellos. */
     fun desdeEntidad(e: NotificacionEntidad) = Notificacion(
         id = e.id, tipo = e.tipo, ocurrioEn = e.ocurrioEn, leidaEn = e.leidaEn,
         pago = e.pago?.let { texto -> runCatching { json.decodeFromString(PagoGuardado.serializer(), texto).aPago() }.getOrNull() },
         etapa = e.etapa?.let { texto -> runCatching { json.decodeFromString(EtapaGuardada.serializer(), texto).aEtapa() }.getOrNull() },
+        vencimiento = e.vencimiento?.let { texto ->
+            runCatching { json.decodeFromString(VencimientoGuardado.serializer(), texto).aAlerta() }.getOrNull()
+        },
     )
 
     private fun instante(texto: String): Long = OffsetDateTime.parse(texto).toInstant().toEpochMilli()
@@ -114,6 +124,27 @@ private data class EtapaGuardada(
         fun de(e: CambioDeEtapa) = EtapaGuardada(
             cambio = e.cambio, siniestroId = e.siniestroId, radicado = e.radicado, poliza = e.poliza, etapa = e.etapa,
             cambioEn = e.cambioEn, monto = e.monto, moneda = e.moneda, pagadoEn = e.pagadoEn,
+        )
+    }
+}
+
+/** Forma en que la alerta de vencimiento queda guardada en el teléfono (HU-M3.2-01). */
+@Serializable
+private data class VencimientoGuardado(
+    @SerialName("poliza") val poliza: String,
+    @SerialName("linea") val linea: String,
+    @SerialName("producto") val producto: String? = null,
+    @SerialName("objeto_asegurado") val objetoAsegurado: String? = null,
+    @SerialName("vence_en") val venceEn: Long,
+    @SerialName("hito") val hito: Int,
+    @SerialName("dias_restantes") val diasRestantes: Int,
+) {
+    fun aAlerta() = AlertaDeVencimiento(poliza, linea, producto, objetoAsegurado, venceEn, hito, diasRestantes)
+
+    companion object {
+        fun de(a: AlertaDeVencimiento) = VencimientoGuardado(
+            poliza = a.poliza, linea = a.linea, producto = a.producto, objetoAsegurado = a.objetoAsegurado,
+            venceEn = a.venceEn, hito = a.hito, diasRestantes = a.diasRestantes,
         )
     }
 }

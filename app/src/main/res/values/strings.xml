@@ -600,6 +600,22 @@
     <string name="notificaciones_etapa_ver_linea_de_tiempo">Ver línea de tiempo</string>
     <string name="notificaciones_canal_etapas">Avance de tus siniestros</string>
     <string name="notificaciones_canal_etapas_descripcion">Te avisamos cada vez que tu siniestro avanza de etapa: en evaluación, aprobado y pagado.</string>
+    <!-- HU-M3.2-01: alerta de vencimiento de la póliza (M15 y M15b) -->
+    <plurals name="notificaciones_vencimiento_titulo">
+        <item quantity="one">Tu póliza vence en %1$d día</item>
+        <item quantity="many">Tu póliza vence en %1$d días</item>
+        <item quantity="other">Tu póliza vence en %1$d días</item>
+    </plurals>
+    <string name="notificaciones_vencimiento_titulo_hoy">Tu póliza vence hoy</string>
+    <string name="notificaciones_vencimiento_cuerpo">La póliza %1$s (%2$s) vence el %3$s. Decide a tiempo si la renuevas o ajustas tu cobertura.</string>
+    <string name="notificaciones_vencimiento_ver_poliza">Ver póliza</string>
+    <string name="notificaciones_vencimiento_linea_vida">Vida</string>
+    <string name="notificaciones_vencimiento_linea_autos">Autos</string>
+    <string name="notificaciones_vencimiento_linea_hogar">Hogar</string>
+    <string name="notificaciones_vencimiento_linea_viaje">Viaje</string>
+    <string name="notificaciones_vencimiento_linea_generica">Seguro</string>
+    <string name="notificaciones_canal_vencimientos">Vencimiento de tus pólizas</string>
+    <string name="notificaciones_canal_vencimientos_descripcion">Te avisamos 30, 15 y 5 días antes de que venza tu póliza.</string>
     <string name="notificaciones_evento_retraso_de_vuelo">Retraso del vuelo %1$s</string>
     <string name="notificaciones_evento_generico">%1$s</string>
     <string name="notificaciones_parametro_retraso_de_vuelo">Retraso de vuelo</string>

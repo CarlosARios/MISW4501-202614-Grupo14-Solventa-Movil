@@ -57,13 +57,12 @@ class SondeoDeNotificacionesViewModel internal constructor(
 
     /**
      * Entrega la notificación tocada, una sola vez, para abrir su destino. La
-     * de un cambio de etapa queda leída: abre la línea de tiempo, que no es una
-     * pantalla de notificaciones (HU-M3.3-01).
+     * de un cambio de etapa y la de un vencimiento quedan leídas: abren la línea
+     * de tiempo (HU-M3.3-01) y el detalle de la póliza (HU-M3.2-01), que no son
+     * pantallas de notificaciones.
      */
     fun abrirPendiente(): DestinoDeNotificacion? = apertura.consumir()?.also { destino ->
-        if (destino is DestinoDeNotificacion.Siniestro) {
-            viewModelScope.launch { repositorio.marcarLeida(destino.notificacionId) }
-        }
+        notificacionPorMarcar(destino)?.let { id -> viewModelScope.launch { repositorio.marcarLeida(id) } }
     }
 
     companion object {
