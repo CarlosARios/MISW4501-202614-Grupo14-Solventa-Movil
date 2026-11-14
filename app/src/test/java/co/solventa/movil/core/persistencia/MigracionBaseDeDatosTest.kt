@@ -198,6 +198,33 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /**
+     * HU-M2.4-01: se agrega la copia sin conexión de los siniestros. Lo que ya
+     * estaba se conserva.
+     */
+    @Test
+    fun `la migracion 7 a 8 conserva las polizas y agrega la copia de los siniestros`() {
+        ayudante.createDatabase(7).apply {
+            execSQL(
+                "INSERT INTO poliza (propietario, id, orden, contenidoCifrado) VALUES ('sub-a', 'AU-2025-118204', 0, 'x')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 8 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(8)
+        try {
+            assertEquals(listOf("AU-2025-118204"), textos(migrada, "SELECT id FROM poliza"))
+            migrada.execSQL(
+                "INSERT INTO siniestro_guardado (propietario, clave, contenidoCifrado, guardadoEn) " +
+                    "VALUES ('sub-a', 'lista', 'x', 1789569000000)",
+            )
+            assertEquals(listOf("lista"), textos(migrada, "SELECT clave FROM siniestro_guardado"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }

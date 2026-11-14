@@ -20,7 +20,7 @@ class LineaDeTiempoTest {
     fun `en evaluacion como en M10 las dos primeras hechas, la tercera actual y las demas pendientes`() {
         val etapas = LineaDeTiempo.armar(EstadoDeSiniestro.EN_EVALUACION, historial)
 
-        assertEquals(Etapa.entries, etapas.map { it.etapa })
+        assertEquals(LineaDeTiempo.MANUALES, etapas.map { it.etapa })
         assertEquals(
             listOf(Avance.HECHA, Avance.HECHA, Avance.ACTUAL, Avance.PENDIENTE, Avance.PENDIENTE),
             etapas.map { it.avance },

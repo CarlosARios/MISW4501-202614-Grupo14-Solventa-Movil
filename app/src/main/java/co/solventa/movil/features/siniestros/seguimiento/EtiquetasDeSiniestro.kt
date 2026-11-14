@@ -58,6 +58,25 @@ object EtiquetasDeSiniestro {
         "glass" -> R.string.siniestros_seguimiento_incidente_vidrios
         "water_damage" -> R.string.siniestros_seguimiento_incidente_agua
         "other" -> R.string.siniestros_seguimiento_incidente_otro
+        "flight_delay" -> R.string.siniestros_seguimiento_incidente_retraso_vuelo
+        else -> null
+    }
+
+    /**
+     * El parámetro objetivo de una resolución automática con lo observado:
+     * «Retraso del vuelo %1$s» (HU-M2.4-01, criterio 3). `null` para un
+     * parámetro que la aplicación todavía no conoce.
+     */
+    @StringRes
+    fun parametro(codigo: String): Int? = when (codigo) {
+        "flight_delay" -> R.string.siniestros_seguimiento_parametro_retraso_vuelo
+        else -> null
+    }
+
+    /** La unidad del disparador: «minutos». `null` si no se conoce: se muestra el código. */
+    @StringRes
+    fun unidad(codigo: String): Int? = when (codigo) {
+        "minutes" -> R.string.siniestros_seguimiento_unidad_minutos
         else -> null
     }
 
@@ -69,13 +88,16 @@ object EtiquetasDeSiniestro {
         Etapa.DECISION ->
             if (etapa.rechazada) R.string.siniestros_seguimiento_etapa_rechazado else R.string.siniestros_seguimiento_etapa_aprobado
         Etapa.PAGO -> R.string.siniestros_seguimiento_etapa_pagado
+        Etapa.EVENTO_DETECTADO -> R.string.siniestros_seguimiento_etapa_evento_detectado
+        Etapa.VALIDACION_AUTOMATICA -> R.string.siniestros_seguimiento_etapa_validacion_automatica
+        Etapa.PAGO_EJECUTADO -> R.string.siniestros_seguimiento_etapa_pago_ejecutado
     }
 
     /** Lo que dice una etapa que todavía no llega, como en M10. */
     @StringRes
     fun etapaPendiente(etapa: Etapa): Int? = when (etapa) {
         Etapa.DECISION -> R.string.siniestros_seguimiento_etapa_aprobado_pendiente
-        Etapa.PAGO -> R.string.siniestros_seguimiento_etapa_pagado_pendiente
+        Etapa.PAGO, Etapa.PAGO_EJECUTADO -> R.string.siniestros_seguimiento_etapa_pagado_pendiente
         else -> null
     }
 

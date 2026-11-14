@@ -24,6 +24,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import co.solventa.movil.R
 import co.solventa.movil.core.i18n.FormatoDeFecha
 import co.solventa.movil.core.i18n.Idioma
+import co.solventa.movil.features.siniestros.radicacion.IndicadorSinConexion
 import co.solventa.movil.core.i18n.IdiomaViewModel
 import co.solventa.movil.shared.ui.AvisoSolventa
 import co.solventa.movil.shared.ui.BarraProgreso
@@ -107,7 +108,11 @@ fun ContenidoMisSiniestros(
     onReintentarEnvios: () -> Unit = {},
     onCerrarRadicado: () -> Unit = {},
 ) {
-    PantallaRegistro(titulo = stringResource(R.string.siniestros_seguimiento_titulo), modifier = modifier) {
+    PantallaRegistro(
+        titulo = stringResource(R.string.siniestros_seguimiento_titulo),
+        modifier = modifier,
+        indicador = { IndicadorSinConexion(estado.copiaLocalDe != null) },
+    ) {
         // HU-M2.2-02: lo del teléfono va primero y no depende de que el
         // servicio responda; sin señal es justo lo que hay que ver.
         AvisosDeBorradores(borradores, idioma, onReintentarEnvios, onCerrarRadicado)
@@ -119,6 +124,14 @@ fun ContenidoMisSiniestros(
         }
         SeccionDeBorradores(borradores.borradores, idioma, onAbrirBorrador)
         val frescura = estado.frescura
+        // HU-M2.4-01, criterio 5: sin red, la última lista guardada en el teléfono.
+        estado.copiaLocalDe?.let { guardadoEn ->
+            AvisoSolventa(
+                tipo = TipoAviso.ERROR,
+                titulo = stringResource(R.string.siniestros_seguimiento_sin_conexion_titulo),
+                texto = stringResource(R.string.siniestros_seguimiento_sin_conexion_texto, cuandoCompleto(guardadoEn, ahora, idioma)),
+            )
+        }
         if (frescura != null && frescura.desdeCache) {
             AvisoDeVersionEnCache(frescura.leidoEn, ahora, idioma, estado.recargando, onReintentar)
         }
@@ -202,7 +215,7 @@ private fun TarjetaDeSiniestro(
                 }
             }
             if (conProgreso) {
-                BarraProgreso(avance = LineaDeTiempo.progreso(s.estado), color = MaterialTheme.colorScheme.primary)
+                BarraProgreso(avance = LineaDeTiempo.progreso(s), color = MaterialTheme.colorScheme.primary)
             }
         }
     }

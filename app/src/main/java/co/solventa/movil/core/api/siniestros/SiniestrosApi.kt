@@ -58,6 +58,14 @@ interface SiniestrosApi {
     @GET("v1/claims/{claim_id}/history")
     suspend fun historial(@Path("claim_id") id: String): Response<HistorialDeSiniestroDto>
 
+    /**
+     * El triage del siniestro en la vista del asegurado: el tiempo estimado de
+     * resolución de la etapa «en evaluación» (HU-M2.4-01, criterio 2). No pasa
+     * por la caché de lectura de HA-L02.
+     */
+    @GET("v1/claims/{claim_id}/triage")
+    suspend fun triaje(@Path("claim_id") id: String): Response<TriajeDelAseguradoDto>
+
     companion object {
         const val ENCABEZADO_IDEMPOTENCIA = "Idempotency-Key"
     }

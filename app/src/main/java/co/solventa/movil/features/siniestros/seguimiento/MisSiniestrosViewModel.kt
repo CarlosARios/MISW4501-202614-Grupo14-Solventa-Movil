@@ -57,6 +57,13 @@ class MisSiniestrosViewModel internal constructor(
                         cerrados = resultado.valor.filter { it.estado.cerrado },
                         frescura = resultado.frescura,
                     )
+                    // Sin red, la última lista guardada en el teléfono (HU-M2.4-01, criterio 5).
+                    is ResultadoDeConsulta.CopiaLocal -> MisSiniestrosUiState(
+                        cargando = false,
+                        enCurso = resultado.valor.filterNot { it.estado.cerrado },
+                        cerrados = resultado.valor.filter { it.estado.cerrado },
+                        copiaLocalDe = resultado.guardadoEn,
+                    )
                     else -> anterior.copy(cargando = false, recargando = false, fallo = falloDe(resultado))
                 }
             }

@@ -16,8 +16,10 @@ import javax.inject.Inject
 /**
  * M10 · Detalle del siniestro con su línea de tiempo (HU-M2.4-01), con el
  * aviso de versión en caché de HA-L02. Pide el detalle y el historial a la
- * vez y arma la línea de tiempo con [LineaDeTiempo]. Como en M9, una
- * respuesta desde la caché se vuelve a consultar sola.
+ * vez y arma la línea de tiempo con [LineaDeTiempo]: la automática si un
+ * evento externo resolvió el siniestro. Como en M9, una respuesta desde la
+ * caché se vuelve a consultar sola. Sin red muestra la última versión guardada
+ * en el teléfono (M10c), con su hora.
  */
 @HiltViewModel
 class DetalleSiniestroViewModel internal constructor(
@@ -54,16 +56,8 @@ class DetalleSiniestroViewModel internal constructor(
             val resultado = repositorio.detalle(id)
             _estado.update { anterior ->
                 when (resultado) {
-                    is ResultadoDeConsulta.Exito -> {
-                        val siniestro = resultado.valor.siniestro
-                        DetalleSiniestroUiState(
-                            cargando = false,
-                            siniestro = siniestro,
-                            etapas = LineaDeTiempo.armar(siniestro.estado, resultado.valor.cambios),
-                            progreso = LineaDeTiempo.progreso(siniestro.estado),
-                            frescura = resultado.frescura,
-                        )
-                    }
+                    is ResultadoDeConsulta.Exito -> estadoDe(resultado.valor).copy(frescura = resultado.frescura)
+                    is ResultadoDeConsulta.CopiaLocal -> estadoDe(resultado.valor).copy(copiaLocalDe = resultado.guardadoEn)
                     else -> anterior.copy(cargando = false, recargando = false, fallo = falloDe(resultado))
                 }
             }
@@ -74,6 +68,17 @@ class DetalleSiniestroViewModel internal constructor(
                 }
             }
         }
+    }
+
+    private fun estadoDe(detalle: DetalleDeSiniestro): DetalleSiniestroUiState {
+        val siniestro = detalle.siniestro
+        return DetalleSiniestroUiState(
+            cargando = false,
+            siniestro = siniestro,
+            etapas = LineaDeTiempo.armar(siniestro, detalle.cambios),
+            progreso = LineaDeTiempo.progreso(siniestro),
+            estimacion = detalle.estimacion,
+        )
     }
 
     companion object {

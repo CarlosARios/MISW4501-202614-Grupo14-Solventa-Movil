@@ -646,7 +646,7 @@
     <string name="siniestros_seguimiento_que_sigue_pagado">The payment was made to your registered account. This claim is closed.</string>
     <string name="siniestros_seguimiento_que_sigue_rechazado">Your claim was rejected. We sent you the reason by email.</string>
     <string name="siniestros_seguimiento_que_sigue_desconocido">We will send you a push notification at every change of stage.</string>
-    <string name="siniestros_seguimiento_pie_actualizado">Updated %1$s</string>
+    <string name="siniestros_seguimiento_pie_actualizado">Updated %1$s · available offline</string>
     <string name="siniestros_seguimiento_pie_cache">Cached version from %1$s</string>
     <string name="siniestros_seguimiento_estado_radicado">Filed</string>
     <string name="siniestros_seguimiento_estado_devuelto">Returned to you</string>
@@ -665,6 +665,34 @@
     <string name="siniestros_seguimiento_incidente_vidrios">Glass</string>
     <string name="siniestros_seguimiento_incidente_agua">Water damage</string>
     <string name="siniestros_seguimiento_incidente_otro">Other</string>
+    <!-- HU-M2.4-01: resolución automática, estimado de la evaluación y copia sin conexión. -->
+    <string name="siniestros_seguimiento_incidente_retraso_vuelo">Flight delay</string>
+    <string name="siniestros_seguimiento_parametro_retraso_vuelo">Delay of flight %1$s</string>
+    <string name="siniestros_seguimiento_unidad_minutos">minutes</string>
+    <string name="siniestros_seguimiento_etapa_evento_detectado">Event detected</string>
+    <string name="siniestros_seguimiento_etapa_validacion_automatica">Automatic coverage check</string>
+    <string name="siniestros_seguimiento_etapa_pago_ejecutado">Payment made</string>
+    <string name="siniestros_seguimiento_evento_observado">Observed: %1$s %2$s</string>
+    <string name="siniestros_seguimiento_validacion_automatica_detalle">Policy in force · threshold exceeded</string>
+    <string name="siniestros_seguimiento_resolucion_automatica">Automatic resolution · no manual review</string>
+    <string name="siniestros_seguimiento_por_que_automatico">Why it was paid automatically</string>
+    <string name="siniestros_seguimiento_parametro_objetivo">Target parameter</string>
+    <string name="siniestros_seguimiento_umbral">Coverage threshold</string>
+    <string name="siniestros_seguimiento_umbral_valor">%1$s %2$s or more</string>
+    <string name="siniestros_seguimiento_valor_observado">Observed value</string>
+    <string name="siniestros_seguimiento_valor_observado_valor">%1$s %2$s · %3$s %4$s</string>
+    <string name="siniestros_seguimiento_pago_ejecutado">Payment made</string>
+    <string name="siniestros_seguimiento_estimacion_con_nivel">Priority Triage %1$d · estimated resolution: %2$s</string>
+    <string name="siniestros_seguimiento_estimacion">Estimated resolution: %1$s</string>
+    <string name="siniestros_seguimiento_sin_conexion_titulo">No connection</string>
+    <string name="siniestros_seguimiento_sin_conexion_texto">Last update: %1$s. Stage changes will show once you are back online.</string>
+    <string name="siniestros_seguimiento_hoy_completo">today %1$s at %2$s</string>
+    <string name="siniestros_seguimiento_fecha_completa">%1$s at %2$s</string>
+    <string name="siniestros_seguimiento_pie_sin_conexion">Last update: %1$s · version saved on this device</string>
+    <plurals name="siniestros_seguimiento_dias_habiles">
+        <item quantity="one">%1$d business day</item>
+        <item quantity="other">%1$d business days</item>
+    </plurals>
     <!-- HU-M2.2-02 · Local draft and offline sync -->
     <string name="radicacion_offline_icono">Offline</string>
     <string name="radicacion_offline_titulo">No connection</string>
