@@ -7,7 +7,8 @@ import co.solventa.movil.ui.theme.SolventaTheme
 
 /**
  * Vistas previas de M15 y M10b con el pago del prototipo (HU-M3.1-01) y los
- * cambios de etapa del siniestro (HU-M3.3-01). Son
+ * cambios de etapa del siniestro (HU-M3.3-01) y las alertas de vencimiento
+ * (HU-M3.2-01). Son
  * herramienta de diseño: no corren en la aplicación.
  */
 private const val PAGADO_PREVIA = 1_789_162_800_000L // 11/09/2026 21:40 UTC
@@ -77,6 +78,37 @@ private fun CentroConEtapasPreview() {
                     pagoPrevia,
                 ),
                 sinLeer = 2,
+            ),
+            idioma = Idioma.ESPANOL,
+            ahora = PAGADO_PREVIA,
+            onAtras = {},
+            onAbrir = {},
+            onMarcarTodas = {},
+            onReintentar = {},
+        )
+    }
+}
+
+/** Las alertas de vencimiento de AU-2025-118204 (HU-M3.2-01): a 15 días y, ya leída, a 30. */
+private fun vencimientoPrevio(hito: Int, dias: Int, leida: Boolean) = Notificacion(
+    id = "ntf-expiry-AU-2025-118204-20260926-$hito", tipo = TiposDeNotificacion.VENCIMIENTO_DE_POLIZA,
+    ocurrioEn = PAGADO_PREVIA - (hito - 15) * 86_400_000L, leidaEn = if (leida) PAGADO_PREVIA else null, pago = null,
+    vencimiento = AlertaDeVencimiento(
+        poliza = "AU-2025-118204", linea = LineasDeVencimiento.AUTOS, producto = "Autos", objetoAsegurado = "KJT-482",
+        venceEn = PAGADO_PREVIA + 15 * 86_400_000L, hito = hito, diasRestantes = dias,
+    ),
+)
+
+@Preview(name = "M15 · Alertas de vencimiento", showBackground = true, heightDp = 900)
+@Composable
+private fun CentroConVencimientosPreview() {
+    SolventaTheme {
+        ContenidoCentro(
+            estado = CentroUiState(
+                cargando = false,
+                hoy = listOf(vencimientoPrevio(hito = 15, dias = 15, leida = false)),
+                anteriores = listOf(vencimientoPrevio(hito = 30, dias = 30, leida = true)),
+                sinLeer = 1,
             ),
             idioma = Idioma.ESPANOL,
             ahora = PAGADO_PREVIA,

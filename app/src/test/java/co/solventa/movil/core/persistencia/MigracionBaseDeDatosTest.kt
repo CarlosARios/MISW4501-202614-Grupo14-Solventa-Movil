@@ -249,6 +249,30 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /**
+     * HU-M3.2-01: cada notificación gana su alerta de vencimiento. Las que ya
+     * estaban (pagos y cambios de etapa) se conservan con el vencimiento vacío.
+     */
+    @Test
+    fun `la migracion 9 a 10 conserva las notificaciones y agrega su vencimiento vacio`() {
+        ayudante.createDatabase(9).apply {
+            execSQL(
+                "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn, etapa) " +
+                    "VALUES ('sub-a', 'ntf-stage-7', 'claim_stage_changed', 1789162800000, NULL, NULL, NULL, '{}')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 10 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(10)
+        try {
+            assertEquals(listOf("{}"), textos(migrada, "SELECT etapa FROM notificacion"))
+            assertEquals(listOf("vacio"), textos(migrada, "SELECT COALESCE(vencimiento, 'vacio') FROM notificacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }

@@ -218,4 +218,17 @@ class RevisorYViewModelsTest {
 
         assertEquals(listOf("ntf-stage-42"), repositorio.leidas)
     }
+
+    // --- HU-M3.2-01 ---
+
+    @Test
+    fun `abrir una alerta de vencimiento desde el centro la marca leida`() = runTest(despachador) {
+        val repositorio = RepositorioFalso()
+        val vm = CentroViewModel(repositorio) { PAGADO }
+
+        vm.abrir(DestinoDeNotificacion.Poliza("AU-2025-118204", "ntf-expiry-1"))
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(listOf("ntf-expiry-1"), repositorio.leidas)
+    }
 }

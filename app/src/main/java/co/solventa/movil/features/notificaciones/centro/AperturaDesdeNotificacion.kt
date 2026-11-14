@@ -12,7 +12,8 @@ import javax.inject.Singleton
  * criterio 4). `MainActivity` la deja aquí al recibir el *intent* y el
  * `NavHost` abre su destino en cuanto hay una sesión abierta: si la sesión
  * estaba cerrada, primero se autentica y luego va directo. La de un cambio de
- * etapa trae además el siniestro, y abre su línea de tiempo (HU-M3.3-01).
+ * etapa trae además el siniestro, y abre su línea de tiempo (HU-M3.3-01); la
+ * de un vencimiento trae la póliza, y abre su detalle (HU-M3.2-01).
  */
 @Singleton
 class AperturaDesdeNotificacion @Inject constructor() {
@@ -24,7 +25,12 @@ class AperturaDesdeNotificacion @Inject constructor() {
     fun recibir(intent: Intent?) {
         val id = intent?.getStringExtra(EXTRA_NOTIFICACION)?.takeIf { it.isNotBlank() } ?: return
         val siniestro = intent.getStringExtra(EXTRA_SINIESTRO)?.takeIf { it.isNotBlank() }
-        _pendiente.value = siniestro?.let { DestinoDeNotificacion.Siniestro(it, id) } ?: DestinoDeNotificacion.Pago(id)
+        val poliza = intent.getStringExtra(EXTRA_POLIZA)?.takeIf { it.isNotBlank() }
+        _pendiente.value = when {
+            siniestro != null -> DestinoDeNotificacion.Siniestro(siniestro, id)
+            poliza != null -> DestinoDeNotificacion.Poliza(poliza, id)
+            else -> DestinoDeNotificacion.Pago(id)
+        }
     }
 
     /** La entrega una sola vez: quien la abre la consume. */
@@ -35,5 +41,8 @@ class AperturaDesdeNotificacion @Inject constructor() {
 
         /** El siniestro de una notificación de cambio de etapa (HU-M3.3-01). */
         const val EXTRA_SINIESTRO = "co.solventa.movil.siniestro"
+
+        /** La póliza de una alerta de vencimiento (HU-M3.2-01). */
+        const val EXTRA_POLIZA = "co.solventa.movil.poliza"
     }
 }
