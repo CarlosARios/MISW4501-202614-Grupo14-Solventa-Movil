@@ -35,6 +35,7 @@ class NotificacionesRepositorioImpl internal constructor(
     private val sesion: SesionRepositorio,
     private val conectividad: ObservadorDeConectividad,
     private val instalacion: IdentidadDeInstalacion,
+    private val tokenDePush: TokenDePush = TokenDePush.Ninguno,
     private val reloj: () -> Long,
 ) : NotificacionesRepositorio, AlCerrarSesion {
 
@@ -45,13 +46,14 @@ class NotificacionesRepositorioImpl internal constructor(
         sesion: SesionRepositorio,
         conectividad: ObservadorDeConectividad,
         instalacion: IdentidadDeInstalacion,
-    ) : this(api, dao, sesion, conectividad, instalacion, System::currentTimeMillis)
+        tokenDePush: TokenDePush,
+    ) : this(api, dao, sesion, conectividad, instalacion, tokenDePush, System::currentTimeMillis)
 
     override val conectado: StateFlow<Boolean> = conectividad.conectado
 
     /** Lo último que se registró con éxito, por cuenta: no se repite sin cambios. */
     @Volatile
-    private var registrado: Triple<String, Boolean, String>? = null
+    private var registrado: Registro? = null
 
     override fun observar(): Flow<CopiaDeNotificaciones> = flow {
         val sub = sub()
@@ -120,12 +122,14 @@ class NotificacionesRepositorioImpl internal constructor(
     override suspend fun registrarDispositivo(permisoConcedido: Boolean, idioma: String) {
         val sub = sub()
         if (sub.isEmpty()) return
-        val estado = Triple(sub, permisoConcedido, idioma)
-        if (registrado == estado) return
         val id = instalacion.id()
-        // Sin proveedor de push real (decisión de HU-M3.1-01) el token es el
-        // id de la instalación; con FCM será el token que entregue Firebase.
-        val dto = DispositivoDto(token = id.takeIf { permisoConcedido }, pushHabilitado = permisoConcedido, idioma = idioma)
+        // HU-M3.3-01: el token de Firebase Cloud Messaging. Sin Firebase (la
+        // aplicación construida sin google-services.json, contra el simulador
+        // de push de HU-M3.1-01), el id de la instalación.
+        val token = if (permisoConcedido) tokenDePush.token() ?: id else null
+        val estado = Registro(sub, permisoConcedido, idioma, token)
+        if (registrado == estado) return
+        val dto = DispositivoDto(token = token, pushHabilitado = permisoConcedido, idioma = idioma)
         val ok = alServicio { api.registrarDispositivo(id, dto) }
         if (ok) registrado = estado
     }
@@ -146,8 +150,19 @@ class NotificacionesRepositorioImpl internal constructor(
         false
     }
 
-    /** Solo los tipos que la aplicación sabe mostrar. */
-    private fun conocida(n: Notificacion): Boolean = n.tipo == TiposDeNotificacion.PAGO_PARAMETRICO && n.pago != null
+    /** Solo los tipos que la aplicación sabe mostrar: el pago paramétrico y, desde HU-M3.3-01, el cambio de etapa. */
+    private fun conocida(n: Notificacion): Boolean = when (n.tipo) {
+        TiposDeNotificacion.PAGO_PARAMETRICO -> n.pago != null
+        TiposDeNotificacion.CAMBIO_DE_ETAPA -> n.etapa != null
+        else -> false
+    }
 
     private suspend fun sub(): String = sesion.sesionGuardada()?.sub.orEmpty()
 }
+
+/**
+ * Lo último que se registró del dispositivo: un cambio en la cuenta, el
+ * permiso, el idioma o el token (HU-M3.3-01: Firebase lo renueva) vuelve a
+ * registrarlo.
+ */
+private data class Registro(val sub: String, val permiso: Boolean, val idioma: String, val token: String?)

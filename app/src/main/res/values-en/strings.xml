@@ -576,6 +576,20 @@
     <string name="notificaciones_aviso_ver_detalle">See details</string>
     <string name="notificaciones_canal_pagos">Automatic payments</string>
     <string name="notificaciones_canal_pagos_descripcion">Notices of the payments your insurance makes on its own, like the one for a delayed flight.</string>
+    <!-- HU-M3.3-01: notificación por cada cambio de etapa del siniestro. -->
+    <string name="notificaciones_etapa_titulo_evaluacion">Your claim is under evaluation</string>
+    <string name="notificaciones_etapa_titulo_aprobado">Your claim was approved</string>
+    <string name="notificaciones_etapa_titulo_aprobado_monto">Your claim was approved: %1$s</string>
+    <string name="notificaciones_etapa_titulo_pagado">Your claim was paid</string>
+    <string name="notificaciones_etapa_titulo_pagado_monto">Your claim was paid: %1$s</string>
+    <string name="notificaciones_etapa_titulo_generico">Your claim moved to a new stage</string>
+    <string name="notificaciones_etapa_cuerpo_evaluacion">%1$s moved to evaluation on %2$s at %3$s.</string>
+    <string name="notificaciones_etapa_cuerpo_aprobado">%1$s was approved on %2$s at %3$s. We will let you know when it is paid.</string>
+    <string name="notificaciones_etapa_cuerpo_pagado">The payment of %1$s was made on %2$s at %3$s to your registered account.</string>
+    <string name="notificaciones_etapa_cuerpo_generico">%1$s moved to a new stage on %2$s at %3$s.</string>
+    <string name="notificaciones_etapa_ver_linea_de_tiempo">See timeline</string>
+    <string name="notificaciones_canal_etapas">Progress of your claims</string>
+    <string name="notificaciones_canal_etapas_descripcion">We let you know every time your claim moves to a new stage: under evaluation, approved and paid.</string>
     <string name="notificaciones_evento_retraso_de_vuelo">Flight %1$s delayed</string>
     <string name="notificaciones_evento_generico">%1$s</string>
     <string name="notificaciones_parametro_retraso_de_vuelo">Flight delay</string>

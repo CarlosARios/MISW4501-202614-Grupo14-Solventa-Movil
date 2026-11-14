@@ -49,13 +49,14 @@ import co.solventa.movil.ui.theme.LocalColoresSolventa
  * M15 · Centro de notificaciones (HU-M3.1-01): las de hoy y las anteriores,
  * con las no leídas marcadas, «Marcar todas como leídas» y «Ver detalle», que
  * abre el pago (M10b). Se lee de la copia local, así que también sirve sin
- * conexión. Solo muestra los pagos paramétricos: los demás tipos del prototipo
- * (renovación, soporte pendiente) son de HU-M3.2-01 y HU-M3.3-01.
+ * conexión. Muestra los pagos paramétricos y, desde HU-M3.3-01, cada cambio de
+ * etapa de un siniestro, que abre su línea de tiempo (M10). La renovación es
+ * de HU-M3.2-01.
  */
 @Composable
 fun CentroPantalla(
     onAtras: () -> Unit,
-    onAbrir: (String) -> Unit,
+    onAbrir: (DestinoDeNotificacion) -> Unit,
     modifier: Modifier = Modifier,
     vm: CentroViewModel = hiltViewModel(),
     idiomas: IdiomaViewModel = hiltViewModel(),
@@ -67,7 +68,10 @@ fun CentroPantalla(
         idioma = idioma,
         ahora = System.currentTimeMillis(),
         onAtras = onAtras,
-        onAbrir = onAbrir,
+        onAbrir = { destino ->
+            vm.abrir(destino)
+            onAbrir(destino)
+        },
         onMarcarTodas = vm::marcarTodasLeidas,
         onReintentar = vm::reintentar,
         modifier = modifier,
@@ -81,7 +85,7 @@ fun ContenidoCentro(
     idioma: Idioma,
     ahora: Long,
     onAtras: () -> Unit,
-    onAbrir: (String) -> Unit,
+    onAbrir: (DestinoDeNotificacion) -> Unit,
     onMarcarTodas: () -> Unit,
     onReintentar: () -> Unit,
     modifier: Modifier = Modifier,
@@ -161,7 +165,7 @@ private fun Seccion(
     notificaciones: List<Notificacion>,
     idioma: Idioma,
     deHoy: Boolean,
-    onAbrir: (String) -> Unit,
+    onAbrir: (DestinoDeNotificacion) -> Unit,
     accion: (@Composable () -> Unit)?,
 ) {
     if (notificaciones.isEmpty()) return
@@ -177,7 +181,9 @@ private fun Seccion(
             )
             accion?.invoke()
         }
-        notificaciones.forEach { TarjetaDePago(it, idioma, deHoy, onAbrir) }
+        notificaciones.forEach {
+            if (it.etapa != null) TarjetaDeEtapa(it, idioma, deHoy, onAbrir) else TarjetaDePago(it, idioma, deHoy, onAbrir)
+        }
     }
 }
 
@@ -195,7 +201,7 @@ private fun EnlaceMarcarTodas(onClick: () -> Unit) {
 
 /** Una tarjeta de pago como la del prototipo: sin leer, con la barra lateral y el punto. */
 @Composable
-private fun TarjetaDePago(n: Notificacion, idioma: Idioma, deHoy: Boolean, onAbrir: (String) -> Unit) {
+private fun TarjetaDePago(n: Notificacion, idioma: Idioma, deHoy: Boolean, onAbrir: (DestinoDeNotificacion) -> Unit) {
     val pago = n.pago ?: return
     val colores = LocalColoresSolventa.current
     val locale = idioma.aLocale()
@@ -212,7 +218,7 @@ private fun TarjetaDePago(n: Notificacion, idioma: Idioma, deHoy: Boolean, onAbr
         modifier = Modifier
             .clip(RoundedCornerShape(12.dp))
             .background(if (n.leida) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
-            .clickable(onClickLabel = stringResource(R.string.notificaciones_centro_ver_detalle)) { onAbrir(n.id) },
+            .clickable(onClickLabel = stringResource(R.string.notificaciones_centro_ver_detalle)) { onAbrir(n.destino) },
     ) {
         Row {
             if (!n.leida) {
@@ -269,6 +275,91 @@ private fun TarjetaDePago(n: Notificacion, idioma: Idioma, deHoy: Boolean, onAbr
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.primary,
                     )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Una tarjeta de cambio de etapa (HU-M3.3-01): el ícono y el título de la
+ * etapa —con el monto en la aprobación y el pago—, el radicado con la fecha y
+ * hora de la transición, y «Ver línea de tiempo». El prototipo no la dibuja:
+ * sigue la misma forma de la tarjeta del pago.
+ */
+@Composable
+private fun TarjetaDeEtapa(n: Notificacion, idioma: Idioma, deHoy: Boolean, onAbrir: (DestinoDeNotificacion) -> Unit) {
+    val e = n.etapa ?: return
+    val colores = LocalColoresSolventa.current
+    val locale = idioma.aLocale()
+    val monto = e.monto
+    val moneda = e.moneda
+    val titulo = if (monto != null && moneda != null) {
+        stringResource(TextosDeNotificacion.tituloDeEtapa(e.etapa, conMonto = true), TextosDeNotificacion.monto(monto, moneda, locale))
+    } else {
+        stringResource(TextosDeNotificacion.tituloDeEtapa(e.etapa, conMonto = false))
+    }
+    val instante = TextosDeNotificacion.instanteDeEtapa(e)
+    val cuerpo = stringResource(
+        TextosDeNotificacion.cuerpoDeEtapa(e.etapa),
+        e.radicado,
+        FormatoDeFecha.fecha(instante, idioma),
+        FormatoDeFecha.hora(instante, idioma),
+    )
+    val hora = FormatoDeFecha.hora(n.ocurrioEn, idioma)
+    val cuando = if (deHoy) {
+        stringResource(R.string.notificaciones_centro_hora_hoy, hora)
+    } else {
+        stringResource(R.string.notificaciones_centro_hora_fecha, FormatoDeFecha.fecha(n.ocurrioEn, idioma), hora)
+    }
+    val sinLeer = stringResource(R.string.notificaciones_centro_sin_leer)
+    val verLinea = stringResource(R.string.notificaciones_etapa_ver_linea_de_tiempo)
+    TarjetaSolventa(
+        relleno = androidx.compose.foundation.layout.PaddingValues(0.dp),
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (n.leida) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f))
+            .clickable(onClickLabel = verLinea) { onAbrir(n.destino) },
+    ) {
+        Row {
+            if (!n.leida) {
+                Box(modifier = Modifier.width(4.dp).fillMaxHeight().background(MaterialTheme.colorScheme.primary))
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(Espacio.x8), modifier = Modifier.padding(Espacio.x16)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Espacio.x12), verticalAlignment = Alignment.Top) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.size(40.dp).background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp)),
+                    ) {
+                        Icon(
+                            painter = painterResource(TextosDeNotificacion.iconoDeEtapa(e.etapa)),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(Espacio.x4)) {
+                        Text(text = titulo, style = MaterialTheme.typography.titleMedium)
+                        Text(text = cuerpo, style = MaterialTheme.typography.bodyMedium, color = colores.textoSecundario)
+                    }
+                    if (!n.leida) {
+                        Box(
+                            modifier = Modifier
+                                .padding(top = Espacio.x8)
+                                .size(8.dp)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
+                                .semantics { contentDescription = sinLeer },
+                        )
+                    }
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = cuando.uppercase(),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colores.textoSecundario,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(text = verLinea, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }

@@ -152,9 +152,19 @@ class IdiomasFalsos(inicial: Idioma = Idioma.ESPANOL) : IdiomaRepositorio {
 
 class ProgramadorFalso : ProgramadorDeRevision {
     var programado = 0
+    var ahora = 0
     override fun programar() {
         programado++
     }
+
+    override fun revisarAhora() {
+        ahora++
+    }
+}
+
+/** El token de Firebase de las pruebas (HU-M3.3-01). */
+class TokenFalso(var valor: String? = "tok-fcm-1") : TokenDePush {
+    override suspend fun token(): String? = valor
 }
 
 /** El repositorio para los ViewModel y el revisor: copia y resultados fijados por la prueba. */
@@ -196,3 +206,22 @@ class RepositorioFalso(copiaInicial: CopiaDeNotificaciones = CopiaDeNotificacion
         registros += permisoConcedido to idioma
     }
 }
+
+/** La aprobación de SIN-2026-01655 (HU-M3.3-01), como la entrega el servicio. */
+fun etapaDto(
+    id: String = "ntf-stage-42",
+    etapa: String = "approved",
+    ocurrio: String = "2026-09-20T14:40:05Z",
+    monto: Double? = 4_132_500.0,
+    pagado: String? = null,
+) = NotificacionDto(
+    id = id,
+    tipo = "claim_stage_changed",
+    ocurrioEn = ocurrio,
+    creadaEn = ocurrio,
+    etapa = co.solventa.movil.core.api.notificaciones.CambioDeEtapaDto(
+        cambio = 42, siniestroId = "8f14e45f-ceea-467a-9f3a-5a2d0b1c7e90", radicado = "SIN-2026-01655",
+        poliza = "HG-2025-880231", etapa = etapa, cambioEn = ocurrio, monto = monto, moneda = monto?.let { "COP" },
+        pagadoEn = pagado,
+    ),
+)

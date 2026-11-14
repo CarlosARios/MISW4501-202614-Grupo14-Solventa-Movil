@@ -35,17 +35,25 @@ object MapeadorDeNotificaciones {
                 pagadoEn = instante(p.pagadoEn),
             )
         },
+        etapa = dto.etapa?.let { e ->
+            CambioDeEtapa(
+                cambio = e.cambio, siniestroId = e.siniestroId, radicado = e.radicado, poliza = e.poliza, etapa = e.etapa,
+                cambioEn = instante(e.cambioEn), monto = e.monto, moneda = e.moneda, pagadoEn = e.pagadoEn?.let(::instante),
+            )
+        },
     )
 
     fun aEntidad(n: Notificacion, propietario: String) = NotificacionEntidad(
         propietario = propietario, id = n.id, tipo = n.tipo, ocurrioEn = n.ocurrioEn, leidaEn = n.leidaEn,
         pago = n.pago?.let { json.encodeToString(PagoGuardado.serializer(), PagoGuardado.de(it)) },
+        etapa = n.etapa?.let { json.encodeToString(EtapaGuardada.serializer(), EtapaGuardada.de(it)) },
     )
 
-    /** La notificación guardada; un pago ilegible la deja sin pago. */
+    /** La notificación guardada; un pago o una etapa ilegibles la dejan sin ellos. */
     fun desdeEntidad(e: NotificacionEntidad) = Notificacion(
         id = e.id, tipo = e.tipo, ocurrioEn = e.ocurrioEn, leidaEn = e.leidaEn,
         pago = e.pago?.let { texto -> runCatching { json.decodeFromString(PagoGuardado.serializer(), texto).aPago() }.getOrNull() },
+        etapa = e.etapa?.let { texto -> runCatching { json.decodeFromString(EtapaGuardada.serializer(), texto).aEtapa() }.getOrNull() },
     )
 
     private fun instante(texto: String): Long = OffsetDateTime.parse(texto).toInstant().toEpochMilli()
@@ -83,6 +91,29 @@ private data class PagoGuardado(
             observado = p.disparador.observado, unidad = p.disparador.unidad, observadoEn = p.disparador.observadoEn,
             marca = p.medioDePago.marca, ultimos4 = p.medioDePago.ultimos4, claveDeIdempotencia = p.claveDeIdempotencia,
             pagadoEn = p.pagadoEn,
+        )
+    }
+}
+
+/** Forma en que el cambio de etapa queda guardado en el teléfono (HU-M3.3-01). */
+@Serializable
+private data class EtapaGuardada(
+    @SerialName("cambio") val cambio: Long,
+    @SerialName("siniestro_id") val siniestroId: String,
+    @SerialName("radicado") val radicado: String,
+    @SerialName("poliza") val poliza: String,
+    @SerialName("etapa") val etapa: String,
+    @SerialName("cambio_en") val cambioEn: Long,
+    @SerialName("monto") val monto: Double? = null,
+    @SerialName("moneda") val moneda: String? = null,
+    @SerialName("pagado_en") val pagadoEn: Long? = null,
+) {
+    fun aEtapa() = CambioDeEtapa(cambio, siniestroId, radicado, poliza, etapa, cambioEn, monto, moneda, pagadoEn)
+
+    companion object {
+        fun de(e: CambioDeEtapa) = EtapaGuardada(
+            cambio = e.cambio, siniestroId = e.siniestroId, radicado = e.radicado, poliza = e.poliza, etapa = e.etapa,
+            cambioEn = e.cambioEn, monto = e.monto, moneda = e.moneda, pagadoEn = e.pagadoEn,
         )
     }
 }
