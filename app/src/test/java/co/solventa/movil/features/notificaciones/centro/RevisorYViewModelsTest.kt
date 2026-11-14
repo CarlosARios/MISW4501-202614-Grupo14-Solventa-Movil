@@ -85,7 +85,7 @@ class RevisorYViewModelsTest {
         val repositorio = RepositorioFalso()
         val programador = ProgramadorFalso()
         val revisor = RevisorDeNotificaciones(repositorio, AvisadorFalso(), PermisoFalso(), IdiomasFalsos())
-        val vm = SondeoDeNotificacionesViewModel(revisor, programador, AperturaDesdeNotificacion(), 20_000)
+        val vm = SondeoDeNotificacionesViewModel(revisor, programador, AperturaDesdeNotificacion(), repositorio, 20_000)
 
         val visible = launch { vm.mientrasVisible() }
         runCurrent()
@@ -103,7 +103,7 @@ class RevisorYViewModelsTest {
         val repositorio = RepositorioFalso()
         val revisor = RevisorDeNotificaciones(repositorio, AvisadorFalso(), PermisoFalso(), IdiomasFalsos())
         val apertura = AperturaDesdeNotificacion()
-        val vm = SondeoDeNotificacionesViewModel(revisor, ProgramadorFalso(), apertura, 20_000)
+        val vm = SondeoDeNotificacionesViewModel(revisor, ProgramadorFalso(), apertura, repositorio, 20_000)
 
         vm.permisoRespondido()
         testScheduler.advanceUntilIdle()
@@ -203,5 +203,19 @@ class RevisorYViewModelsTest {
         assertTrue(vm.estado.value.noDisponible)
         assertFalse(vm.estado.value.cargando)
         assertEquals(1, repositorio.sincronizaciones)
+    }
+
+    // --- HU-M3.3-01 ---
+
+    @Test
+    fun `abrir un cambio de etapa desde el centro lo marca leido y abrir un pago no (lo marca su detalle)`() = runTest(despachador) {
+        val repositorio = RepositorioFalso()
+        val vm = CentroViewModel(repositorio) { PAGADO }
+
+        vm.abrir(DestinoDeNotificacion.Siniestro("cl-1", "ntf-stage-42"))
+        vm.abrir(DestinoDeNotificacion.Pago("ntf-ppo-1"))
+        testScheduler.advanceUntilIdle()
+
+        assertEquals(listOf("ntf-stage-42"), repositorio.leidas)
     }
 }

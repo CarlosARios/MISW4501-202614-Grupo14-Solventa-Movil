@@ -225,6 +225,30 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /**
+     * HU-M3.3-01: cada notificación gana su cambio de etapa. Las que ya estaban
+     * (pagos) se conservan con la etapa vacía.
+     */
+    @Test
+    fun `la migracion 8 a 9 conserva las notificaciones y agrega su etapa vacia`() {
+        ayudante.createDatabase(8).apply {
+            execSQL(
+                "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn) " +
+                    "VALUES ('sub-a', 'ntf-ppo-1', 'parametric_payout', 1789162800000, NULL, '{}', NULL)",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 9 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(9)
+        try {
+            assertEquals(listOf("ntf-ppo-1"), textos(migrada, "SELECT id FROM notificacion"))
+            assertEquals(listOf("vacia"), textos(migrada, "SELECT COALESCE(etapa, 'vacia') FROM notificacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }

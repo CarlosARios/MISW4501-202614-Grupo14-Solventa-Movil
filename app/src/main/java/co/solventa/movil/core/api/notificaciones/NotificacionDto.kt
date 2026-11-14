@@ -18,12 +18,33 @@ data class ListaDeNotificacionesDto(
 @Serializable
 data class NotificacionDto(
     @SerialName("notification_id") val id: String,
-    /** `parametric_payout`; un tipo que la aplicación no conoce se ignora. */
+    /** `parametric_payout` o `claim_stage_changed`; un tipo que la aplicación no conoce se ignora. */
     @SerialName("kind") val tipo: String,
     @SerialName("occurred_at") val ocurrioEn: String,
     @SerialName("created_at") val creadaEn: String,
     @SerialName("read_at") val leidaEn: String? = null,
     @SerialName("payout") val pago: PagoParametricoDto? = null,
+    @SerialName("stage") val etapa: CambioDeEtapaDto? = null,
+)
+
+/**
+ * El cambio de etapa de un siniestro (HU-M3.3-01): la etapa, el siniestro y
+ * cuándo, y en la aprobación y el pago, el monto. `claim_id` es el id con el
+ * que se abre la línea de tiempo; `filing_number`, el radicado que se muestra.
+ */
+@Serializable
+data class CambioDeEtapaDto(
+    @SerialName("change_id") val cambio: Long,
+    @SerialName("claim_id") val siniestroId: String,
+    @SerialName("filing_number") val radicado: String,
+    @SerialName("policy_id") val poliza: String = "",
+    /** `in_evaluation`, `approved` o `paid`. */
+    @SerialName("stage") val etapa: String,
+    @SerialName("changed_at") val cambioEn: String,
+    /** En unidades de la moneda (pesos), ya sin el deducible. */
+    @SerialName("amount") val monto: Double? = null,
+    @SerialName("currency") val moneda: String? = null,
+    @SerialName("paid_at") val pagadoEn: String? = null,
 )
 
 /** El pago paramétrico automático: lo que muestra M10b. */

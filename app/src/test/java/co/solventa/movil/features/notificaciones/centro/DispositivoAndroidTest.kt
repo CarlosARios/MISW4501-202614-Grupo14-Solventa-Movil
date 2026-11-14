@@ -75,7 +75,7 @@ class DispositivoAndroidTest {
         assertNull(apertura.pendiente.value)
         apertura.recibir(Intent().putExtra(AperturaDesdeNotificacion.EXTRA_NOTIFICACION, "ntf-1"))
 
-        assertEquals("ntf-1", apertura.consumir())
+        assertEquals(DestinoDeNotificacion.Pago("ntf-1"), apertura.consumir())
         assertNull(apertura.consumir())
     }
 

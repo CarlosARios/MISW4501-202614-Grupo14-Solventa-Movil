@@ -4,7 +4,9 @@ import android.content.Context
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -43,9 +45,17 @@ class RevisionDeNotificacionesWorker internal constructor(
     }
 }
 
-/** Programa la revisión periódica del centro (HU-M3.1-01). */
+/** Programa la revisión del centro (HU-M3.1-01). */
 interface ProgramadorDeRevision {
+    /** La revisión periódica, de respaldo. */
     fun programar()
+
+    /**
+     * Una revisión en cuanto haya red: la pide el *push* de Firebase
+     * (HU-M3.3-01), para que el aviso llegue en segundos con la aplicación
+     * cerrada.
+     */
+    fun revisarAhora()
 }
 
 /**
@@ -64,8 +74,24 @@ class ProgramadorDeRevisionWorkManager @Inject constructor(
         WorkManager.getInstance(contexto).enqueueUniquePeriodicWork(TRABAJO, ExistingPeriodicWorkPolicy.KEEP, solicitud)
     }
 
+    /**
+     * Un trabajo único de una vez, con red: dos *push* seguidos no lo
+     * duplican (`KEEP`), porque una revisión trae todo lo nuevo. El *push* de
+     * prioridad alta deja a la aplicación correr en ese momento aunque el
+     * teléfono esté en reposo.
+     */
+    override fun revisarAhora() {
+        val solicitud = OneTimeWorkRequestBuilder<RevisionDeNotificacionesWorker>()
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+            .build()
+        WorkManager.getInstance(contexto).enqueueUniqueWork(TRABAJO_AHORA, ExistingWorkPolicy.KEEP, solicitud)
+    }
+
     companion object {
         const val TRABAJO = "revisar-notificaciones"
+
+        /** La revisión que pide un *push* (HU-M3.3-01). */
+        const val TRABAJO_AHORA = "revisar-notificaciones-ahora"
 
         /** El mínimo que admite WorkManager para un trabajo periódico. */
         const val INTERVALO_MIN = 15L

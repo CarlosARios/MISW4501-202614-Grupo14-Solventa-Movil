@@ -59,6 +59,7 @@ import co.solventa.movil.features.originacion.polizas.grafoPolizas
 import co.solventa.movil.features.siniestros.seguimiento.grafoConsultaDeSiniestros
 import co.solventa.movil.features.notificaciones.centro.SondeoDeNotificacionesViewModel
 import co.solventa.movil.features.notificaciones.centro.grafoNotificaciones
+import co.solventa.movil.features.notificaciones.centro.rutaDe
 import co.solventa.movil.features.perfil.destinoPerfil
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoBoton
@@ -113,7 +114,7 @@ fun SolventaNavHost(
     val pendiente by notificaciones.pendiente.collectAsStateWithLifecycle()
     LaunchedEffect(pendiente, pestana) {
         if (pendiente != null && pestana != null) {
-            notificaciones.abrirPendiente()?.let { navegacion.navigate(Ruta.DetallePagoParametrico(it)) }
+            notificaciones.abrirPendiente()?.let { navegacion.navigate(rutaDe(it)) }
         }
     }
 
