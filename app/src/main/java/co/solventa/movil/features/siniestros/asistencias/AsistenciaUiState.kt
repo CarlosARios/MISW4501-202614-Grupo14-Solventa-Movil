@@ -55,6 +55,9 @@ enum class EncabezadoDeAsistencia {
     /** En la cola con red: «Enviando tu ubicación…». */
     ENVIANDO,
 
+    /** En la cola con red y sin ubicación que enviar: «Enviando tu solicitud…». */
+    ENVIANDO_SOLICITUD,
+
     /** En la cola sin red: «Sin conexión de datos: la enviaremos en cuanto haya señal». */
     SIN_CONEXION,
 
@@ -67,6 +70,7 @@ enum class PasoDelEstado {
     UBICACION_RECIBIDA,
     SOLICITUD_RECIBIDA,
     ENVIANDO,
+    ENVIANDO_SOLICITUD,
     SIN_CONEXION,
     NO_REGISTRADA,
 
@@ -112,7 +116,11 @@ data class AsistenciaUiState(
             return when (actual.envio) {
                 EstadoDeEnvio.Confirmada ->
                     if (actual.resultado is ResultadoDeUbicacion.Compartida) EncabezadoDeAsistencia.ENVIADA else EncabezadoDeAsistencia.REGISTRADA
-                EstadoDeEnvio.EnCola -> if (conectado) EncabezadoDeAsistencia.ENVIANDO else EncabezadoDeAsistencia.SIN_CONEXION
+                EstadoDeEnvio.EnCola -> when {
+                    !conectado -> EncabezadoDeAsistencia.SIN_CONEXION
+                    actual.resultado is ResultadoDeUbicacion.Compartida -> EncabezadoDeAsistencia.ENVIANDO
+                    else -> EncabezadoDeAsistencia.ENVIANDO_SOLICITUD
+                }
                 is EstadoDeEnvio.Descartada -> EncabezadoDeAsistencia.NO_REGISTRADA
             }
         }
@@ -134,7 +142,11 @@ data class AsistenciaUiState(
                     when (actual.envio) {
                         EstadoDeEnvio.Confirmada ->
                             if (actual.resultado is ResultadoDeUbicacion.Compartida) PasoDelEstado.UBICACION_RECIBIDA else PasoDelEstado.SOLICITUD_RECIBIDA
-                        EstadoDeEnvio.EnCola -> if (conectado) PasoDelEstado.ENVIANDO else PasoDelEstado.SIN_CONEXION
+                        EstadoDeEnvio.EnCola -> when {
+                            !conectado -> PasoDelEstado.SIN_CONEXION
+                            actual.resultado is ResultadoDeUbicacion.Compartida -> PasoDelEstado.ENVIANDO
+                            else -> PasoDelEstado.ENVIANDO_SOLICITUD
+                        }
                         is EstadoDeEnvio.Descartada -> PasoDelEstado.NO_REGISTRADA
                     },
                 )

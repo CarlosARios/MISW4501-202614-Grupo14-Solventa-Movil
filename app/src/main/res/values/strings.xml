@@ -807,6 +807,7 @@
     <string name="siniestros_asistencia_enviada">Ubicación enviada a Solventa · %1$s</string>
     <string name="siniestros_asistencia_registrada">Solicitud registrada en Solventa · %1$s</string>
     <string name="siniestros_asistencia_enviando">Enviando tu ubicación…</string>
+    <string name="siniestros_asistencia_enviando_solicitud">Enviando tu solicitud…</string>
     <string name="siniestros_asistencia_sin_conexion">Sin conexión de datos: la enviaremos en cuanto haya señal</string>
     <string name="siniestros_asistencia_sin_ubicacion_titulo">No pudimos obtener tu ubicación</string>
     <string name="siniestros_asistencia_sin_ubicacion_permiso">No diste permiso de ubicación. Iniciamos la llamada de todas formas: cuéntale al operador dónde estás.</string>
@@ -817,6 +818,7 @@
     <string name="siniestros_asistencia_descarte_vencida">No logramos enviarla durante la última hora. Tu llamada con el operador sigue siendo válida.</string>
     <string name="siniestros_asistencia_descarte_rechazada">Solventa no pudo recibirla. Tu llamada con el operador sigue siendo válida.</string>
     <string name="siniestros_asistencia_datos_titulo">Datos que enviamos</string>
+    <string name="siniestros_asistencia_datos_titulo_solicitud">Datos de la solicitud</string>
     <string name="siniestros_asistencia_dato_poliza">Póliza</string>
     <string name="siniestros_asistencia_dato_ubicacion">Ubicación</string>
     <string name="siniestros_asistencia_dato_coordenadas">%1$s %2$s · %3$s %4$s</string>
@@ -830,7 +832,6 @@
     <string name="siniestros_asistencia_dato_lugar">Lugar</string>
     <string name="siniestros_asistencia_dato_hora">Hora de registro</string>
     <string name="siniestros_asistencia_dato_hora_valor">%1$s (UTC %2$s)</string>
-    <string name="siniestros_asistencia_dato_hora_pendiente">Pendiente de registro</string>
     <string name="siniestros_asistencia_dato_numero">Número de solicitud</string>
     <string name="siniestros_asistencia_estado_titulo">Estado de la solicitud</string>
     <string name="siniestros_asistencia_estado_ubicacion_recibida">Ubicación recibida por Solventa</string>

@@ -164,6 +164,18 @@ class AsistenciaViewModelTest {
     }
 
     @Test
+    fun `sin ubicacion en la cola con red dice que envia la solicitud y no la ubicacion`() = runTest(despachador) {
+        leida = null
+        val vm = vm()
+
+        vm.solicitar()
+        advanceUntilIdle()
+
+        assertEquals(EncabezadoDeAsistencia.ENVIANDO_SOLICITUD, vm.estado.value.encabezado)
+        assertEquals(listOf(PasoDelEstado.ENVIANDO_SOLICITUD), vm.estado.value.pasosDelEstado)
+    }
+
+    @Test
     fun `sin datos la solicitud dice que se enviara con senal`() = runTest(despachador) {
         val sinRed = RepositorioDeAsistenciaFalso(conectado = false)
         val vm = AsistenciaViewModel(

@@ -68,4 +68,14 @@ class PresentacionDeAsistenciaTest {
         assertEquals(TipoDeDialogo.entries.size, TipoDeDialogo.entries.map(TextosDeAsistencia::dialogo).toSet().size)
         assertEquals(Hemisferio.entries.size, Hemisferio.entries.map(TextosDeAsistencia::hemisferio).toSet().size)
     }
+
+    @Test
+    fun `solo la solicitud confirmada habla de datos que se enviaron`() {
+        assertEquals(R.string.siniestros_asistencia_datos_titulo, TextosDeAsistencia.datosTitulo(EstadoDeEnvio.Confirmada))
+        assertEquals(R.string.siniestros_asistencia_datos_titulo_solicitud, TextosDeAsistencia.datosTitulo(EstadoDeEnvio.EnCola))
+        assertEquals(
+            R.string.siniestros_asistencia_datos_titulo_solicitud,
+            TextosDeAsistencia.datosTitulo(EstadoDeEnvio.Descartada(MotivoDeDescarte.VENCIDA)),
+        )
+    }
 }

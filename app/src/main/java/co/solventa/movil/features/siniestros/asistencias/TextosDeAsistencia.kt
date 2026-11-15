@@ -38,6 +38,7 @@ object TextosDeAsistencia {
         PasoDelEstado.UBICACION_RECIBIDA -> R.string.siniestros_asistencia_estado_ubicacion_recibida
         PasoDelEstado.SOLICITUD_RECIBIDA -> R.string.siniestros_asistencia_estado_solicitud_recibida
         PasoDelEstado.ENVIANDO -> R.string.siniestros_asistencia_enviando
+        PasoDelEstado.ENVIANDO_SOLICITUD -> R.string.siniestros_asistencia_enviando_solicitud
         PasoDelEstado.SIN_CONEXION -> R.string.siniestros_asistencia_sin_conexion
         PasoDelEstado.NO_REGISTRADA -> R.string.siniestros_asistencia_no_registrada_titulo
         PasoDelEstado.LLAMADA_EN_CURSO -> R.string.siniestros_asistencia_estado_llamada
@@ -46,6 +47,16 @@ object TextosDeAsistencia {
         PasoDelEstado.DESPACHADA -> R.string.siniestros_asistencia_estado_despachada
         PasoDelEstado.CERRADA -> R.string.siniestros_asistencia_estado_cerrada
         PasoDelEstado.DESCONOCIDO -> R.string.siniestros_asistencia_estado_desconocido
+    }
+
+    /**
+     * «Datos que enviamos» solo cuando el servicio ya los recibió; en la cola o
+     * descartada son los datos de la solicitud, que aún no se enviaron.
+     */
+    @StringRes
+    fun datosTitulo(envio: EstadoDeEnvio): Int = when (envio) {
+        EstadoDeEnvio.Confirmada -> R.string.siniestros_asistencia_datos_titulo
+        EstadoDeEnvio.EnCola, is EstadoDeEnvio.Descartada -> R.string.siniestros_asistencia_datos_titulo_solicitud
     }
 
     @StringRes
