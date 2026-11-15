@@ -273,6 +273,34 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /**
+     * HU-M2.3-01: la versión 11 agrega la cola cifrada de solicitudes de
+     * asistencia. Lo que ya estaba se conserva.
+     */
+    @Test
+    fun `la migracion 10 a 11 conserva las notificaciones y agrega la cola de asistencias`() {
+        ayudante.createDatabase(10).apply {
+            execSQL(
+                "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn, etapa, vencimiento) " +
+                    "VALUES ('sub-a', 'ntf-stage-7', 'claim_stage_changed', 1789162800000, NULL, NULL, NULL, '{}', NULL)",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 11 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(11)
+        try {
+            assertEquals(listOf("ntf-stage-7"), textos(migrada, "SELECT id FROM notificacion"))
+            migrada.execSQL(
+                "INSERT INTO solicitud_de_asistencia (propietario, clave, cargaCifrada, geocodificada, estadoDeEnvio, " +
+                    "intentos, creadaEn) VALUES ('sub-a', 'clave-1', 'x', 0, 'en_cola', 0, 1794710400000)",
+            )
+            assertEquals(listOf("clave-1"), textos(migrada, "SELECT clave FROM solicitud_de_asistencia"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }
