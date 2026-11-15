@@ -54,6 +54,7 @@ import co.solventa.movil.features.acceso.registro.grafoRegistro
 import co.solventa.movil.features.auditoria.consentimientos.grafoConsentimientos
 import co.solventa.movil.features.siniestros.evidencia.grafoCapturaDeEvidencia
 import co.solventa.movil.features.siniestros.radicacion.grafoRadicacion
+import co.solventa.movil.features.siniestros.asistencias.destinoAsistencia
 import co.solventa.movil.features.inicio.PantallaInicio
 import co.solventa.movil.features.originacion.polizas.grafoPolizas
 import co.solventa.movil.features.siniestros.seguimiento.grafoConsultaDeSiniestros
@@ -161,6 +162,7 @@ fun SolventaNavHost(
 
             grafoRegistro(navegacion)
             grafoRadicacion(navegacion)
+            destinoAsistencia(navegacion)
             grafoConsentimientos(navegacion)
             grafoPolizas(navegacion)
             grafoConsultaDeSiniestros(navegacion)
@@ -185,6 +187,7 @@ fun SolventaNavHost(
                 PantallaInicio(
                     onRegistro = { navegacion.navigate(Ruta.Registro) },
                     onReportarSiniestro = { navegacion.navigate(Ruta.Radicacion()) },
+                    onSolicitarAsistencia = { navegacion.navigate(Ruta.Asistencia) },
                     onNotificaciones = { navegacion.navigate(Ruta.Notificaciones) },
                     onVerificacionExitosa = { navegacion.navigate(Ruta.VerificacionExitosa) },
                     onVerificacionNoSuperada = { navegacion.navigate(Ruta.VerificacionNoSuperada) },

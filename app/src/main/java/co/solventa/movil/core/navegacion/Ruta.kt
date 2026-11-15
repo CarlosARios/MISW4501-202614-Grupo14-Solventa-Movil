@@ -72,6 +72,13 @@ sealed interface Ruta {
         val retomar: Boolean = false,
     ) : Ruta
 
+    /**
+     * M14 · Solicitar asistencia en sitio (HU-M2.3-01). M14b (ubicación o
+     * permiso desactivados) y M14c (sin señal de satélite) son estados suyos.
+     */
+    @Serializable
+    data object Asistencia : Ruta
+
     /** M11e · Radicado generado. Cierra el flujo de la radicación. */
     @Serializable
     data object RadicacionRadicado : Ruta

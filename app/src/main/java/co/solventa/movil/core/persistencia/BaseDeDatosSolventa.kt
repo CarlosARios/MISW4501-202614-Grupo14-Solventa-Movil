@@ -10,6 +10,7 @@ import co.solventa.movil.core.persistencia.dao.PolizaDao
 import co.solventa.movil.core.persistencia.dao.NotificacionDao
 import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
 import co.solventa.movil.core.persistencia.dao.SiniestroGuardadoDao
+import co.solventa.movil.core.persistencia.dao.SolicitudDeAsistenciaDao
 import co.solventa.movil.core.persistencia.entidades.BorradorDeRadicacion
 import co.solventa.movil.core.persistencia.entidades.ConsentimientoEntidad
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
@@ -18,6 +19,7 @@ import co.solventa.movil.core.persistencia.entidades.NotificacionEntidad
 import co.solventa.movil.core.persistencia.entidades.RevocacionPendienteEntidad
 import co.solventa.movil.core.persistencia.entidades.SiniestroGuardadoEntidad
 import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
+import co.solventa.movil.core.persistencia.entidades.SolicitudDeAsistenciaEntidad
 
 /**
  * La base de datos del dispositivo.
@@ -65,6 +67,12 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * de vencimiento de poliza (columna nueva que admite nulos). La migracion
  * 9 → 10 es automatica y conserva todo.
  *
+ * La version 11 (HU-M2.3-01) agrega la cola de solicitudes de asistencia en
+ * sitio. La ubicacion de una persona es sensible, asi que la carga (poliza,
+ * coordenadas, precision y direccion) se guarda cifrada como la de las
+ * polizas; en claro queda solo lo operativo. La migracion 10 → 11 es
+ * automatica porque solo agrega una tabla.
+ *
  * El esquema se exporta a `app/schemas`, que es lo que permite revisar en un
  * *pull request* qué cambió una migración.
  */
@@ -78,8 +86,9 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         PolizaEntidad::class,
         NotificacionEntidad::class,
         SiniestroGuardadoEntidad::class,
+        SolicitudDeAsistenciaEntidad::class,
     ],
-    version = 10,
+    version = 11,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
@@ -90,6 +99,7 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         AutoMigration(from = 7, to = 8),
         AutoMigration(from = 8, to = 9),
         AutoMigration(from = 9, to = 10),
+        AutoMigration(from = 10, to = 11),
     ],
     exportSchema = true,
 )
@@ -108,6 +118,8 @@ abstract class BaseDeDatosSolventa : RoomDatabase() {
     abstract fun notificaciones(): NotificacionDao
 
     abstract fun siniestrosGuardados(): SiniestroGuardadoDao
+
+    abstract fun solicitudesDeAsistencia(): SolicitudDeAsistenciaDao
 
     companion object {
         const val NOMBRE = "solventa.db"

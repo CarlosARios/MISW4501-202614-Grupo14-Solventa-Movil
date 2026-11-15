@@ -44,6 +44,7 @@ fun PantallaInicio(
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier,
     onNotificaciones: () -> Unit = {},
+    onSolicitarAsistencia: () -> Unit = {},
     vm: InicioViewModel = hiltViewModel(),
 ) {
     val sesion by vm.sesion.collectAsStateWithLifecycle()
@@ -59,6 +60,7 @@ fun PantallaInicio(
         onCerrarSesion = { vm.cerrarSesion(onCerrarSesion) },
         modifier = modifier,
         onNotificaciones = onNotificaciones,
+        onSolicitarAsistencia = onSolicitarAsistencia,
     )
 }
 
@@ -74,6 +76,7 @@ private fun ContenidoInicio(
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier,
     onNotificaciones: () -> Unit = {},
+    onSolicitarAsistencia: () -> Unit = {},
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(Espacio.x12),
@@ -100,6 +103,13 @@ private fun ContenidoInicio(
             texto = stringResource(R.string.inicio_reportar_siniestro),
             onClick = onReportarSiniestro,
             modifier = Modifier.padding(top = Espacio.x12),
+        )
+        // La asistencia en sitio (HU-M2.3-01, D12), junto a «Reportar
+        // siniestro» mientras Inicio siga siendo provisional.
+        BotonSolventa(
+            texto = stringResource(R.string.siniestros_asistencia_entrada),
+            onClick = onSolicitarAsistencia,
+            tipo = TipoBoton.SECUNDARIO,
         )
         // El centro de notificaciones (HU-M3.1-01): la campana de M3, mientras
         // Inicio siga siendo provisional.
