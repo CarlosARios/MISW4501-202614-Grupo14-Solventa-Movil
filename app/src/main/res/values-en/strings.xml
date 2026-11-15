@@ -795,6 +795,7 @@
     <string name="siniestros_asistencia_enviada">Location sent to Solventa · %1$s</string>
     <string name="siniestros_asistencia_registrada">Request registered with Solventa · %1$s</string>
     <string name="siniestros_asistencia_enviando">Sending your location…</string>
+    <string name="siniestros_asistencia_enviando_solicitud">Sending your request…</string>
     <string name="siniestros_asistencia_sin_conexion">No data connection: we will send it as soon as there is signal</string>
     <string name="siniestros_asistencia_sin_ubicacion_titulo">We could not get your location</string>
     <string name="siniestros_asistencia_sin_ubicacion_permiso">You did not allow location access. We started the call anyway: tell the operator where you are.</string>
@@ -805,6 +806,7 @@
     <string name="siniestros_asistencia_descarte_vencida">We could not send it during the last hour. Your call with the operator is still valid.</string>
     <string name="siniestros_asistencia_descarte_rechazada">Solventa could not receive it. Your call with the operator is still valid.</string>
     <string name="siniestros_asistencia_datos_titulo">Data we sent</string>
+    <string name="siniestros_asistencia_datos_titulo_solicitud">Request details</string>
     <string name="siniestros_asistencia_dato_poliza">Policy</string>
     <string name="siniestros_asistencia_dato_ubicacion">Location</string>
     <string name="siniestros_asistencia_dato_coordenadas">%1$s %2$s · %3$s %4$s</string>
@@ -818,7 +820,6 @@
     <string name="siniestros_asistencia_dato_lugar">Place</string>
     <string name="siniestros_asistencia_dato_hora">Registered at</string>
     <string name="siniestros_asistencia_dato_hora_valor">%1$s (UTC %2$s)</string>
-    <string name="siniestros_asistencia_dato_hora_pendiente">Pending registration</string>
     <string name="siniestros_asistencia_dato_numero">Request number</string>
     <string name="siniestros_asistencia_estado_titulo">Request status</string>
     <string name="siniestros_asistencia_estado_ubicacion_recibida">Location received by Solventa</string>

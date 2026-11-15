@@ -209,9 +209,10 @@ class PantallasAsistenciaTest {
         // El aviso de arriba y la fila de «Estado de la solicitud» dicen lo mismo.
         composicion.onAllNodesWithContentDescription(texto(R.string.siniestros_asistencia_sin_conexion)).assertCountEquals(2)
         composicion.onAllNodesWithContentDescription(texto(R.string.siniestros_asistencia_sin_conexion)).onFirst().assertIsDisplayed()
-        composicion.onNodeWithContentDescription(
-            "${texto(R.string.siniestros_asistencia_dato_hora)}: ${texto(R.string.siniestros_asistencia_dato_hora_pendiente)}",
-        ).performScrollTo().assertIsDisplayed()
+        // Aún no se envió: ni «Datos que enviamos» ni una hora de registro que no existe.
+        composicion.onNodeWithText(texto(R.string.siniestros_asistencia_datos_titulo_solicitud)).performScrollTo().assertIsDisplayed()
+        composicion.onNodeWithText(texto(R.string.siniestros_asistencia_datos_titulo)).assertDoesNotExist()
+        composicion.onNodeWithContentDescription(texto(R.string.siniestros_asistencia_dato_hora), substring = true).assertDoesNotExist()
         composicion.onNodeWithText(texto(R.string.siniestros_asistencia_ver_estado)).assertDoesNotExist()
     }
 

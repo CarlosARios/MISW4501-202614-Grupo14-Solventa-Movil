@@ -315,6 +315,7 @@ private fun Solicitada(estado: AsistenciaUiState, idioma: Locale) {
             ),
         )
         EncabezadoDeAsistencia.ENVIANDO -> Esperando(stringResource(R.string.siniestros_asistencia_enviando))
+        EncabezadoDeAsistencia.ENVIANDO_SOLICITUD -> Esperando(stringResource(R.string.siniestros_asistencia_enviando_solicitud))
         EncabezadoDeAsistencia.SIN_CONEXION -> AvisoSolventa(
             tipo = TipoAviso.INFORMACION,
             texto = stringResource(R.string.siniestros_asistencia_sin_conexion),
@@ -354,7 +355,7 @@ private fun Solicitada(estado: AsistenciaUiState, idioma: Locale) {
                     PasoDelEstado.CERRADA,
                     -> R.drawable.ic_circulo_check to colores.exitoFuerte
                     PasoDelEstado.LLAMADA_EN_CURSO, PasoDelEstado.EN_ATENCION -> R.drawable.ic_telefono to colores.informacionFuerte
-                    PasoDelEstado.ENVIANDO, PasoDelEstado.POR_DESPACHAR, PasoDelEstado.DESCONOCIDO ->
+                    PasoDelEstado.ENVIANDO, PasoDelEstado.ENVIANDO_SOLICITUD, PasoDelEstado.POR_DESPACHAR, PasoDelEstado.DESCONOCIDO ->
                         R.drawable.ic_reloj to colores.textoSecundario
                     PasoDelEstado.SIN_CONEXION -> R.drawable.ic_sin_conexion to colores.advertenciaFuerte
                     PasoDelEstado.NO_REGISTRADA -> R.drawable.ic_circulo_x to MaterialTheme.colorScheme.error
@@ -372,7 +373,7 @@ private fun Solicitada(estado: AsistenciaUiState, idioma: Locale) {
 @Composable
 private fun DatosEnviados(solicitud: SolicitudDeAsistencia, idioma: Locale) {
     Text(
-        text = stringResource(R.string.siniestros_asistencia_datos_titulo),
+        text = stringResource(TextosDeAsistencia.datosTitulo(solicitud.envio)),
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.semantics { heading() },
     )
@@ -410,14 +411,14 @@ private fun DatosEnviados(solicitud: SolicitudDeAsistencia, idioma: Locale) {
             SeparadorTarjeta()
             Dato(stringResource(R.string.siniestros_asistencia_dato_lugar), it)
         }
-        SeparadorTarjeta()
-        Dato(
-            stringResource(R.string.siniestros_asistencia_dato_hora),
-            solicitud.registradaEn?.let { instante ->
-                val (local, utc) = PresentacionDeAsistencia.horaLocalYUtc(instante, idioma)
-                stringResource(R.string.siniestros_asistencia_dato_hora_valor, local, utc)
-            } ?: stringResource(R.string.siniestros_asistencia_dato_hora_pendiente),
-        )
+        solicitud.registradaEn?.let { instante ->
+            SeparadorTarjeta()
+            val (local, utc) = PresentacionDeAsistencia.horaLocalYUtc(instante, idioma)
+            Dato(
+                stringResource(R.string.siniestros_asistencia_dato_hora),
+                stringResource(R.string.siniestros_asistencia_dato_hora_valor, local, utc),
+            )
+        }
         solicitud.numero?.let {
             SeparadorTarjeta()
             Dato(stringResource(R.string.siniestros_asistencia_dato_numero), it)
