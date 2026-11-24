@@ -70,6 +70,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- HU-M3.3-01: recibe los push de Firebase Cloud Messaging. -->
+        <service
+            android:name=".features.notificaciones.centro.ServicioDePush"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
         <!-- WorkManager se inicializa bajo demanda con la configuración de
              SolventaApp: su inicializador por omisión crearía una instancia
              sin la fábrica de Hilt. -->

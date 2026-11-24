@@ -1,4 +1,7 @@
 [versions]
+# Firebase Cloud Messaging (HU-M3.3-01), verificados en Google Maven.
+firebaseBom = "35.2.0"
+googleServices = "4.6.0"
 agp = "9.4.1"
 coreKtx = "1.19.1"
 junit = "4.13.2"
@@ -38,6 +41,8 @@ room = "2.8.5"
 kover = "0.9.11"
 
 [libraries]
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
@@ -107,6 +112,7 @@ robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "
 androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "workManager" }
 
 [plugins]
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

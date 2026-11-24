@@ -5,8 +5,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 /**
  * Radicación del siniestro en el servicio de siniestros (HU-M2.2-01). El
@@ -38,6 +40,50 @@ interface SiniestrosApi {
         @Header(Correlacion.ENCABEZADO) correlacion: String,
         @Body peticion: SolicitudDeRadicacion,
     ): Response<RespuestaDeRadicacion>
+
+    /**
+     * Los siniestros del asegurado, el más reciente primero (HU-M2.4-01).
+     * Con la caché de lectura de HA-L02 la respuesta dice si salió de la caché
+     * (`stale`) y de qué hora es (`as_of`); el contrato está en
+     * `docs/contratos/HA-L02-api.md` del repositorio de servicios.
+     */
+    @GET("v1/claims")
+    suspend fun siniestros(): Response<ListaDeSiniestrosDto>
+
+    /** El detalle de un siniestro propio; uno ajeno o inexistente responde 404. */
+    @GET("v1/claims/{claim_id}")
+    suspend fun siniestro(@Path("claim_id") id: String): Response<DetalleDeSiniestroDto>
+
+    /** Cada cambio de estado del siniestro: la línea de tiempo de M10. */
+    @GET("v1/claims/{claim_id}/history")
+    suspend fun historial(@Path("claim_id") id: String): Response<HistorialDeSiniestroDto>
+
+    /**
+     * El triage del siniestro en la vista del asegurado: el tiempo estimado de
+     * resolución de la etapa «en evaluación» (HU-M2.4-01, criterio 2). No pasa
+     * por la caché de lectura de HA-L02.
+     */
+    @GET("v1/claims/{claim_id}/triage")
+    suspend fun triaje(@Path("claim_id") id: String): Response<TriajeDelAseguradoDto>
+
+    /**
+     * Registra una solicitud de asistencia en sitio con la póliza y el
+     * resultado de la ubicación (HU-M2.3-01). La clave de idempotencia se
+     * genera al tocar «Solicitar asistencia» y se reutiliza en cada reintento:
+     * con la misma clave el servicio devuelve `200` con la que ya existe. El
+     * contrato está en `docs/contratos/HU-M2.3-01-api.md` del repositorio de
+     * servicios.
+     */
+    @POST("v1/claims/assistance-requests")
+    suspend fun solicitarAsistencia(
+        @Header(ENCABEZADO_IDEMPOTENCIA) clave: String,
+        @Header(Correlacion.ENCABEZADO) correlacion: String,
+        @Body peticion: SolicitudDeAsistenciaDto,
+    ): Response<RespuestaDeAsistenciaDto>
+
+    /** Una solicitud de asistencia propia con su estado actual; ajena o inexistente responde 404. */
+    @GET("v1/claims/assistance-requests/{request_id}")
+    suspend fun solicitudDeAsistencia(@Path("request_id") id: String): Response<RespuestaDeAsistenciaDto>
 
     companion object {
         const val ENCABEZADO_IDEMPOTENCIA = "Idempotency-Key"

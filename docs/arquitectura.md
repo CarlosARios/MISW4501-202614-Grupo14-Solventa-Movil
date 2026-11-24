@@ -23,14 +23,14 @@ Resumen de lo que los [modelos de arquitectura](https://github.com/leonelparrale
 | Rol humano | **asegurado**, único rol de este canal | No hay menú por rol ni *guards* por rol; la app entera es del asegurado |
 | Desbloqueo local | `BiometricPrompt` del sistema operativo; desbloquea la sesión guardada sin reautenticar contra el proveedor de identidad | `core/auth/biometria/` · HU-M1.1-02 |
 | Aprovisionamiento del usuario | El registro con verificación de identidad es el disparador: HA-S01 referencia HU-M1.1-01 como el momento en que el usuario entra al *user pool* | `features/acceso/registro/` |
-| Modo sin conexión | El teléfono pierde la red; el navegador del portal normalmente no | Room para borradores y caché de lectura, WorkManager para la cola de envío. La caché con datos sensibles —las pólizas de HU-M1.2-01— se guarda cifrada con una clave del Keystore de Android (`core/persistencia/cifrado/`) |
+| Modo sin conexión | El teléfono pierde la red; el navegador del portal normalmente no | Room para borradores y caché de lectura, WorkManager para la cola de envío. El reporte de siniestro completo sin red se encola con la misma clave de idempotencia y se borra del teléfono solo cuando el servicio confirma el radicado (HU-M2.2-02); cada borrador y cada evidencia guardan el `sub` de quien los creó. La caché con datos sensibles —las pólizas de HU-M1.2-01— se guarda cifrada con una clave del Keystore de Android (`core/persistencia/cifrado/`) |
 | Timeout de integración del gateway | 5 s en las rutas de cotización (ADR-02) | La app no cotiza: la cotización es un flujo web (E1). Sí aplica el límite de 30 s de HU-M1.1-01 para la verificación de identidad |
 
 ## 3. Atributos de calidad que el cliente móvil debe evidenciar
 
 | Historia de arquitectura | Qué muestra la app | Dónde |
 |---|---|---|
-| HA-L02 · Consulta rápida con caché de lectura | Mis siniestros con «actualizado hoy 14:30 · disponible sin conexión», y el estado degradado cuando la fuente no responde | `features/siniestros/seguimiento/` (M9, M9c, M10c) |
+| HA-L02 · Consulta rápida con caché de lectura | Mis siniestros y el detalle con «Actualizado hoy a las 14:30»; cuando el servicio de siniestros no lee su base en 900 ms responde desde su caché de lectura (`stale: true`) y la app muestra el estado degradado con la hora de esa versión (contrato `docs/contratos/HA-L02-api.md` del repositorio de servicios) | `features/siniestros/seguimiento/` (M9, M9c, M10) |
 | HA-D02 · Cobro sin pérdida ante caída de la pasarela | Siniestro paramétrico resuelto automáticamente, con parámetro, umbral, valor observado y clave de idempotencia | `features/siniestros/seguimiento/` (M10b) |
 | HA-S01 · Autenticación y autorización por roles | 401 → sesión expirada; desbloqueo biométrico; cierre automático por inactividad a los cinco minutos | `core/auth/`, `features/acceso/` (M2, M2d) |
 | RN-02 · Revocación efectiva ≤ 5 min | Revocación del consentimiento desde el perfil, con reintento | `features/auditoria/consentimientos/` (M8, M8b) |

@@ -52,6 +52,16 @@ class CentroViewModel internal constructor(
         viewModelScope.launch { repositorio.marcarTodasLeidas() }
     }
 
+    /**
+     * El asegurado tocó una notificación. La de un cambio de etapa abre la
+     * línea de tiempo del siniestro (HU-M3.3-01) y la de un vencimiento, el
+     * detalle de la póliza (HU-M3.2-01): ninguna de las dos la marca leída,
+     * así que se marca aquí. El detalle del pago (M10b) se marca solo.
+     */
+    fun abrir(destino: DestinoDeNotificacion) {
+        notificacionPorMarcar(destino)?.let { id -> viewModelScope.launch { repositorio.marcarLeida(id) } }
+    }
+
     private fun sincronizar() {
         viewModelScope.launch {
             val resultado = repositorio.sincronizar()

@@ -29,3 +29,6 @@ local.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Firebase (HU-M3.3-01, FCM): cada quien lo descarga de la consola del proyecto solventa-94126; no se versiona.
+app/google-services.json

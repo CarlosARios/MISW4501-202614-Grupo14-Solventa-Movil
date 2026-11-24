@@ -1,26 +1,58 @@
 package co.solventa.movil.features.siniestros.radicacion
 
-import co.solventa.movil.core.persistencia.dao.BorradorDeRadicacionDao
+import android.content.Context
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import co.solventa.movil.core.persistencia.BaseDeDatosSolventa
 import co.solventa.movil.core.persistencia.entidades.BorradorDeRadicacion
+import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
+import co.solventa.movil.features.siniestros.UsuarioActual
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
+import org.junit.runner.RunWith
 
 /**
- * El borrador entre el modelo del asistente y la tabla del dispositivo. Lo
- * que se comprueba es la traducción en los dos sentidos y qué pasa cuando lo
- * guardado viene de una versión anterior de la aplicación.
+ * El borrador entre el modelo del asistente y la tabla del dispositivo, sobre
+ * la base real en memoria: la traducción en los dos sentidos, lo guardado por
+ * una versión anterior y, desde HU-M2.2-02, que cada borrador sea solo de
+ * quien lo empezó y lleve el estado de su envío.
  */
+@RunWith(AndroidJUnit4::class)
 class BorradorRepositorioLocalTest {
 
-    private val dao = DaoEnMemoria()
-    private val repositorio = BorradorRepositorioLocal(dao)
+    private lateinit var base: BaseDeDatosSolventa
+    private var sesion = ASEGURADO
+    private var ahora = 1_000L
+    private lateinit var repositorio: BorradorRepositorioLocal
 
-    private fun borrador() = BorradorEnCurso(
-        id = "borrador-1",
+    @Before
+    fun antes() {
+        val contexto = ApplicationProvider.getApplicationContext<Context>()
+        base = Room.inMemoryDatabaseBuilder(contexto, BaseDeDatosSolventa::class.java)
+            .allowMainThreadQueries()
+            .build()
+        repositorio = BorradorRepositorioLocal(
+            base.borradoresDeRadicacion(),
+            base.evidenciasCapturadas(),
+            UsuarioActual { sesion },
+        ) { ahora }
+    }
+
+    @After
+    fun despues() {
+        base.close()
+    }
+
+    private fun borrador(id: String = "borrador-1") = BorradorEnCurso(
+        id = id,
         etapa = Etapa.HECHOS,
         radicacion = Radicacion(
             poliza = "AU-2025-118204",
@@ -37,7 +69,7 @@ class BorradorRepositorioLocalTest {
     fun `lo guardado se lee igual a como entro`() = runTest {
         repositorio.guardar(borrador())
 
-        assertEquals(borrador(), repositorio.enCurso())
+        assertEquals(borrador().copy(actualizadoEn = ahora), repositorio.enCurso())
     }
 
     @Test
@@ -60,10 +92,114 @@ class BorradorRepositorioLocalTest {
     }
 
     @Test
-    fun `guardar deja la hora del ultimo cambio`() = runTest {
+    fun `el borrador de una cuenta no lo ve otra en el mismo telefono`() = runTest {
         repositorio.guardar(borrador())
 
-        assertTrue(dao.guardado!!.actualizadoEn > 0)
+        sesion = OTRO
+        assertNull(repositorio.enCurso())
+        assertTrue(repositorio.delUsuario().first().isEmpty())
+        assertNull(repositorio.paraEnviar("borrador-1"))
+
+        sesion = ASEGURADO
+        assertEquals("borrador-1", repositorio.enCurso()?.id)
+    }
+
+    @Test
+    fun `sin sesion no se guarda ni se lee nada`() = runTest {
+        sesion = ""
+        repositorio.guardar(borrador())
+
+        assertNull(repositorio.enCurso())
+        assertTrue(repositorio.delUsuario().first().isEmpty())
+    }
+
+    @Test
+    fun `un borrador en cola deja de retomarse y queda listo para enviar`() = runTest {
+        repositorio.guardar(borrador())
+
+        repositorio.encolar("borrador-1")
+
+        assertNull(repositorio.enCurso())
+        assertEquals("borrador-1", repositorio.paraEnviar("borrador-1")?.id)
+        assertEquals(EnvioDelBorrador.EN_COLA, repositorio.delUsuario().first().single().envio)
+    }
+
+    @Test
+    fun `uno en edicion no se envia`() = runTest {
+        repositorio.guardar(borrador())
+
+        assertNull(repositorio.paraEnviar("borrador-1"))
+    }
+
+    @Test
+    fun `los fallos se cuentan con la hora del ultimo`() = runTest {
+        repositorio.guardar(borrador())
+        repositorio.encolar("borrador-1")
+
+        ahora = 5_000L
+        repositorio.registrarFallo("borrador-1", EnvioDelBorrador.EN_COLA)
+        ahora = 9_000L
+        repositorio.registrarFallo("borrador-1", EnvioDelBorrador.FALLIDO)
+
+        val resumen = repositorio.delUsuario().first().single()
+        assertEquals(EnvioDelBorrador.FALLIDO, resumen.envio)
+        assertEquals(2, resumen.intentos)
+        assertEquals(9_000L, resumen.ultimoIntentoEn)
+        // Un fallido no se envía solo: espera el reintento manual.
+        assertNull(repositorio.paraEnviar("borrador-1"))
+    }
+
+    @Test
+    fun `volver a encolar deja los intentos en cero`() = runTest {
+        repositorio.guardar(borrador())
+        repositorio.encolar("borrador-1")
+        repositorio.registrarFallo("borrador-1", EnvioDelBorrador.FALLIDO)
+
+        repositorio.encolar("borrador-1")
+
+        assertEquals(0, repositorio.paraEnviar("borrador-1")?.intentos)
+    }
+
+    @Test
+    fun `el radicado queda guardado hasta mostrar el aviso`() = runTest {
+        repositorio.guardar(borrador())
+        repositorio.encolar("borrador-1")
+
+        repositorio.marcarRadicado("borrador-1", CasoRadicado("caso-9", "SIN-2026-01877", "2026-11-11T12:00:00Z"))
+
+        val resumen = repositorio.delUsuario().first().single()
+        assertEquals(EnvioDelBorrador.RADICADO, resumen.envio)
+        assertEquals("SIN-2026-01877", resumen.radicado)
+        assertEquals("caso-9", resumen.casoId)
+    }
+
+    @Test
+    fun `retomar devuelve a edicion y pone de primero`() = runTest {
+        ahora = 1_000L
+        repositorio.guardar(borrador("viejo"))
+        ahora = 2_000L
+        repositorio.guardar(borrador("nuevo"))
+        repositorio.encolar("viejo")
+        repositorio.registrarFallo("viejo", EnvioDelBorrador.FALLIDO)
+
+        ahora = 3_000L
+        repositorio.retomar("viejo")
+
+        assertEquals("viejo", repositorio.enCurso()?.id)
+    }
+
+    @Test
+    fun `cada tarjeta cuenta sus fotos y su video`() = runTest {
+        repositorio.guardar(borrador())
+        val dao = base.evidenciasCapturadas()
+        dao.guardar(evidencia("e1", "photo"))
+        dao.guardar(evidencia("e2", "photo"))
+        dao.guardar(evidencia("e3", "video"))
+
+        val resumen = repositorio.delUsuario().first().single()
+
+        assertEquals(2, resumen.fotos)
+        assertEquals(1, resumen.videos)
     }
 
     /**
@@ -72,21 +208,21 @@ class BorradorRepositorioLocalTest {
      */
     @Test
     fun `una etapa desconocida devuelve a la primera`() = runTest {
-        dao.guardado = entidadCruda(etapa = "REVISION_FINAL", tipo = "COLISION")
+        base.borradoresDeRadicacion().guardar(entidadCruda(etapa = "REVISION_FINAL", tipo = "COLISION"))
 
         assertEquals(Etapa.IDENTIFICACION, repositorio.enCurso()?.etapa)
     }
 
     @Test
     fun `un tipo desconocido deja el incidente sin elegir`() = runTest {
-        dao.guardado = entidadCruda(etapa = "HECHOS", tipo = "METEORITO")
+        base.borradoresDeRadicacion().guardar(entidadCruda(etapa = "HECHOS", tipo = "METEORITO"))
 
         assertNull(repositorio.enCurso()?.radicacion?.tipo)
     }
 
     @Test
     fun `unas respuestas ilegibles no se llevan el borrador`() = runTest {
-        dao.guardado = entidadCruda(etapa = "HECHOS", tipo = "COLISION", respuestas = "{")
+        base.borradoresDeRadicacion().guardar(entidadCruda(etapa = "HECHOS", tipo = "COLISION", respuestas = "{"))
 
         val leido = repositorio.enCurso()
 
@@ -109,20 +245,31 @@ class BorradorRepositorioLocalTest {
         respuestasJson = respuestas,
         declaracionAceptada = false,
         actualizadoEn = 1L,
+        propietario = ASEGURADO,
     )
-}
 
-private class DaoEnMemoria : BorradorDeRadicacionDao {
+    private fun evidencia(id: String, tipo: String) = EvidenciaCapturada(
+        id = id,
+        borradorId = "borrador-1",
+        posicion = 0,
+        tipo = tipo,
+        rutaArchivo = "/no/existe/$id",
+        capturadaEn = 1L,
+        latitud = 0.0,
+        longitud = 0.0,
+        altitud = null,
+        precisionM = 0f,
+        ubicacionConfiable = false,
+        sha256 = id,
+        tamanoBytes = 100,
+        duracionS = 0,
+        llaveDelObjeto = null,
+        estado = "pendiente",
+        propietario = ASEGURADO,
+    )
 
-    var guardado: BorradorDeRadicacion? = null
-
-    override suspend fun guardar(borrador: BorradorDeRadicacion) {
-        guardado = borrador
-    }
-
-    override suspend fun enCurso(): BorradorDeRadicacion? = guardado
-
-    override suspend fun borrar(id: String) {
-        if (guardado?.id == id) guardado = null
+    private companion object {
+        const val ASEGURADO = "sub-asegurado"
+        const val OTRO = "sub-otra-cuenta"
     }
 }

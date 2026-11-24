@@ -38,7 +38,7 @@ class CentroYDetallePantallaTest {
         ),
     )
 
-    private var abierta: String? = null
+    private var abierta: DestinoDeNotificacion? = null
     private var marcadas = 0
 
     private fun montarCentro(estado: CentroUiState) {
@@ -64,7 +64,7 @@ class CentroYDetallePantallaTest {
         composicion.onNodeWithContentDescription(texto(R.string.notificaciones_centro_sin_leer)).assertIsDisplayed()
 
         composicion.onNodeWithText(texto(R.string.notificaciones_aviso_titulo, "$ 180.000 COP")).performClick()
-        assertEquals("ntf-ppo-1", abierta)
+        assertEquals(DestinoDeNotificacion.Pago("ntf-ppo-1"), abierta)
     }
 
     @Test

@@ -18,12 +18,52 @@ data class ListaDeNotificacionesDto(
 @Serializable
 data class NotificacionDto(
     @SerialName("notification_id") val id: String,
-    /** `parametric_payout`; un tipo que la aplicación no conoce se ignora. */
+    /** `parametric_payout`, `claim_stage_changed` o `policy_expiry`; un tipo que la aplicación no conoce se ignora. */
     @SerialName("kind") val tipo: String,
     @SerialName("occurred_at") val ocurrioEn: String,
     @SerialName("created_at") val creadaEn: String,
     @SerialName("read_at") val leidaEn: String? = null,
     @SerialName("payout") val pago: PagoParametricoDto? = null,
+    @SerialName("stage") val etapa: CambioDeEtapaDto? = null,
+    @SerialName("expiry") val vencimiento: AlertaDeVencimientoDto? = null,
+)
+
+/**
+ * La alerta de vencimiento de una póliza (HU-M3.2-01): a 30, 15 o 5 días del
+ * fin de la vigencia. `coverage_end` es la fecha exacta del vencimiento;
+ * `days_left`, los días que faltaban al enviarla.
+ */
+@Serializable
+data class AlertaDeVencimientoDto(
+    @SerialName("policy_id") val poliza: String,
+    /** `life`, `auto`, `home` o `travel`. */
+    @SerialName("line") val linea: String,
+    @SerialName("product") val producto: String? = null,
+    @SerialName("insured_object") val objetoAsegurado: String? = null,
+    @SerialName("coverage_end") val venceEn: String,
+    /** 30, 15 o 5. */
+    @SerialName("milestone_days") val hito: Int,
+    @SerialName("days_left") val diasRestantes: Int,
+)
+
+/**
+ * El cambio de etapa de un siniestro (HU-M3.3-01): la etapa, el siniestro y
+ * cuándo, y en la aprobación y el pago, el monto. `claim_id` es el id con el
+ * que se abre la línea de tiempo; `filing_number`, el radicado que se muestra.
+ */
+@Serializable
+data class CambioDeEtapaDto(
+    @SerialName("change_id") val cambio: Long,
+    @SerialName("claim_id") val siniestroId: String,
+    @SerialName("filing_number") val radicado: String,
+    @SerialName("policy_id") val poliza: String = "",
+    /** `in_evaluation`, `approved` o `paid`. */
+    @SerialName("stage") val etapa: String,
+    @SerialName("changed_at") val cambioEn: String,
+    /** En unidades de la moneda (pesos), ya sin el deducible. */
+    @SerialName("amount") val monto: Double? = null,
+    @SerialName("currency") val moneda: String? = null,
+    @SerialName("paid_at") val pagadoEn: String? = null,
 )
 
 /** El pago paramétrico automático: lo que muestra M10b. */

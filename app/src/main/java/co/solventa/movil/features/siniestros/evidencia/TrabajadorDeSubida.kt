@@ -14,6 +14,7 @@ import co.solventa.movil.core.api.siniestros.SolicitudDeSubida
 import co.solventa.movil.core.api.siniestros.SubidorDeArchivos
 import co.solventa.movil.core.errores.Correlacion
 import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
+import co.solventa.movil.features.siniestros.UsuarioActual
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -82,10 +83,14 @@ class TrabajadorDeSubida @AssistedInject constructor(
     private val dao: EvidenciaCapturadaDao,
     private val api: SiniestrosApi,
     private val subidor: SubidorDeArchivos,
+    private val usuario: UsuarioActual,
 ) : CoroutineWorker(contexto, parametros) {
 
     override suspend fun doWork(): Result {
-        val pendientes = dao.pendientes()
+        // Solo lo de la sesión abierta: la firma de la subida sale de su
+        // token y la llave del objeto lleva su `sub` (HU-M2.2-02, criterio 6).
+        val sub = usuario.sub().ifEmpty { return Result.success() }
+        val pendientes = dao.pendientes(sub)
         if (pendientes.isEmpty()) return Result.success()
 
         var algunaFallo = false

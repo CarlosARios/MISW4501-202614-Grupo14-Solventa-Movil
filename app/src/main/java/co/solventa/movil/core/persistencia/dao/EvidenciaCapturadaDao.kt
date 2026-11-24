@@ -23,9 +23,19 @@ interface EvidenciaCapturadaDao {
     @Query("SELECT * FROM evidencia_capturada WHERE borradorId = :borradorId ORDER BY posicion")
     suspend fun listarDeBorrador(borradorId: String): List<EvidenciaCapturada>
 
-    /** Lo que al trabajador de envío le queda por subir. */
-    @Query("SELECT * FROM evidencia_capturada WHERE estado <> 'subida' ORDER BY capturadaEn LIMIT 20")
-    suspend fun pendientes(): List<EvidenciaCapturada>
+    /**
+     * Lo que al trabajador de envío le queda por subir, solo de la sesión
+     * abierta: la subida va firmada con su token (HU-M2.2-02, criterio 6).
+     */
+    @Query(
+        "SELECT * FROM evidencia_capturada WHERE estado <> 'subida' AND propietario = :propietario " +
+            "ORDER BY capturadaEn LIMIT 20",
+    )
+    suspend fun pendientes(propietario: String): List<EvidenciaCapturada>
+
+    /** Lo capturado de los borradores de un usuario, para el resumen de cada tarjeta. */
+    @Query("SELECT * FROM evidencia_capturada WHERE propietario = :propietario")
+    fun deUsuario(propietario: String): Flow<List<EvidenciaCapturada>>
 
     @Query("UPDATE evidencia_capturada SET estado = :estado WHERE id = :id")
     suspend fun marcar(id: String, estado: String)

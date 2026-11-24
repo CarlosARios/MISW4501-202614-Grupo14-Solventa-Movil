@@ -54,10 +54,13 @@ import co.solventa.movil.features.acceso.registro.grafoRegistro
 import co.solventa.movil.features.auditoria.consentimientos.grafoConsentimientos
 import co.solventa.movil.features.siniestros.evidencia.grafoCapturaDeEvidencia
 import co.solventa.movil.features.siniestros.radicacion.grafoRadicacion
+import co.solventa.movil.features.siniestros.asistencias.destinoAsistencia
 import co.solventa.movil.features.inicio.PantallaInicio
 import co.solventa.movil.features.originacion.polizas.grafoPolizas
+import co.solventa.movil.features.siniestros.seguimiento.grafoConsultaDeSiniestros
 import co.solventa.movil.features.notificaciones.centro.SondeoDeNotificacionesViewModel
 import co.solventa.movil.features.notificaciones.centro.grafoNotificaciones
+import co.solventa.movil.features.notificaciones.centro.rutaDe
 import co.solventa.movil.features.perfil.destinoPerfil
 import co.solventa.movil.shared.ui.BotonSolventa
 import co.solventa.movil.shared.ui.TipoBoton
@@ -112,7 +115,7 @@ fun SolventaNavHost(
     val pendiente by notificaciones.pendiente.collectAsStateWithLifecycle()
     LaunchedEffect(pendiente, pestana) {
         if (pendiente != null && pestana != null) {
-            notificaciones.abrirPendiente()?.let { navegacion.navigate(Ruta.DetallePagoParametrico(it)) }
+            notificaciones.abrirPendiente()?.let { navegacion.navigate(rutaDe(it)) }
         }
     }
 
@@ -159,8 +162,10 @@ fun SolventaNavHost(
 
             grafoRegistro(navegacion)
             grafoRadicacion(navegacion)
+            destinoAsistencia(navegacion)
             grafoConsentimientos(navegacion)
             grafoPolizas(navegacion)
+            grafoConsultaDeSiniestros(navegacion)
             grafoNotificaciones(navegacion)
             destinoPerfil(
                 onConsentimientos = { navegacion.navigate(Ruta.Consentimientos) },
@@ -181,7 +186,8 @@ fun SolventaNavHost(
                 PedirPermisoDeNotificaciones(onRespondido = notificaciones::permisoRespondido)
                 PantallaInicio(
                     onRegistro = { navegacion.navigate(Ruta.Registro) },
-                    onReportarSiniestro = { navegacion.navigate(Ruta.Radicacion) },
+                    onReportarSiniestro = { navegacion.navigate(Ruta.Radicacion()) },
+                    onSolicitarAsistencia = { navegacion.navigate(Ruta.Asistencia) },
                     onNotificaciones = { navegacion.navigate(Ruta.Notificaciones) },
                     onVerificacionExitosa = { navegacion.navigate(Ruta.VerificacionExitosa) },
                     onVerificacionNoSuperada = { navegacion.navigate(Ruta.VerificacionNoSuperada) },
@@ -241,6 +247,7 @@ private fun rutaDe(destino: NavDestination?): Ruta? = when {
     destino == null -> null
     destino.hasRoute<Ruta.Inicio>() -> Ruta.Inicio
     destino.hasRoute<Ruta.Polizas>() -> Ruta.Polizas
+    destino.hasRoute<Ruta.Siniestros>() -> Ruta.Siniestros
     destino.hasRoute<Ruta.Perfil>() -> Ruta.Perfil
     destino.hasRoute<Ruta.Consentimientos>() -> Ruta.Consentimientos
     else -> null

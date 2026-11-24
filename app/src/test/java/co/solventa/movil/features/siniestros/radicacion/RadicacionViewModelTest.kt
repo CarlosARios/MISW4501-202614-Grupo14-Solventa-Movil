@@ -11,6 +11,9 @@ import co.solventa.movil.features.siniestros.evidencia.LimitesDeEvidencia
 import co.solventa.movil.features.siniestros.evidencia.TipoDeEvidencia
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import co.solventa.movil.core.sincronizacion.ObservadorDeConectividad
+import co.solventa.movil.features.siniestros.radicacion.envio.ColaDeRadicacion
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -35,6 +38,8 @@ class RadicacionViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
     private lateinit var borradores: BorradoresEnMemoria
+    private val conectividad = ConectividadDePrueba()
+    private val cola = ColaFalsa()
     private lateinit var radicaciones: RadicacionFalsa
     private lateinit var evidencias: EvidenciasFalsas
 
@@ -52,7 +57,7 @@ class RadicacionViewModelTest {
     }
 
     private fun crearViewModel() =
-        RadicacionViewModel(borradores, radicaciones, PolizasFalsas(), evidencias)
+        RadicacionViewModel(borradores, radicaciones, PolizasFalsas(), evidencias, conectividad, cola)
 
     // Criterio 1 — el asistente recorre Identificación, Hechos, Evidencias y
     // Declaración, en ese orden.
@@ -322,9 +327,12 @@ class RadicacionViewModelTest {
         assertTrue(viewModel.estado.value.camposRechazados.isEmpty())
     }
 
-    /** Si el servicio no responde, el borrador sigue ahí para reintentar. */
+    /**
+     * HU-M2.2-02: si el servicio no responde, el reporte no se pierde ni hay
+     * que reintentarlo a mano: queda en cola con su misma clave.
+     */
     @Test
-    fun `una falla del envio conserva el borrador y su clave`() = runTest(dispatcher) {
+    fun `una falla del envio encola el reporte con su clave`() = runTest(dispatcher) {
         radicaciones.resultado = ResultadoRadicacion.NoDisponible("a1b2c3")
         val viewModel = crearViewModel()
         advanceUntilIdle()
@@ -334,25 +342,70 @@ class RadicacionViewModelTest {
         viewModel.radicar()
         advanceUntilIdle()
 
-        val envio = viewModel.estado.value.envio
-        assertTrue(envio is EstadoDelEnvio.NoDisponible)
-        assertEquals("a1b2c3", (envio as EstadoDelEnvio.NoDisponible).referencia)
+        assertEquals(EstadoDelEnvio.EnCola, viewModel.estado.value.envio)
+        assertEquals(listOf(id), borradores.encolados)
+        assertEquals(listOf(id), cola.encolados)
         assertTrue(borradores.descartados.isEmpty())
-        assertEquals(id, viewModel.estado.value.borradorId)
     }
 
     @Test
-    fun `el aviso de falla se cierra para volver a intentar`() = runTest(dispatcher) {
-        radicaciones.resultado = ResultadoRadicacion.NoDisponible("a1b2c3")
+    fun `sin red el reporte se encola sin llamar al servicio`() = runTest(dispatcher) {
+        conectividad.estado.value = false
         val viewModel = crearViewModel()
         advanceUntilIdle()
         completarTodo(viewModel)
+        val id = viewModel.estado.value.borradorId
+
         viewModel.radicar()
         advanceUntilIdle()
 
-        viewModel.descartarAvisoDeEnvio()
+        assertTrue(viewModel.estado.value.sinConexion)
+        assertEquals(EstadoDelEnvio.EnCola, viewModel.estado.value.envio)
+        assertEquals(listOf(id), cola.encolados)
+        assertNull("no se llamó al servicio", radicaciones.claveRecibida)
+        assertEquals("se guardó lo último antes de encolar", id, borradores.guardado?.id)
+    }
 
-        assertEquals(EstadoDelEnvio.NoIniciado, viewModel.estado.value.envio)
+    @Test
+    fun `con evidencia todavia subiendo el reporte se encola`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        advanceUntilIdle()
+        completarTodo(viewModel)
+        evidencias.conUnaSubiendo()
+        advanceUntilIdle()
+
+        viewModel.radicar()
+        advanceUntilIdle()
+
+        assertEquals(EstadoDelEnvio.EnCola, viewModel.estado.value.envio)
+        assertNull(radicaciones.claveRecibida)
+    }
+
+    @Test
+    fun `sin red el asistente lo dice y vuelve a la normalidad con la red`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        advanceUntilIdle()
+        assertFalse(viewModel.estado.value.sinConexion)
+
+        conectividad.estado.value = false
+        advanceUntilIdle()
+        assertTrue(viewModel.estado.value.sinConexion)
+
+        conectividad.estado.value = true
+        advanceUntilIdle()
+        assertFalse(viewModel.estado.value.sinConexion)
+    }
+
+    @Test
+    fun `guardar deja la hora del borrador para el aviso sin conexion`() = runTest(dispatcher) {
+        val viewModel = crearViewModel()
+        advanceUntilIdle()
+        assertNull(viewModel.estado.value.guardadoEn)
+
+        viewModel.fijarLugar("Autopista Norte")
+        advanceUntilIdle()
+
+        assertTrue((viewModel.estado.value.guardadoEn ?: 0L) > 0L)
     }
 
     @Test
@@ -424,6 +477,43 @@ private class BorradoresEnMemoria : BorradorRepositorio {
     }
 
     override fun nuevoIdentificador(): String = "borrador-nuevo-${++secuencia}"
+
+    val encolados = mutableListOf<String>()
+
+    override fun delUsuario(): Flow<List<BorradorResumen>> = MutableStateFlow(emptyList())
+
+    override suspend fun retomar(id: String) = Unit
+
+    override suspend fun encolar(id: String) {
+        encolados += id
+    }
+
+    override suspend fun paraEnviar(id: String): BorradorEnCurso? = null
+
+    override suspend fun marcarEnviando(id: String) = Unit
+
+    override suspend fun registrarFallo(id: String, envio: EnvioDelBorrador) = Unit
+
+    override suspend fun marcarRadicado(id: String, caso: CasoRadicado) = Unit
+}
+
+private class ConectividadDePrueba : ObservadorDeConectividad {
+    val estado = MutableStateFlow(true)
+    override val conectado: StateFlow<Boolean> = estado
+}
+
+private class ColaFalsa : ColaDeRadicacion {
+    val encolados = mutableListOf<String>()
+    val cancelados = mutableListOf<String>()
+    override fun encolar(borradorId: String) {
+        encolados += borradorId
+    }
+    override fun reintentar(borradorId: String) {
+        encolados += borradorId
+    }
+    override fun cancelar(borradorId: String) {
+        cancelados += borradorId
+    }
 }
 
 private class PolizasFalsas : PolizasRepositorio {
@@ -484,6 +574,13 @@ private class EvidenciasFalsas : EvidenciaRepositorio {
                 duracionS = 0,
                 estado = EstadoDeEvidencia.SUBIDA,
             )
+        }
+    }
+
+    /** Una de las fotos vuelve a quedar subiendo, como cuando falta la red. */
+    fun conUnaSubiendo() {
+        capturadas.value = capturadas.value.mapIndexed { i, e ->
+            if (i == 0) e.copy(estado = EstadoDeEvidencia.SUBIENDO) else e
         }
     }
 
@@ -568,20 +665,33 @@ class EvidenciaDelAsistenteTest {
         assertTrue(estado.puedeAvanzar)
     }
 
+    /**
+     * HU-M2.2-02: radicar ya no espera a que la evidencia termine de subir;
+     * el reporte se encola y el envío en segundo plano la espera.
+     */
     @Test
-    fun `la radicacion espera a que la evidencia llegue a la plataforma`() {
+    fun `radicar no espera a la evidencia que sigue viajando`() {
         val enCurso = estadoConEvidencias(
             enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS,
             enCurso = 1,
         ).copy(etapa = Etapa.DECLARACION, radicacion = Radicacion(declaracionAceptada = true))
 
         assertTrue(enCurso.faltantes.isEmpty())
-        assertFalse("la evidencia todavia viaja", enCurso.puedeAvanzar)
+        assertTrue(enCurso.puedeAvanzar)
+        assertFalse(enCurso.copy(envio = EstadoDelEnvio.EnCola).puedeAvanzar)
+    }
 
-        val todoEnviado = estadoConEvidencias(enviadas = LimitesDeEvidencia.MINIMO_DE_FOTOS)
-            .copy(etapa = Etapa.DECLARACION, radicacion = Radicacion(declaracionAceptada = true))
+    @Test
+    fun `el aviso sin conexion suma lo que pesan las fotos`() {
+        val estado = RadicacionUiState(
+            evidencias = listOf(
+                evidencia("a", EstadoDeEvidencia.PENDIENTE).copy(tamanoBytes = 1_000_000),
+                evidencia("b", EstadoDeEvidencia.PENDIENTE).copy(tamanoBytes = 1_202_000),
+            ),
+        )
 
-        assertTrue(todoEnviado.puedeAvanzar)
+        assertEquals(2_202_000L, estado.tamanoDeFotos)
+        assertEquals("2,1", megas(estado.tamanoDeFotos))
     }
 
     @Test
@@ -643,7 +753,7 @@ class DescarteDelBorradorTest {
 
     @Test
     fun `descartar el borrador borra sus evidencias y arranca uno nuevo`() = runTest(dispatcher) {
-        val viewModel = RadicacionViewModel(borradores, RadicacionFalsa(), PolizasFalsas(), evidencias)
+        val viewModel = RadicacionViewModel(borradores, RadicacionFalsa(), PolizasFalsas(), evidencias, ConectividadDePrueba(), ColaFalsa())
         advanceUntilIdle()
         val primero = viewModel.estado.value.borradorId
 

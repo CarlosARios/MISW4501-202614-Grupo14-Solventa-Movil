@@ -307,6 +307,22 @@ Para probarlo en un dispositivo físico hay que construir `staging` o `release` 
 gateway de la ventana abierta. La variante `debug` apunta a `http://10.0.2.2:8080`, que solo significa algo dentro
 del emulador.
 
+### Notificaciones *push*: Firebase Cloud Messaging
+
+Desde HU-M3.3-01 los *push* llegan por **Firebase Cloud Messaging** (proyecto `solventa-94126`), aunque la aplicación esté
+cerrada o el teléfono bloqueado. Para recibirlos, la aplicación necesita el `google-services.json` del proyecto en `app/`:
+
+1. Pídelo al equipo, o descárgalo de la consola de Firebase (*Configuración del proyecto → Tus apps → `co.solventa.movil`*).
+2. Déjalo en `app/google-services.json`. **No se versiona** (está en `.gitignore`).
+
+Sin el archivo la aplicación compila igual —el CI y las corridas locales lo hacen así—: el plugin de Google Services no
+se aplica, el dispositivo se registra con el id de la instalación y la aplicación solo se entera de las notificaciones
+revisando el centro (cada 20 s abierta, cada 15 min en segundo plano), como con el simulador de HU-M3.1-01.
+
+Con el archivo, `ServicioDePush` recibe el mensaje de Firebase (solo datos, prioridad alta) y pide una revisión del centro
+en ese momento; la notificación del sistema la sigue escribiendo la aplicación, con sus textos y sus canales. El emulador
+necesita una imagen con Google APIs (`Solventa_API34` la tiene).
+
 ---
 
 ## 7. Pruebas

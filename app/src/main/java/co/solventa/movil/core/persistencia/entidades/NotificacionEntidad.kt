@@ -11,6 +11,13 @@ import androidx.room.Entity
  * copia de los consentimientos. El pago viaja como JSON en texto: lo escribe y
  * lo lee el mapeador del dominio.
  *
+ * [etapa] es el cambio de etapa de un siniestro (HU-M3.3-01), también como
+ * JSON en texto; vacía en las de pago y en las guardadas antes de la versión 9.
+ *
+ * [vencimiento] es la alerta de que una póliza está por vencer (HU-M3.2-01),
+ * también como JSON en texto; vacía en las demás y en las guardadas antes de
+ * la versión 10.
+ *
  * [avisadaEn] marca cuándo la aplicación mostró la notificación del sistema
  * por ella: cada notificación se avisa una sola vez, aunque se sincronice
  * muchas veces (criterio 6: ninguna se pierde ni se repite).
@@ -24,4 +31,6 @@ data class NotificacionEntidad(
     val leidaEn: Long?,
     val pago: String?,
     val avisadaEn: Long? = null,
+    val etapa: String? = null,
+    val vencimiento: String? = null,
 )

@@ -9,13 +9,17 @@ import co.solventa.movil.core.persistencia.dao.EvidenciaCapturadaDao
 import co.solventa.movil.core.persistencia.dao.PolizaDao
 import co.solventa.movil.core.persistencia.dao.NotificacionDao
 import co.solventa.movil.core.persistencia.dao.RevocacionPendienteDao
+import co.solventa.movil.core.persistencia.dao.SiniestroGuardadoDao
+import co.solventa.movil.core.persistencia.dao.SolicitudDeAsistenciaDao
 import co.solventa.movil.core.persistencia.entidades.BorradorDeRadicacion
 import co.solventa.movil.core.persistencia.entidades.ConsentimientoEntidad
 import co.solventa.movil.core.persistencia.entidades.EvidenciaCapturada
 import co.solventa.movil.core.persistencia.entidades.PolizaEntidad
 import co.solventa.movil.core.persistencia.entidades.NotificacionEntidad
 import co.solventa.movil.core.persistencia.entidades.RevocacionPendienteEntidad
+import co.solventa.movil.core.persistencia.entidades.SiniestroGuardadoEntidad
 import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
+import co.solventa.movil.core.persistencia.entidades.SolicitudDeAsistenciaEntidad
 
 /**
  * La base de datos del dispositivo.
@@ -46,6 +50,29 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
  * asegurado, con la marca de cuales ya se avisaron con una notificacion del
  * sistema. La migracion 5 → 6 tambien es automatica y conserva todo.
  *
+ * La version 7 (HU-M2.2-02) agrega al borrador de la radicacion su dueño y el
+ * estado de su envio en segundo plano, y a cada evidencia su dueño. La
+ * migracion 6 → 7 es automatica; lo que ya estaba queda sin dueño y no se
+ * muestra a nadie.
+ *
+ * La version 8 (HU-M2.4-01) agrega la copia sin conexion de *Mis siniestros*
+ * y del detalle de cada caso, cifrada como la de las polizas. La migracion
+ * 7 → 8 es automatica porque solo agrega una tabla.
+ *
+ * La version 9 (HU-M3.3-01) agrega a la copia de cada notificacion su cambio
+ * de etapa del siniestro (columna nueva que admite nulos). La migracion 8 → 9
+ * es automatica y conserva todo.
+ *
+ * La version 10 (HU-M3.2-01) agrega a la copia de cada notificacion su alerta
+ * de vencimiento de poliza (columna nueva que admite nulos). La migracion
+ * 9 → 10 es automatica y conserva todo.
+ *
+ * La version 11 (HU-M2.3-01) agrega la cola de solicitudes de asistencia en
+ * sitio. La ubicacion de una persona es sensible, asi que la carga (poliza,
+ * coordenadas, precision y direccion) se guarda cifrada como la de las
+ * polizas; en claro queda solo lo operativo. La migracion 10 → 11 es
+ * automatica porque solo agrega una tabla.
+ *
  * El esquema se exporta a `app/schemas`, que es lo que permite revisar en un
  * *pull request* qué cambió una migración.
  */
@@ -58,14 +85,21 @@ import co.solventa.movil.core.persistencia.entidades.SincronizacionEntidad
         RevocacionPendienteEntidad::class,
         PolizaEntidad::class,
         NotificacionEntidad::class,
+        SiniestroGuardadoEntidad::class,
+        SolicitudDeAsistenciaEntidad::class,
     ],
-    version = 6,
+    version = 11,
     autoMigrations = [
         AutoMigration(from = 1, to = 2),
         AutoMigration(from = 2, to = 3),
         AutoMigration(from = 3, to = 4),
         AutoMigration(from = 4, to = 5),
         AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 7, to = 8),
+        AutoMigration(from = 8, to = 9),
+        AutoMigration(from = 9, to = 10),
+        AutoMigration(from = 10, to = 11),
     ],
     exportSchema = true,
 )
@@ -82,6 +116,10 @@ abstract class BaseDeDatosSolventa : RoomDatabase() {
     abstract fun polizas(): PolizaDao
 
     abstract fun notificaciones(): NotificacionDao
+
+    abstract fun siniestrosGuardados(): SiniestroGuardadoDao
+
+    abstract fun solicitudesDeAsistencia(): SolicitudDeAsistenciaDao
 
     companion object {
         const val NOMBRE = "solventa.db"

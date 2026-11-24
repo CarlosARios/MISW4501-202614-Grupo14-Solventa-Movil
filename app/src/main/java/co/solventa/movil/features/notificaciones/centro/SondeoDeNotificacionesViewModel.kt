@@ -23,15 +23,20 @@ class SondeoDeNotificacionesViewModel internal constructor(
     private val revisor: RevisorDeNotificaciones,
     private val programador: ProgramadorDeRevision,
     private val apertura: AperturaDesdeNotificacion,
+    private val repositorio: NotificacionesRepositorio,
     private val intervaloMs: Long,
 ) : ViewModel() {
 
     @Inject
-    constructor(revisor: RevisorDeNotificaciones, programador: ProgramadorDeRevision, apertura: AperturaDesdeNotificacion) :
-        this(revisor, programador, apertura, INTERVALO_MS)
+    constructor(
+        revisor: RevisorDeNotificaciones,
+        programador: ProgramadorDeRevision,
+        apertura: AperturaDesdeNotificacion,
+        repositorio: NotificacionesRepositorio,
+    ) : this(revisor, programador, apertura, repositorio, INTERVALO_MS)
 
     /** La notificación que el usuario tocó y espera abrirse. */
-    val pendiente: StateFlow<String?> = apertura.pendiente
+    val pendiente: StateFlow<DestinoDeNotificacion?> = apertura.pendiente
 
     /**
      * Revisa el centro cada [INTERVALO_MS] mientras quien llama lo mantenga
@@ -50,8 +55,15 @@ class SondeoDeNotificacionesViewModel internal constructor(
         viewModelScope.launch { revisor.revisar() }
     }
 
-    /** Entrega la notificación tocada, una sola vez, para abrir su detalle. */
-    fun abrirPendiente(): String? = apertura.consumir()
+    /**
+     * Entrega la notificación tocada, una sola vez, para abrir su destino. La
+     * de un cambio de etapa y la de un vencimiento quedan leídas: abren la línea
+     * de tiempo (HU-M3.3-01) y el detalle de la póliza (HU-M3.2-01), que no son
+     * pantallas de notificaciones.
+     */
+    fun abrirPendiente(): DestinoDeNotificacion? = apertura.consumir()?.also { destino ->
+        notificacionPorMarcar(destino)?.let { id -> viewModelScope.launch { repositorio.marcarLeida(id) } }
+    }
 
     companion object {
         /** Cada cuánto se revisa con la aplicación a la vista: muy por debajo de los 60 s. */

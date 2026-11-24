@@ -1,5 +1,6 @@
 package co.solventa.movil.core.persistencia.entidades
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -24,7 +25,7 @@ data class EvidenciaCapturada(
     val posicion: Int,
     /** `foto` o `video`, como los nombra el contrato. */
     val tipo: String,
-    /** Ruta del archivo en la caché de la aplicación. */
+    /** Ruta del archivo en el almacenamiento de la aplicación, fuera de la caché. */
     val rutaArchivo: String,
     val capturadaEn: Long,
     val latitud: Double,
@@ -38,4 +39,10 @@ data class EvidenciaCapturada(
     val llaveDelObjeto: String?,
     /** `pendiente`, `subiendo`, `subida` o `fallida`. */
     val estado: String,
+    /**
+     * El `sub` de quien la capturó (HU-M2.2-02, criterio 6): el trabajador de
+     * subida solo envía lo de la sesión abierta.
+     */
+    @ColumnInfo(defaultValue = "")
+    val propietario: String = "",
 )

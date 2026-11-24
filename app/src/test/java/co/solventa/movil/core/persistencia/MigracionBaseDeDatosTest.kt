@@ -170,6 +170,137 @@ class MigracionBaseDeDatosTest {
         }
     }
 
+    /**
+     * HU-M2.2-02: el borrador gana su dueño y el estado de su envío, y la
+     * evidencia su dueño. Lo que ya estaba queda en edición y sin dueño.
+     */
+    @Test
+    fun `la migracion 6 a 7 conserva el borrador en edicion y sin dueno`() {
+        ayudante.createDatabase(6).apply {
+            execSQL(
+                "INSERT INTO borrador_de_radicacion (id, etapa, poliza, tipo, ocurrioEn, lugar, descripcion, " +
+                    "respuestasJson, declaracionAceptada, actualizadoEn, montoEstimado) " +
+                    "VALUES ('borrador-1', 'HECHOS', 'AU-2025-118204', 'COLISION', 1792539000000, " +
+                    "'Autopista Norte km 12', 'Choque por alcance', '{}', 0, 1792539100000, '')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 7 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(7)
+        try {
+            assertEquals(listOf("borrador-1"), textos(migrada, "SELECT id FROM borrador_de_radicacion"))
+            assertEquals(listOf(""), textos(migrada, "SELECT propietario FROM borrador_de_radicacion"))
+            assertEquals(listOf("edicion"), textos(migrada, "SELECT envio FROM borrador_de_radicacion"))
+            assertEquals(listOf("0"), textos(migrada, "SELECT CAST(intentos AS TEXT) FROM borrador_de_radicacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    /**
+     * HU-M2.4-01: se agrega la copia sin conexión de los siniestros. Lo que ya
+     * estaba se conserva.
+     */
+    @Test
+    fun `la migracion 7 a 8 conserva las polizas y agrega la copia de los siniestros`() {
+        ayudante.createDatabase(7).apply {
+            execSQL(
+                "INSERT INTO poliza (propietario, id, orden, contenidoCifrado) VALUES ('sub-a', 'AU-2025-118204', 0, 'x')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 8 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(8)
+        try {
+            assertEquals(listOf("AU-2025-118204"), textos(migrada, "SELECT id FROM poliza"))
+            migrada.execSQL(
+                "INSERT INTO siniestro_guardado (propietario, clave, contenidoCifrado, guardadoEn) " +
+                    "VALUES ('sub-a', 'lista', 'x', 1789569000000)",
+            )
+            assertEquals(listOf("lista"), textos(migrada, "SELECT clave FROM siniestro_guardado"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    /**
+     * HU-M3.3-01: cada notificación gana su cambio de etapa. Las que ya estaban
+     * (pagos) se conservan con la etapa vacía.
+     */
+    @Test
+    fun `la migracion 8 a 9 conserva las notificaciones y agrega su etapa vacia`() {
+        ayudante.createDatabase(8).apply {
+            execSQL(
+                "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn) " +
+                    "VALUES ('sub-a', 'ntf-ppo-1', 'parametric_payout', 1789162800000, NULL, '{}', NULL)",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 9 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(9)
+        try {
+            assertEquals(listOf("ntf-ppo-1"), textos(migrada, "SELECT id FROM notificacion"))
+            assertEquals(listOf("vacia"), textos(migrada, "SELECT COALESCE(etapa, 'vacia') FROM notificacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    /**
+     * HU-M3.2-01: cada notificación gana su alerta de vencimiento. Las que ya
+     * estaban (pagos y cambios de etapa) se conservan con el vencimiento vacío.
+     */
+    @Test
+    fun `la migracion 9 a 10 conserva las notificaciones y agrega su vencimiento vacio`() {
+        ayudante.createDatabase(9).apply {
+            execSQL(
+                "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn, etapa) " +
+                    "VALUES ('sub-a', 'ntf-stage-7', 'claim_stage_changed', 1789162800000, NULL, NULL, NULL, '{}')",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 10 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(10)
+        try {
+            assertEquals(listOf("{}"), textos(migrada, "SELECT etapa FROM notificacion"))
+            assertEquals(listOf("vacio"), textos(migrada, "SELECT COALESCE(vencimiento, 'vacio') FROM notificacion"))
+        } finally {
+            migrada.close()
+        }
+    }
+
+    /**
+     * HU-M2.3-01: la versión 11 agrega la cola cifrada de solicitudes de
+     * asistencia. Lo que ya estaba se conserva.
+     */
+    @Test
+    fun `la migracion 10 a 11 conserva las notificaciones y agrega la cola de asistencias`() {
+        ayudante.createDatabase(10).apply {
+            execSQL(
+                "INSERT INTO notificacion (propietario, id, tipo, ocurrioEn, leidaEn, pago, avisadaEn, etapa, vencimiento) " +
+                    "VALUES ('sub-a', 'ntf-stage-7', 'claim_stage_changed', 1789162800000, NULL, NULL, NULL, '{}', NULL)",
+            )
+            close()
+        }
+
+        // Valida que el resultado sea exactamente el esquema 11 exportado.
+        val migrada = ayudante.runMigrationsAndValidate(11)
+        try {
+            assertEquals(listOf("ntf-stage-7"), textos(migrada, "SELECT id FROM notificacion"))
+            migrada.execSQL(
+                "INSERT INTO solicitud_de_asistencia (propietario, clave, cargaCifrada, geocodificada, estadoDeEnvio, " +
+                    "intentos, creadaEn) VALUES ('sub-a', 'clave-1', 'x', 0, 'en_cola', 0, 1794710400000)",
+            )
+            assertEquals(listOf("clave-1"), textos(migrada, "SELECT clave FROM solicitud_de_asistencia"))
+        } finally {
+            migrada.close()
+        }
+    }
+
     private fun textos(conexion: SQLiteConnection, consulta: String): List<String> =
         conexion.prepare(consulta).use { sentencia ->
             buildList { while (sentencia.step()) add(sentencia.getText(0)) }

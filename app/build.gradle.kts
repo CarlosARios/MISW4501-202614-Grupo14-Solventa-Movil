@@ -7,6 +7,17 @@ plugins {
     alias(libs.plugins.kover)
 }
 
+/*
+ * Firebase Cloud Messaging (HU-M3.3-01). El plugin solo se aplica con el
+ * google-services.json del proyecto solventa-94126 en app/ (no se versiona:
+ * cada quien lo descarga de la consola de Firebase). Sin él la app compila
+ * igual —el CI y las corridas locales contra el simulador de push— y el
+ * dispositivo se registra con el id de la instalación, como en HU-M3.1-01.
+ */
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 /**
  * Ruta del almacen de claves de publicacion, si esta disponible.
  *
@@ -269,6 +280,8 @@ ksp {
 }
 
 dependencies {
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

@@ -35,6 +35,10 @@ abstract class NotificacionesModule {
 
     @Binds
     abstract fun enlazarProgramador(impl: ProgramadorDeRevisionWorkManager): ProgramadorDeRevision
+
+    /** El token de Firebase Cloud Messaging (HU-M3.3-01). */
+    @Binds
+    abstract fun enlazarTokenDePush(impl: TokenDeFirebase): TokenDePush
 }
 
 /** El revisor para el trabajo que crea WorkManager fuera de Hilt. */
